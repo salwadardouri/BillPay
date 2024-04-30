@@ -13,6 +13,7 @@ import DashAdmin from './components/admin/DashAdmin';
 import User from './components/admin/user/User';
 import CreatePassword from './components/admin/user/createPassword';
 import CreatePassFin from './components/admin/user/createPassFin';
+import Categories from './components/admin/Parametre/Categories';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Accueil />} /> {/* Mettez à jour le chemin selon vos besoins */}
           <Route path="/SignIn" element={<SignIn />} /> 
           <Route path="/SignUp" element={<SignUp />} /> 
+          <Route path="/Categories" element={<Categories/>} /> 
           <Route path="/ResetPassword" element={<ResetPassword/>} />
           <Route path="/ForgotPassword" element={<ForgotPassword/>} />
           <Route path="/Client" element={<AccueilClient/>} /> 

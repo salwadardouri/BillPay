@@ -40,11 +40,3 @@
         }
       }
       
-      /* Extra large devices (desktops, 992px and up) */
-      @media (min-width: 992px) {
-        /* Ajoutez vos styles pour les appareils très grands ici */
-        /* Par exemple */
-        .signin {
-          font-size: 20px;
-        }
-    }

@@ -144,7 +144,7 @@ const ResetPassword = () => {
 
       if (response.ok) {
         console.log('Reset password request successful', responseData);
-        console.log('Reset password request successful', responseData);
+      
         setSuccessMessage('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
         setTimeout(() => setSuccessMessage(''), 2000);
         // Réinitialiser secondsRemaining à 0

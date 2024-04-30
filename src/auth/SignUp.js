@@ -1,30 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Input, Card, Row, Col, Select,Alert } from 'antd';
+import { Button, Form, Input, Card, Row, Col, Select ,message} from 'antd';
 import PhoneInput from 'react-phone-input-2';
+import countryList from 'react-select-country-list';
+import { components } from 'react-select';
 import 'react-phone-input-2/lib/style.css';
+import ReactSelect from 'react-select';
+
 import FacebookImage from '../images/fb.png';
 import GmailImage from '../images/g.png';
 import LinkedinImage from '../images/in.png';
+import {  ArrowLeftOutlined,MailOutlined,GlobalOutlined,LockOutlined ,UserOutlined,EnvironmentOutlined } from '@ant-design/icons';
 import './media.css'; 
 const { Option } = Select;
-
+const CountryOption = (props) => {
+    return (
+      <components.Option {...props}>
+        <img
+          alt={`Flag of ${props.data.label}`}
+          src={`https://flagcdn.com/16x12/${props.data.value.toLowerCase()}.png`}
+          style={{ marginRight: 10 , float:'left' }}
+        />
+        {props.data.label}
+      </components.Option>
+    );
+  };
 const SignUp = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const [clientType, setClientType] = useState("Client Physique");
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
+ 
+      const handleButtonClick = () => {
+        navigate('/');
+      };
     const handleLoginClick= () => {
       navigate('/SignIn');
     };
   
-    const handleLinkClick = () => {
-      navigate('/ForgotPassword');
-    };
+    // const handleLinkClick = () => {
+    //   navigate('/ForgotPassword');
+    // };
 
     const handleChangePhoneNumber = (value) => {
         setPhoneNumber(value);
@@ -35,63 +53,95 @@ const SignUp = () => {
         const phoneNumberPattern = /^\+?[1-9]\d{1,14}$/;
         return phoneNumberPattern.test(phoneNumber);
     };
+
     const onFinish = async (values) => {
-      try {
-          const { fullname, email, password, country, num_phone, address, code_postal, matricule } = values;
-  
-          // Format the phone number as desired
-          let formattedPhoneNumber = `+${num_phone.replace(/\s/g, '')}`;
-  
+        try {
+          const {
+            fullname,
+            email,
+            password,
+            country,
+            num_phone,
+            address,
+            code_postal,
+            matricule,
+          } = values;
+    
+          // Formater le numéro de téléphone
+          const formattedPhoneNumber = `+${num_phone.replace(/\s/g, '')}`;
+    
           const postData = {
-              fullname,
-              email,
-              password,
-              country,
-              num_phone: formattedPhoneNumber,
-              address,
-              code_postal,
-              roles: ["CLIENT"],
-              matricule_fiscale: clientType === "Client Morale" ? matricule : undefined,
+            fullname,
+            email,
+            password,
+            country: country.label,
+            num_phone: formattedPhoneNumber,
+            address,
+            code_postal,
+            roles: ['CLIENT'],
+            matricule_fiscale: clientType === 'Client Morale' ? matricule : undefined,
           };
-  
+    
           const response = await fetch('http://localhost:5000/auth/signupclient', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(postData),
-              credentials: 'include',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+            credentials: 'include', // pour les cookies et les sessions
           });
-  
+    
           const responseData = await response.json();
-  
+    
           if (response.ok) {
-              console.log('User created successfully', responseData);
-              setSuccessMessage('User created successful');
-          setTimeout(() => {
+            // Si tout est correct
+            message.success('Utilisateur créé avec succès');
+            setTimeout(() => {
               navigate('/Client');
-            }, 3000);
-        } else {
-            // Handle errors
-            console.error('Email already exists', responseData);
-            setErrorMessage('Email already exists');
-            setTimeout(() => setErrorMessage(''), 3000); // Clear error message after 1 second
+            }, 3000); // Naviguer après 3 secondes
+          } else {
+            // Gérer les erreurs spécifiques
+            if (response.status === 409) {
+              // Conflit, comme un email déjà existant
+              message.error('L\'email existe déjà');
+            } else if (response.status === 400) {
+              // Erreur de validation
+              message.error(`Erreur de validation: ${responseData.message}`);
+            } else {
+              // Autres erreurs
+              message.error('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial');
+            }
+            // Effacer le message d'erreur après un certain temps
+            setTimeout(() => message.error(''), 3000);
           }
         } catch (error) {
-          console.error('An error occurred', error);
-          setErrorMessage('An error occurred');
-          setTimeout(() => setErrorMessage(''), 3000); // Clear error message after 1 second
+          // Gestion des exceptions non prévues
+          console.error('Une erreur s\'est produite', error);
+          message.error('Une erreur s\'est produite');
+          setTimeout(() => message.error(''), 3000);
         }
       };
   
-  
-
+      const countryOptions = countryList().getData();
     const handleClientTypeChange = (value) => {
         setClientType(value);
     };
 
     return (
-        <div className="media" style={{ flex: 1, paddingTop: '20px', textAlign: 'right',backgroundColor:'#EEEEEE' }}>
+        <div  className="media"  style={{ 
+            backgroundColor: '#AAB8FD', 
+            minHeight: '100vh', // Ensure the background color fills the viewport
+        
+      
+      
+          }}>
+            <div style={{paddingTop: '10px'}} >
+          
+            <Button type="primary" style={{ float: 'left', background: 'transparent', color: '#022452',marginTop:'280px' }} onClick={handleButtonClick}>
+            <ArrowLeftOutlined />
+          </Button>
+              </div>
+           
             <Card
                 style={{
                     textAlign: 'center',
@@ -103,17 +153,16 @@ const SignUp = () => {
                     display: 'flex',
                     flexDirection: 'column',
                 }}>
+                   
                 <div style={{ float: 'center', textAlign: 'center', width: '100%', marginTop: '10px' }}>
+     
                     <div style={{ fontFamily: 'cursive', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>
+              
                         <h2>Create New Account !</h2>
                         <p style={{ color: 'grey' }}>Get your free BillPayVisto account now </p>
                     </div>
                     <div style={{ marginTop: '30px' }}>
 
-                    {successMessage && <Alert message={successMessage} type="success" showIcon/>}
-{errorMessage && <Alert message={errorMessage} type="error" showIcon />}
-
-<br/>
                     <Form
     form={form}
     name="basic"
@@ -129,7 +178,7 @@ const SignUp = () => {
       <Col style={{ marginBottom: '0px' }}>
           <Form.Item
               name="matricule"
-              label="Tax Identification Number"
+           
               rules={[
                   {
                       required: clientType === "Client Morale",
@@ -137,7 +186,10 @@ const SignUp = () => {
                   }
               ]}
           >
-              <Input  placeholder="Please input your Tax Identification Number !" />
+              <Input  placeholder=" Tax Identification Number !" refix={<LockOutlined/>} style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
           </Form.Item>
       </Col>
     </Row>
@@ -163,22 +215,28 @@ const SignUp = () => {
         <Col span={12} style={{ marginBottom: '0px' }}>
             <Form.Item
                 name="fullname"
-                label="Fullname"
+               
                 rules={[{ required: true, message: 'Please input your fullname!', whitespace: true }]}
             >
-                <Input placeholder="Please input your FullName !"/>
+                <Input placeholder=" FullName " prefix={<UserOutlined/>}style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
             </Form.Item>
         </Col>
         <Col span={12} style={{ marginBottom: '0px' }}>
                                     <Form.Item
                                         name="email"
-                                        label="E-mail"
+                                      
                                         rules={[
                                             { type: 'email', message: 'The input is not valid E-mail!' },
-                                            { required: true, message: 'Please input your E-mail!' },
+                                            { required: true, message: ' E-mail' },
                                         ]}>
-                                        <Input placeholder="Please input your Email!" />
-                                    </Form.Item>
+                                        <Input prefix={<MailOutlined />}  placeholder=" Email" style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
+  </Form.Item>
                                 </Col>
  
     </Row>
@@ -187,17 +245,21 @@ const SignUp = () => {
         <Col span={12} style={{ marginBottom: '0px' }}>
             <Form.Item
                 name="password"
-                label="Password"
+               
                 rules={[{ required: true, message: 'Please input your password!' }]}
                 hasFeedback
             >
-                <Input.Password placeholder="Please input your Password!"/>
-            </Form.Item>
+                 <Input.Password prefix={<LockOutlined/>}  placeholder="Password "  style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
+  </Form.Item>
+           
         </Col>
         <Col span={12} style={{ marginBottom: '0x' }}>
             <Form.Item
                 name="confirm"
-                label="Confirm Password"
+              
                 dependencies={['password']}
                 hasFeedback
                 rules={[
@@ -212,61 +274,97 @@ const SignUp = () => {
                     }),
                 ]}
             >
-                <Input.Password placeholder="Please confirm your password!" />
+                <Input.Password prefix={<LockOutlined/>}  placeholder="Confirm your Password " style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
             </Form.Item>
         </Col>
     </Row>
 
     <Row gutter={[16, 16]}>
+    
+      <Col span={12} style={{ marginBottom: '0px', textAlign: 'left' }}> 
+        <Form.Item
+          name="num_phone"
+          style={{ border: 'none', borderBottom: '0.5px solid grey' }}
+          rules={[{ required: true, message: 'Please input your phone number!' }]}
+        >
+          <PhoneInput
+            country={'us'}
+            value={phoneNumber}
+            onChange={handleChangePhoneNumber}
+            inputStyle={{ border: 'none', boxShadow: 'none', textAlign: 'left' }} 
+            placeholder="Phone number"
+            buttonStyle={{ border: 'none', boxShadow: 'none' , backgroundColor:'transparent' }} // Supprime la bordure de l'indicateur
+          />
+        </Form.Item>
+        {!validPhoneNumber && <p>Please enter a valid phone number.</p>}
+      </Col>
+   
 
-                                <Col span={12} style={{ marginBottom: '0px' }}>
-                                    <Form.Item
-                                        name="num_phone"
-                                        label="Phone Number"
-                                        rules={[{ required: true, message: 'Please input your phone number!' }]}
-                                    >
-                                        <PhoneInput
-                                            country={'us'}
-                                            value={phoneNumber}
-                                            onChange={handleChangePhoneNumber}
-                                            inputProps={{
-                                                required: true,
-                                            }}
-                                        />
-                                    </Form.Item>
-                                    {!validPhoneNumber && (
-                                        <p>Please enter a valid phone number.</p>
-                                    )}
-                                </Col>
-        <Col span={12} style={{ marginBottom: '0px' }}>
-
-    <Form.Item
-      name="country"
-      label="Country"
-      rules={[{ required: true, message: 'Please input your country!' }]}
-    >
-      <Input />
-    </Form.Item>
-  </Col>
+      <Col span={12} style={{ marginBottom: '0px', textAlign: 'left' }}>
+  <Form.Item
+    name="country"
+    rules={[{ required: true, message: 'Please select your country!' }]}
+    style={{ border: 'none', borderBottom: '0.5px solid grey' }}
+   
+  > 
+    <ReactSelect
+      options={countryOptions}
+      components={{ Option: CountryOption }}
+      placeholder={<><GlobalOutlined style={{ marginRight: '8px' , color:'black',fontSize: '16px', }} /> Country</>}
+      isClearable={true}
+    
+      styles={{
+        control: (base) => ({
+          ...base,
+          border: 'none', // Supprime la bordure
+          boxShadow: 'none', // Supprime l'ombre
+          fontSize: '16px',
+          color:'grey'
+        }),
+        input: (base) => ({
+          ...base,
+          textAlign: 'left', // Alignement à gauche
+          fontSize: '16px',
+          
+         
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          border: 'none', // Supprime la bordure de l'indicateur de liste déroulante
+          fontSize: '16px',
+        }),
+      }}
+    />
+   
+  </Form.Item>
+      </Col>
     </Row>
-
     <Row gutter={[16, 16]}>
         <Col span={12} style={{ marginBottom: '0px' }}>
             <Form.Item
                 name="address"
-                label="Address"
+               
                 rules={[{ required: true, message: 'Please input your address!' }]}
             >
-                <Input  placeholder="Please input your Address!" />
+                <Input prefix={<EnvironmentOutlined/>} placeholder="Address" style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
             </Form.Item>
         </Col>
         <Col span={12} style={{ marginBottom: '0px' }}>
             <Form.Item
                 name="code_postal"
-                label="Postal Code"
+              
                 rules={[{ required: true, message: 'Please input your postal code!' }]}
             >
-                <Input placeholder="Please input your Postal Code!" />
+                <Input prefix={<EnvironmentOutlined/>} placeholder="Postal Code"style={{ border: 'none',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
             </Form.Item>
         </Col>
     </Row>
@@ -276,16 +374,16 @@ const SignUp = () => {
     <Row justify="space-between" align="middle"> {/* Utilisation d'une ligne de grille pour aligner les éléments et les espacer */}
     <Col>
       <Form.Item style={{ marginBottom: 0 }}> {/* Suppression de la marge inférieure du Form.Item */}
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" style={{ backgroundColor:'#022452'}}>
           Register
         </Button>
       </Form.Item>
     </Col>
-    <Col>
-    <span style={{ marginLeft: '250px', cursor: 'pointer' , color:'blue'}} onClick={handleLinkClick}>
+    {/* <Col>
+    <span style={{ marginLeft: '250px', cursor: 'pointer' , color:'#004AAD'}} onClick={handleLinkClick}>
       Forgot your password?
     </span>
-    </Col>
+    </Col> */}
   </Row>
 </Form>
                     </div>
@@ -307,7 +405,7 @@ const SignUp = () => {
                             <img src={LinkedinImage} alt="Linkedin" style={{ width: '40px' }} />
                         </div>
                         <div style={{ float:'center', fontFamily: 'cursive', color: 'grey', fontWeight: 'bold' }}> Don't have an account ?  
-                        <span style={{ cursor: 'pointer',color:'blue' }} onClick={handleLoginClick}>
+                        <span style={{ cursor: 'pointer',color:'#004AAD'  }} onClick={handleLoginClick}>
                         SignIn!  </span>
            </div>
                     </div>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Button, Tabs, Select, Drawer, Space, Form, Input, Col, Row, Alert} from 'antd';
+import { Table, Popconfirm, Tooltip,Button, Tabs, Select, Drawer, Space, Form, Input, Col, Row, Alert} from 'antd';
 import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
 import './User.css';
-
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 const { TabPane } = Tabs;
 const { Option } = Select;
 
@@ -18,6 +19,9 @@ const User = () => {
     const [successAlert, setSuccessAlert] = useState(false);
     const [errorAlert, setErrorAlert] = useState(false);
     const [isMatriculeEnabled, setIsMatriculeEnabled] = useState(false);
+
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [validPhoneNumber, setValidPhoneNumber] = useState(true);
     const showDrawer = () => {
         setOpen(true);
     };
@@ -65,9 +69,20 @@ const User = () => {
             setLoading(false);
         }
     };
+    const handleChangePhoneNumber = (value) => {
+        setPhoneNumber(value);
+        setValidPhoneNumber(validatePhoneNumber(value));
+    };
 
+    const validatePhoneNumber = (phoneNumber) => {
+        const phoneNumberPattern = /^\+?[1-9]\d{1,14}$/;
+        return phoneNumberPattern.test(phoneNumber);
+    };
     const onFinishFinancier = async (values) => {
+        let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
+       values.num_phone = formattedPhoneNumber;
         values.roles = ["FINANCIER"];
+      
 
         try {
             const response = await fetch('http://localhost:5000/financier/create-account', {
@@ -97,8 +112,11 @@ const User = () => {
             setTimeout(() => setErrorAlert(false), 3000);
         }
     };
+
     const onFinishClient = async  (values) => {
         values.roles = ["CLIENT"];
+        let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
+        values.num_phone = formattedPhoneNumber;
         values.matricule_fiscale = isMatriculeEnabled ? values.matricule_fiscale_input : null;
         try {
           const response = await fetch('http://localhost:5000/clients/create-account', {
@@ -141,26 +159,38 @@ const User = () => {
         {
             title: 'Fullname',
             dataIndex: 'fullname',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Email',
             dataIndex: 'email',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Country',
             dataIndex: 'country',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Phone Number',
             dataIndex: 'num_phone',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Address',
             dataIndex: 'address',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Postal Code',
             dataIndex: 'code_postal',
+            ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Actions',
@@ -185,36 +215,43 @@ const User = () => {
             title: 'Ref',
             dataIndex: 'refClient',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Fullname',
             dataIndex: 'fullname',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Email',
             dataIndex: 'email',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Country',
             dataIndex: 'country',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Phone Number',
             dataIndex: 'num_phone',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Address',
             dataIndex: 'address',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
             title: 'Postal Code',
             dataIndex: 'code_postal',
             ellipsis: true,
+            render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         ...(clientTypeFilter === 'physique'
             ? []
@@ -223,6 +260,7 @@ const User = () => {
                     title: 'TIN : Tax identification number',
                     dataIndex: 'matricule_fiscale',
                     ellipsis: true,
+                    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
                 },
             ]),
         {
@@ -318,14 +356,27 @@ const User = () => {
                 </Row>
                 <Row gutter={[16, 16]}>
                   <Col span={12} style={{ marginBottom: '16px' }}>
-                    <Form.Item
-                      name="num_phone"
-                      label="Phone Number"
-                      rules={[{ required: true, message: 'Please input your phone number!' }]}
-                    >
-                      <Input style={{ width: '100%' }} placeholder="Please input your phone number!"/>
-                    </Form.Item>
-                  </Col>
+              
+                                    <Form.Item
+                                        name="num_phone"
+                                        label="Phone_Number"
+                                        rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                    >
+                                    
+                                        <PhoneInput
+                                            country={'us'}
+                                            value={phoneNumber}
+                                            onChange={handleChangePhoneNumber}
+                                         
+                                            placeholder="Phone number"
+                                           
+                                        />
+                                
+                                    </Form.Item>
+                                    {!validPhoneNumber && (
+                                        <p>Please enter a valid phone number.</p>
+                                    )}
+                                </Col>
                   <Col span={12} style={{ marginBottom: '16px' }}>
                     <Form.Item
                       name="country"
@@ -391,14 +442,27 @@ const User = () => {
                     </Row>
                     <Row gutter={[16, 16]}>
                         <Col span={12} style={{ marginBottom: '16px' }}>
-                            <Form.Item
-                                name="num_phone"
-                                label="Phone Number"
-                                rules={[{ required: true, message: 'Please input your phone number!' }]}
-                            >
-                                <Input style={{ width: '100%' }} placeholder="Please input your phone number!" />
-                            </Form.Item>
-                        </Col>
+                       
+                                    <Form.Item
+                                        name="num_phone"
+                                     label="Phone_Number"
+                                        rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                    >
+                                    
+                                        <PhoneInput
+                                            country={'us'}
+                                            value={phoneNumber}
+                                            onChange={handleChangePhoneNumber}
+                                         
+                                            placeholder="Phone number"
+                                           
+                                        />
+                                
+                                    </Form.Item>
+                                    {!validPhoneNumber && (
+                                        <p>Please enter a valid phone number.</p>
+                                    )}
+                                </Col>
                         <Col span={12} style={{ marginBottom: '16px' }}>
                             <Form.Item
                                 name="country"

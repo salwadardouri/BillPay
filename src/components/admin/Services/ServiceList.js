@@ -1,145 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Drawer, Form, Input, Row, Col, Space, Alert, Select, InputNumber, Table, Popconfirm , message } from 'antd';
+import { Button, Drawer, Form, Input, Row, Col, Space, Alert, Select, InputNumber, Table, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Option } = Select;
 
 const ServiceList = () => {
-  const [open, setOpen] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const [form] = Form.useForm();
   const [successAlert, setSuccessAlert] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
   const [clients, setClients] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState('');
-
-  useEffect(() => {
-    fetch('http://localhost:5000/clients')
-      .then(response => response.json())
-      .then(data => {
-        setClients(data);
-      })
-      .catch(error => {
-        console.error('Error fetching clients:', error);
-      });
-  }, []);
-
-  const showDrawer = () => setOpen(true);
-  const onClose = () => setOpen(false);
-
-  const onFinish = (values) => {
-    const postData = {
-      ...values,
-      clientId: selectedClientId,
-    };
-
-    fetch('http://localhost:5000/services', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(postData),
-    })
-    .then(response => response.ok ? response.json() : Promise.reject('Failed to create account.'))
-    .then(data => {
-      setSuccessAlert(true);
-      setTimeout(() => setSuccessAlert(false), 3000);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      setErrorAlert(true);
-    });
-  };
-
-  return (
-    <>
-      <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />} style={{ float: 'right' }}>
-        New service
-      </Button>
-      <Drawer
-        title="Create a new account"
-        width={720}
-        onClose={onClose}
-        open={open}
-        extra={
-          <Space>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={() => form.submit()} type="primary">Submit</Button>
-          </Space>
-        }
-      >
-        {successAlert && <Alert message="Success" description="Service created successfully." type="success" showIcon />}
-        {errorAlert && <Alert message="Error" description="Failed to create the service. Please try again later." type="error" showIcon />}
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Row gutter={[16, 16]}>
-            <Col span={12} style={{ marginBottom: '16px' }}>
-              <Form.Item
-                name="libelle"
-                label="Designation"
-                rules={[
-                  { required: true, message: 'Please input your Designation! ' },
-                ]}
-              >
-  <Input placeholder="Please input your Designation!" />
-              </Form.Item>
-            </Col>
-      
-            <Col span={12} style={{ marginBottom: '16px' }}>
-              <Form.Item
-                name="quantite"
-                label="Quantity"
-                rules={[{ required: true, message: 'Please input your quantite!' }]}
-              >
-          
-                <Input placeholder="Please input your Quantity!"  style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-            <Col span={12} style={{ marginBottom: '16px' }}>
-              <Form.Item
-                name="prix_unitaire"
-                label="Unit Price"
-                rules={[{ required: true, message: 'Please input your prix unitaire!' }]}
-              >
-                
-                <InputNumber style={{ width: '100%' }} placeholder="Please input your Unit Price!" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="clientId"
-                label="Client"
-                rules={[{ required: true, message: 'Please select a client!' }]}
-              >
-                <Select placeholder="Select a client" onChange={value => setSelectedClientId(value)}>
-                  {clients.map(client => (
-                    <Option key={client._id} value={client._id}>{client.email}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Drawer>
-      <ServicesListe />
-    </>
-  );
-};
-
-const ServicesListe = () => {
+  const [tvaList, setTvaList] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [editingService, setEditingService] = useState(null);
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [clients, setClients] = useState([]);
-
-  useEffect(() => {
-    fetchServices();
-    fetchClients();
-  }, []);
-
   const fetchServices = async () => {
     setLoading(true);
     try {
@@ -152,39 +26,50 @@ const ServicesListe = () => {
     }
   };
 
-  const fetchClients = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/clients');
-      setClients(response.data);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/clients');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
 
-  const handleEdit = (record) => {
-    setEditingService(record);
-    setDrawerVisible(true);
-  };
+    const fetchTvaList = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/tva');
+        setTvaList(response.data);
+      } catch (error) {
+        console.error('Error fetching TVA:', error);
+      }
+    };
 
-  const handleDelete = async (record) => {
-    // Mettez ici la logique pour supprimer un service
-    console.log('Deleting service:', record);
-  };
+    fetchClients();
+    fetchTvaList();
+    fetchServices();
+  }, []);
+  const showDrawer = () => setDrawerVisible(true);
 
   const onCloseDrawer = () => {
     setDrawerVisible(false);
-    setEditingService(null);
-    form.resetFields();   
+    form.resetFields();
   };
-
-  const onFinish = async (formData) => {
+  const onFinish = async (values) => {
     try {
-      // Mettez ici la logique pour mettre à jour un service
-      console.log('Form data:', formData);
-      onCloseDrawer();
+      const response = await axios.post('http://localhost:5000/services', values);
+      if (response.status === 201) {
+        setSuccessAlert(true);
+        setTimeout(() => setSuccessAlert(false), 3000);
+        form.resetFields();
+        setDrawerVisible(false);
+        fetchServices();
+      } else {
+        throw new Error('Failed to create the service.');
+      }
     } catch (error) {
-      console.error('Error updating service:', error);
-      message.error('An error occurred while updating service');
+      console.error('Error creating service:', error);
+      setErrorAlert(true);
     }
   };
 
@@ -192,45 +77,49 @@ const ServicesListe = () => {
     {
       title: 'Ref',
       dataIndex: 'reference',
+      key: 'reference',
     },
     {
       title: 'Designation',
       dataIndex: 'libelle',
+      key: 'libelle',
     },
     {
       title: 'Quantity',
       dataIndex: 'quantite',
+      key: 'quantite',
     },
     {
       title: 'Unit Price',
       dataIndex: 'prix_unitaire',
+      key: 'prix_unitaire',
     },
     {
       title: 'Montant HT',
       dataIndex: 'montant_HT',
+      key: 'montant_HT',
     },
     {
       title: 'Client Fullname',
-      dataIndex: 'client',
-      render: (client) => (
-        <span>{client ? `${client.fullname} ` : 'N/A'}</span>
-      ),
+      dataIndex: ['client', 'fullname'],
+      key: 'client_fullname',
     },
+
     {
-      title: 'Client Email',
-      dataIndex: 'client',
-      render: (client) => (
-        <span>{client ? ` ${client.email}` : 'N/A'}</span>
-      ),
+      title: 'TVA',
+      dataIndex: ['tva', 'Pourcent_TVA'],
+      key: 'tva_Pourcent_TVA',
     },
     {
       title: 'Actions',
+      dataIndex: '_id',
+      key: 'actions',
       render: (_, record) => (
         <>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
             title="Are you sure to delete this service?"
-            onConfirm={() => handleDelete(record)}
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
@@ -241,56 +130,80 @@ const ServicesListe = () => {
     },
   ];
 
+  const handleEdit = (record) => {
+    // Logic for editing
+    console.log('Editing service:', record);
+  };
+
+  const handleDelete = async (serviceId) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/services/${serviceId}`);
+      if (response.status === 200) {
+        setSuccessAlert(true);
+        setTimeout(() => setSuccessAlert(false), 3000);
+        fetchServices();
+      } else {
+        throw new Error('Failed to delete the service.');
+      }
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      setErrorAlert(true);
+    }
+  };
+
   return (
-    <div>
-      <Table style={{ marginTop: '100px' }} columns={columns} dataSource={services} loading={loading} />
+    <>
+      <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />} style={{ float: 'right' }}>
+        New service
+      </Button>
 
       <Drawer
-        title="Edit Service"
-        placement="right"
+        title="Create a new service"
         width={720}
-        closable={false}
         onClose={onCloseDrawer}
         visible={drawerVisible}
+        extra={
+          <Space>
+            <Button onClick={onCloseDrawer}>Cancel</Button>
+            <Button type="primary" onClick={() => form.submit()}>Submit</Button>
+          </Space>
+        }
       >
-        <Form form={form} onFinish={onFinish} initialValues={editingService}>
-          <Row gutter={16}>
-            
+        {successAlert && <Alert message="Success" description="Service created successfully." type="success" showIcon />}
+        {errorAlert && <Alert message="Error" description="Failed to create the service. Please try again later." type="error" showIcon />}
+        
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Row gutter={[16, 16]}>
             <Col span={12} style={{ marginBottom: '16px' }}>
               <Form.Item
                 name="libelle"
-                label="libelle"
-                rules={[
-                  { required: true, message: 'Please input your libelle! ' },
-                ]}
+                label="Designation"
+                rules={[{ required: true, message: 'Please input the designation!' }]}
               >
-                <Input />
+                <Input placeholder="Enter the designation" />
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={[16, 16]}>
             <Col span={12} style={{ marginBottom: '16px' }}>
               <Form.Item
                 name="quantite"
-                label="quantite"
-                rules={[{ required: true, message: 'Please input your quantite!' }]}
+                label="Quantity"
+                rules={[{ required: true, message: 'Please input the quantity!' }]}
               >
-                <Input style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12} style={{ marginBottom: '16px' }}>
-              <Form.Item
-                name="prix_unitaire"
-                label="prix_unitaire"
-                rules={[{ required: true, message: 'Please input your prix_unitaire!' }]}
-              >
-                <Input />
+                <InputNumber style={{ width: '100%' }} placeholder="Enter the quantity" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={[16, 16]}>
-    
             <Col span={12} style={{ marginBottom: '16px' }}>
+              <Form.Item
+                name="prix_unitaire"
+                label="Unit Price"
+                rules={[{ required: true, message: 'Please input the unit price!' }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Enter the unit price" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
               <Form.Item
                 name="clientId"
                 label="Client"
@@ -303,19 +216,31 @@ const ServicesListe = () => {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Update
-                </Button>
+            <Col span={12}>
+              <Form.Item
+                name="tvaId"
+                label="TVA"
+                rules={[{ required: true, message: 'Please select a TVA' }]}
+              >
+                <Select placeholder="Select a TVA">
+                  {tvaList.map(tva => (
+                    <Option key={tva._id} value={tva._id}>{tva.Pourcent_TVA}</Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
         </Form>
       </Drawer>
-    </div>
+
+      <Table
+        style={{ marginTop: '80px' }}
+        columns={columns}
+        dataSource={services}
+        loading={loading}
+        rowKey="_id"
+      />
+    </>
   );
 };
 

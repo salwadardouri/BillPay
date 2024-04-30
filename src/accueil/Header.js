@@ -21,19 +21,19 @@ const Header = () => {
       <div style={{ marginRight: '30px', padding:" 2px 5px"}}>
         <Link to="/SignIn">
           {/* Rediriger vers /SignIn au lieu de /signup */}
-          <Button type="link" style={{ color: '11009E', fontSize: '1rem' ,marginTop:"1px", fontWeight: 'bold' }}>
+          <Button type="link" style={{ color: '#022452', fontSize: '1rem' ,marginTop:"1px" ,fontFamily: 'cursive',cursor: 'pointer'}}>
             SignIn
           </Button>
         </Link>
         <Link to="/">
           {/* Rediriger vers /SignIn au lieu de /signup */}
-          <Button type="link" style={{ color: '11009E', fontSize: '1rem' ,marginTop:"1px", fontWeight: 'bold' }}>
+          <Button type="link" style={{ color: '#022452', fontSize: '1rem' ,marginTop:"1px",fontFamily: 'cursive',cursor: 'pointer' }}>
             About Us
           </Button>
         </Link>
         <Link to="/">
           {/* Rediriger vers /SignIn au lieu de /signup */}
-          <Button type="link" style={{ color: '11009E', fontSize: '1rem' ,marginTop:"1px", fontWeight: 'bold' }}>
+          <Button type="link" style={{ color: '#022452',fontSize: '1rem' ,marginTop:"1px",fontFamily: 'cursive',cursor: 'pointer' }}>
             Contact
           </Button>
         </Link>

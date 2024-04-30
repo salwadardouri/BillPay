@@ -4,9 +4,9 @@ import { Button, Form, Input , Card ,Alert} from 'antd';
 import FacebookImage from '../images/fb.png';
 import GmailImage from '../images/g.png';
 import LinkedinImage from '../images/in.png';
-import SignInImage from '../images/login.jpg';
+import SignInImage from '../images/login1.png';
 import './SignIn.css'; 
-import { ArrowLeftOutlined   } from '@ant-design/icons';
+import { ArrowLeftOutlined,MailOutlined,LockOutlined  } from '@ant-design/icons';
 
 
 const SignIn = () => {
@@ -84,14 +84,18 @@ const SignIn = () => {
     
    
   return (
-    <div className="signin" style={{backgroundColor:'#EEEEEE' }}>
+
+<div  className="signin"  style={{ 
+      backgroundColor: '#AAB8FD', 
+      minHeight: '100vh', // Ensure the background color fills the viewport
+    }}>
       <div style={{paddingTop: '10px'}} >
          
-      <Button type="primary" style={{ float: 'left', background: 'transparent', color: 'blue' }} onClick={handleButtonClick}>
+      <Button type="primary" style={{ float: 'left', background: 'transparent', color: '#022452',marginTop:'280px' }} onClick={handleButtonClick}>
       <ArrowLeftOutlined />
     </Button>
         </div>
-<div style={{ flex: 1, paddingTop: '60px', textAlign: 'left', margin: '10px' }}>
+<div style={{ flex: 1, paddingTop: '30px', textAlign: 'left', margin: '10px' }}>
     <Card
           style={{
              textAlign:'left',
@@ -104,7 +108,8 @@ const SignIn = () => {
             flexDirection: 'column',
       
           }}>
-   <div style={{ float: 'left', textAlign: 'left', width: '50%', marginTop: '10px' }}>
+             <div style={{ float: 'right', textAlign: 'right', width: '50%', marginTop: '10px' }}>
+  
       <div style={{ fontFamily: 'cursive', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold'}}>
         <h2>Welcome Back !</h2>
         <p style={{ color: 'grey'}}>Sign in to continue to BillPayVisto </p>
@@ -113,12 +118,12 @@ const SignIn = () => {
       {successMessage && <Alert message={successMessage} type="success" showIcon />}
 {errorMessage && <Alert message={errorMessage} type="error" showIcon/>}
 
-         <Form name="basic" form={form}  layout="vertical" colon={false} style={{width: '85%', marginLeft:'30px'}}
+         <Form name="basic" form={form}  layout="vertical" colon={false} style={{width: '85%', marginLeft:'30px', marginTop:'80px'}}
                initialValues={{remember: true,}}
                onFinish={onLoginFinish} 
                onFinishFailed={onFinishFailed}
                autoComplete="off" >
-            <Form.Item label="Email" name="email"
+            <Form.Item  name="email"
                      rules={[
                       {
         required: true,
@@ -126,11 +131,14 @@ const SignIn = () => {
       },
     ]}
   >
-    <Input  placeholder="Please input your E-mail!"  />
+    <Input prefix={<MailOutlined />}  placeholder=" Email" style={{ border: 'none', borderBottom: '0.5px solid grey',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%'}}/>
   </Form.Item>
 
   <Form.Item
-    label="Password"
+
     name="password"
     rules={[
       {
@@ -140,16 +148,19 @@ const SignIn = () => {
     ]}
   >
 
-    <Input.Password   placeholder="Please input your Password !"  />
+    <Input.Password prefix={<LockOutlined/>}  placeholder="Password "  style={{ border: 'none', borderBottom: '1px solid grey', 
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparent
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%' }}/>
   </Form.Item>
 <Form.Item>
-      <Button type="primary" htmlType="submit" style={{width:'100%'}}>
+      <Button type="primary" htmlType="submit" style={{width:'100%' , backgroundColor:'#022452'}}>
         Submit
       </Button>
   
   </Form.Item>
 </Form>
-<span style={{ marginLeft: '250px', cursor: 'pointer' , color:'blue'}} onClick={handleLinkClick}>
+<span style={{ marginRight: '35px', cursor: 'pointer' , color:'#004AAD'}} onClick={handleLinkClick}>
       Forgot your password?
     </span>
 
@@ -163,22 +174,21 @@ const SignIn = () => {
       height: '1px',
       marginLeft:"60px",
       backgroundColor: '#ccc',}}>
-      </div> <span style={{color:'grey', marginLeft:"185px"}}>Sign in with </span>
-      <div style={{marginLeft: '170px'}}>
+      </div> <span style={{color:'grey', marginRight:"190px"}}>Sign in with </span>
+      <div style={{marginRight:"170px"}}>
         
           <img src={FacebookImage} alt="Facebook" style={{ width: '40px' }} />
           <img src={GmailImage} alt="Instagram" style={{ width: '30px' }} />
           <img src={LinkedinImage} alt="Linkedin" style={{ width: '40px' }} />
         </div>
-      <div style={{marginLeft: '100px',fontFamily: 'cursive', color:'grey', fontWeight: 'bold'}}> Don't have an account ?    <span style={{ cursor: 'pointer',color:'blue' }} onClick={handleRegisterClick}>
+      <div style={{marginRight:"100px",fontFamily: 'cursive', color:'grey', fontWeight: 'bold'}}> Don't have an account ?    <span style={{ cursor: 'pointer',color:'#004AAD' }} onClick={handleRegisterClick}>
       Register now!
     </span></div>
 
     
     </div>
     </div>
-
-    <div style={{ float: 'right', textAlign: 'right', width: '50%', marginTop: '10px' }}>
+    <div style={{ float: 'left', textAlign: 'left', width: '50%', marginTop: '10px' }}>
     <img src={SignInImage} alt="SignIn" style={{ width: '100%', marginTop:"30px",height:'100%'  }} />
         </div>
     </Card>

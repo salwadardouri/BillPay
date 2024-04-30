@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Button } from 'antd';
-import { TeamOutlined, MenuFoldOutlined, MenuUnfoldOutlined ,SettingOutlined} from '@ant-design/icons';
+import { TeamOutlined, MenuFoldOutlined, MenuUnfoldOutlined ,SettingOutlined,LogoutOutlined} from '@ant-design/icons';
 import User from './user/User';
 import ParametreVisto from './Parametre/ParametreVisto';
 import Services from './Services/ServiceList';
@@ -31,6 +31,28 @@ const DashAdmin = () => {
   const handleMenuClick = (e) => {
     setSelectedMenuKey(e.key);
   };
+  const handleLogout = async () => {
+    try {
+      const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+
+      if (confirmed) {
+        const response = await fetch('http://localhost:5000/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          // Rediriger vers la page de connexion ou une autre page après la déconnexion
+          window.location.href = '/SignIn';
+        } else {
+          console.error('Erreur lors de la déconnexion');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion', error);
+    }
+  };
+
 
   return (
     <div className="DashAdmin" style={{ background: '#EFECEC' }}>
@@ -47,7 +69,7 @@ const DashAdmin = () => {
         <Menu
       mode="inline"
       selectedKeys={[selectedMenuKey]}
-      onClick={handleMenuClick}
+     onClick={handleMenuClick}
       style={{ background: '#222831', marginTop: '20px' , width:'auto'   }}
     >
     <Menu.Item
@@ -97,8 +119,18 @@ const DashAdmin = () => {
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ marginTop: '15px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0C0C0C' }}
+              style={{ marginTop: '15px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}
             />
+  <div style={{ display: 'flex', alignItems: 'center' , float:'right' , marginRight:'30px', marginTop:'-25px'}}>
+        <Button
+          onClick={handleLogout}
+          icon={<LogoutOutlined />}
+          type="text"
+          style={{  color: '#0C0C0C', fontSize: '16px' }}
+        >
+     
+        </Button>
+      </div>
           </Header>
       
           <Content style={{ margin: '30px 20px', padding: 24, minHeight: 280, background: 'white', borderRadius: '10px' }}>

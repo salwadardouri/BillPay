@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Input , Card ,Col,Alert} from 'antd';
+import { Button, Form, Input , Card,Alert} from 'antd';
 import FacebookImage from '../images/fb.png';
 import GmailImage from '../images/g.png';
 import LinkedinImage from '../images/in.png';
-import SignInImage from '../images/forgot.png';
+import SignInImage from '../images/forgot1.png';
 import { ArrowLeftOutlined   } from '@ant-design/icons';
 import { MailOutlined } from '@ant-design/icons';
 import './media.css'; 
@@ -21,6 +21,7 @@ const ForgotPassword = () => {
     const handleButtonClick = () => {
       navigate('/');
     };
+    
 
     const handleResetPassword = async () => {
       try {
@@ -60,14 +61,17 @@ const ForgotPassword = () => {
       }
     };
   return (
-    <div className="media" style={{backgroundColor:'#EEEEEE' }}>
-      <div style={{paddingTop: '10px'}}>
-         
-      <Button type="primary" shape="circle" style={{ float: 'left', background: 'white', color: 'blue' , marginTop:'300px'}} onClick={handleButtonClick}>
+<div  className="media"  style={{ 
+      backgroundColor: '#AAB8FD', 
+      minHeight: '100vh', // Ensure the background color fills the viewport 
+     }}>
+      <div style={{paddingTop: '10px'}} >
+      <Button type="primary" style={{ float: 'left', background: 'transparent', color: '#022452',marginTop:'280px' }} onClick={handleButtonClick}>
       <ArrowLeftOutlined />
     </Button>
         </div>
-<div style={{ flex: 1, paddingTop: '60px', textAlign: 'left', margin: '10px' }}>
+
+<div style={{ flex: 1, paddingTop: '30px', textAlign: 'left', margin: '10px' }}>
     <Card
           style={{
              textAlign:'left',
@@ -90,11 +94,12 @@ const ForgotPassword = () => {
     <p style={{ color: 'grey'}}>Reset password with BillPayVisto </p> 
     <br/>
     
- <Col span={20}   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px',  marginLeft:'30px', fontFamily: 'Inter',backgroundColor:'#FFE3CA' , textAlign:'justify'}}>
-<span style={{marginLeft:'20px' , marginRight:'20px'}}>Enter Your Mail Send Code Your Mail Please Check And Varify If Your Mail Before Account Create You Have A Code Inbox. Create Code  & Your New Password  !</span></Col>
-
+ 
     </div>
-   <div  style={{ marginTop: '40px' }}>
+
+
+    <div style={{marginLeft:'30px', marginRight:'40px', fontFamily:'Poppins',textAlign:'justify', color:'#004AAD', fontSize:'15px'}}>Enter Your Mail Send Code Your Mail Please Check And Varify If Your Mail Before Account Create You Have A Code Inbox. Create Code  & Your New Password  !</div>
+   <div  style={{ marginTop: '30px' }}>
  
 <Form 
  name="basic"
@@ -113,7 +118,7 @@ const ForgotPassword = () => {
   autoComplete="off"
   >
 <Form.Item
-    label="Enter your E-mail"
+   
     name="email"
     
     rules={[
@@ -123,12 +128,17 @@ const ForgotPassword = () => {
       },
     ]}
   >
-     <Input    prefix={<MailOutlined />} placeholder="Please enter your E-mail!"  />
+    <Input prefix={<MailOutlined />}  placeholder=" Email" style={{ border: 'none', marginBottom:'30px',
+  boxShadow: 'none', // Élimine l'ombre si nécessaire
+  backgroundColor: 'transparent', // Peut également rendre le fond transparen
+  outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}}/>
   </Form.Item> 
 <Form.Item>
-      <Button type="primary" htmlType="submit" onClick={() => { handleResetPassword()}} style={{width:'100%'}}>
+      <Button type="primary" htmlType="submit" onClick={() => { handleResetPassword()}} style={{width:'100%' , backgroundColor:'#022452'}}>
       Send Reset Email
       </Button>
+     
+  
   
   </Form.Item>
 </Form>
@@ -148,7 +158,7 @@ const ForgotPassword = () => {
           <img src={GmailImage} alt="Instagram" style={{ width: '30px' }} />
           <img src={LinkedinImage} alt="Linkedin" style={{ width: '40px' }} />
         </div>
-      <div style={{marginLeft: '50px',fontFamily: 'cursive', color:'grey', fontWeight: 'bold'}}> Wait, I remember my password...  ?  <a href="/SignIn">Click here</a></div>
+      <div style={{marginLeft: '50px',fontFamily: 'cursive', color:'grey', fontWeight: 'bold'}}> Wait, I remember my password...  ?  <a href="/SignIn" style={{ cursor: 'pointer',color:'#004AAD' }}>Click here</a></div>
 
     
     </div>
