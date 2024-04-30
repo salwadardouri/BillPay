@@ -6,7 +6,6 @@ import countryList from 'react-select-country-list';
 import { components } from 'react-select';
 import 'react-phone-input-2/lib/style.css';
 import ReactSelect from 'react-select';
-
 import FacebookImage from '../images/fb.png';
 import GmailImage from '../images/g.png';
 import LinkedinImage from '../images/in.png';

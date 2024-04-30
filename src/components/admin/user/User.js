@@ -4,9 +4,24 @@ import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons
 import './User.css';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import countryList from 'react-select-country-list';
+import { components } from 'react-select';
+
+import ReactSelect from 'react-select';
 const { TabPane } = Tabs;
 const { Option } = Select;
-
+const CountryOption = (props) => {
+    return (
+      <components.Option {...props}>
+        <img
+          alt={`Flag of ${props.data.label}`}
+          src={`https://flagcdn.com/16x12/${props.data.value.toLowerCase()}.png`}
+          style={{ marginRight: 10 , float:'left' }}
+        />
+        {props.data.label}
+      </components.Option>
+    );
+  };
 const User = () => {
     const [clients, setClients] = useState([]);
     const [financiers, setFinanciers] = useState([]);
@@ -19,9 +34,11 @@ const User = () => {
     const [successAlert, setSuccessAlert] = useState(false);
     const [errorAlert, setErrorAlert] = useState(false);
     const [isMatriculeEnabled, setIsMatriculeEnabled] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState(null);
 
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
+    const countryOptions = countryList().getData();
     const showDrawer = () => {
         setOpen(true);
     };
@@ -82,7 +99,7 @@ const User = () => {
         let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
        values.num_phone = formattedPhoneNumber;
         values.roles = ["FINANCIER"];
-      
+        values.country = selectedCountry ? selectedCountry.label : '';
 
         try {
             const response = await fetch('http://localhost:5000/financier/create-account', {
@@ -118,6 +135,7 @@ const User = () => {
         let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
         values.num_phone = formattedPhoneNumber;
         values.matricule_fiscale = isMatriculeEnabled ? values.matricule_fiscale_input : null;
+        values.country = selectedCountry ? selectedCountry.label : '';
         try {
           const response = await fetch('http://localhost:5000/clients/create-account', {
           method: 'POST',
@@ -377,15 +395,40 @@ const User = () => {
                                         <p>Please enter a valid phone number.</p>
                                     )}
                                 </Col>
-                  <Col span={12} style={{ marginBottom: '16px' }}>
-                    <Form.Item
-                      name="country"
-                      label="Country"
-                      rules={[{ required: true, message: 'Please input your country!' }]}
-                    >
-                      <Input placeholder="Please input your country!"/>
-                    </Form.Item>
-                  </Col>
+                                <Col span={12} style={{ marginBottom: '16px' }}>
+                                <Form.Item
+  name="country"
+  label='Country'
+  rules={[{ required: true, message: 'Please select your country!' }]}
+
+>
+  <ReactSelect
+    options={countryOptions}
+    components={{ Option: CountryOption }}
+    placeholder="Country"
+    isClearable={true}
+    onChange={(option) => setSelectedCountry(option)} // Update state when a country is selected
+    styles={{
+      control: (base) => ({
+        ...base,
+
+      }),
+      input: (base) => ({
+        ...base,
+        textAlign: 'left',
+
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+   
+     
+      }),
+    }}
+  />
+</Form.Item>
+
+      </Col>
+ 
                 </Row>
                 <Row gutter={[16, 16]}>
                   <Col span={12} style={{ marginBottom: '16px' }}>
@@ -464,13 +507,37 @@ const User = () => {
                                     )}
                                 </Col>
                         <Col span={12} style={{ marginBottom: '16px' }}>
-                            <Form.Item
-                                name="country"
-                                label="Country"
-                                rules={[{ required: true, message: 'Please input your country!' }]}
-                            >
-                                <Input placeholder="Please input your country!" />
-                            </Form.Item>
+                        <Form.Item
+  name="country"
+  label='Country'
+  rules={[{ required: true, message: 'Please select your country!' }]}
+
+>
+  <ReactSelect
+    options={countryOptions}
+    components={{ Option: CountryOption }}
+    placeholder="Country"
+    isClearable={true}
+    onChange={(option) => setSelectedCountry(option)} // Update state when a country is selected
+    styles={{
+      control: (base) => ({
+        ...base,
+
+      }),
+      input: (base) => ({
+        ...base,
+        textAlign: 'left',
+
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+     
+
+      }),
+    }}
+  />
+</Form.Item>
+
                         </Col>
                     </Row>
                     <Row gutter={[16, 16]}>
@@ -501,7 +568,7 @@ const User = () => {
     return (
         <div>
             <div style={{ marginBottom: 16, float: 'right' }}>
-                <Button type="primary" icon={<UserAddOutlined />} onClick={showDrawer}>New account</Button>
+                <Button type="primary" style={{ backgroundColor:'#022452'}} icon={<UserAddOutlined />} onClick={showDrawer}>New account</Button>
             </div>
             <Drawer
                 title="Create a new account"
@@ -516,14 +583,15 @@ const User = () => {
                         </Select>
                         <Space>
                             <Button onClick={onClose}>Cancel</Button>
-                            <Button onClick={() => form.submit()} type="primary" htmlType="submit">Submit</Button>
+                            <Button onClick={() => form.submit()} type="primary" style={{ backgroundColor:'#022452'}} htmlType="submit">Submit</Button>
                         </Space>
                     </div>
                 }
             >
+                <div style={{width:'600px'}}>
                 {successAlert && <Alert message="Success" description="Check your email to find the link." type="success" showIcon />}
                 {errorAlert && <Alert message="Error" description="The account could not be created due to a server error. Please try again later!" type="error" showIcon />}
-<br/>
+<br/></div>
                 {drawerContent()}
             </Drawer>
 

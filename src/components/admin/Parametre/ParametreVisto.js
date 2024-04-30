@@ -4,10 +4,24 @@ import { EditOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import axios from 'axios';
+import countryList from 'react-select-country-list';
+import { components } from 'react-select';
+import ReactSelect from 'react-select';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
-
+const CountryOption = (props) => {
+  return (
+    <components.Option {...props}>
+      <img
+        alt={`Flag of ${props.data.label}`}
+        src={`https://flagcdn.com/16x12/${props.data.value.toLowerCase()}.png`}
+        style={{ marginRight: 10 , float:'left' }}
+      />
+      {props.data.label}
+    </components.Option>
+  );
+};
 const ParametreVisto = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,6 +35,7 @@ const ParametreVisto = () => {
   const [taxOption, setTaxOption] = useState('tva'); // Correction du nom de la variable
   const [phoneNumber, setPhoneNumber] = useState('');
   const [validPhoneNumber, setValidPhoneNumber] = useState(true);
+
 // eslint-disable-next-line
   const handleTaxOptionChange = (value) => {
     setTaxOption(value);
@@ -94,6 +109,7 @@ const ParametreVisto = () => {
       setActiveTabKey(key);
       setSelectedOption(key); // Mettre à jour selectedOption
   };
+  
   const handleFormSubmit = async () => {
     try {
         const values = await form.validateFields();
@@ -122,6 +138,7 @@ const validatePhoneNumber = (phoneNumber) => {
   const phoneNumberPattern = /^\+?[1-9]\d{1,14}$/;
   return phoneNumberPattern.test(phoneNumber);
 };
+const countryOptions = countryList().getData();
 const createBasicInformation = async (values) => {
   try {
     const { Nom_S, Email_S,Paye_S,Address_S,Code_Postal_S,Matricule_Fiscale_S,Num_Phone_S } = values;
@@ -132,7 +149,7 @@ const createBasicInformation = async (values) => {
       const postData = {
       Nom_S,
       Email_S,
-      Paye_S,
+      Paye_S: Paye_S.label,
       Address_S,
       Code_Postal_S,
       Matricule_Fiscale_S,
@@ -332,7 +349,7 @@ const createBasicInformation = async (values) => {
     return (
         <div>
             <div style={{ marginBottom: 16, float: 'right' }}>
-                <Button type="primary" icon={<UserAddOutlined />} onClick={() => setOpen(true)}>Create</Button>
+                <Button  style={{ backgroundColor:'#022452'}} type="primary" icon={<UserAddOutlined />} onClick={() => setOpen(true)}>Create</Button>
             </div>
             <div style={{ clear: 'both' }}>
                 <Tabs activeKey={activeTabKey} onChange={onTabChange}>
@@ -407,35 +424,7 @@ const createBasicInformation = async (values) => {
           </Col>
         </Row>
         <Row gutter={16}>
-        <Col span={12}>
-            <Form.Item
-              name="Paye_S"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please enter the country!.',
-                },
-              ]}
-            >
-              <Input  placeholder="Country"style={{ border: 'none', backgroundColor: 'transparent', outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}} />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="Address_S"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please enter the address!.',
-                },
-              ]}
-            >
-              <Input  placeholder="Address!"style={{ border: 'none', backgroundColor: 'transparent', outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}} />
-            </Form.Item>
-          </Col>
-          </Row>
-          <Row  gutter={16}>
-          <Col span={12} style={{ marginBottom: '0px' }}>
+        <Col span={12} style={{ marginBottom: '0px' }}>
                                     <Form.Item
                                         name="Num_Phone_S"
                                         style={{ border: 'none', borderBottom: '0.5px solid grey',}}
@@ -448,15 +437,68 @@ const createBasicInformation = async (values) => {
                                             onChange={handleChangePhoneNumber}
                                             inputStyle={{ border: 'none', boxShadow: 'none' }}
                                             placeholder="Phone number"
-                                           
+                                            buttonStyle={{ border: 'none', boxShadow: 'none' , backgroundColor:'transparent' }}
                                         />
-                                
                                     </Form.Item>
                                     {!validPhoneNumber && (
                                         <p>Please enter a valid phone number.</p>
                                     )}
                                 </Col>
-     
+        <Col span={12}>
+        <Form.Item
+    name="Paye_S"
+    rules={[{ required: true, message: 'Please select your country!' }]}
+    style={{ border: 'none', borderBottom: '0.5px solid grey' }}
+   
+  > 
+    <ReactSelect
+      options={countryOptions}
+      components={{ Option: CountryOption }}
+      placeholder='Country'
+      isClearable={true}
+    
+      styles={{
+        control: (base) => ({
+          ...base,
+          border: 'none', // Supprime la bordure
+          boxShadow: 'none', // Supprime l'ombre
+          fontSize: '16px',
+          color:'grey'
+        }),
+        input: (base) => ({
+          ...base,
+          textAlign: 'left', // Alignement à gauche
+          fontSize: '16px',
+          
+         
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          border: 'none', // Supprime la bordure de l'indicateur de liste déroulante
+          fontSize: '16px',
+        }),
+      }}
+    />
+   
+  </Form.Item>
+          </Col>
+         
+          </Row>
+          <Row  gutter={16}>
+          
+          <Col span={12}>
+            <Form.Item
+              name="Address_S"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter the address!.',
+                },
+              ]}
+            >
+              <Input  placeholder="Address"style={{ border: 'none', backgroundColor: 'transparent', outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}} />
+            </Form.Item>
+          </Col>
           <Col span={12}>
             <Form.Item
               name="Code_Postal_S"
@@ -468,7 +510,7 @@ const createBasicInformation = async (values) => {
                 },
               ]}
             >
-              <Input placeholder="Postal code."  />
+              <Input placeholder="Postal code." style={{ border: 'none', backgroundColor: 'transparent', outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}} />
             </Form.Item>
           </Col>
           </Row>
@@ -484,7 +526,7 @@ const createBasicInformation = async (values) => {
                 },
               ]}
             >
-              <Input placeholder="Tax Identification Number ." />
+              <Input placeholder="Tax Identification Number ."style={{ border: 'none', backgroundColor: 'transparent', outline: 'none',fontSize: '16px', padding: '10px', height: '40px',width: '100%',borderBottom: '0.5px solid grey'}} />
             </Form.Item>
           </Col>
       </Row>
@@ -557,7 +599,7 @@ const createBasicInformation = async (values) => {
             </>
           )}
                     <Form.Item>
-                        <Button style={{width:'100px', marginTop:'20px'}} type="primary" htmlType="submit"onClick={() => openModal(activeTabKey)}>Create</Button>
+                        <Button style={{width:'100px', marginTop:'20px', backgroundColor:'#022452'}}type="primary" htmlType="submit"onClick={() => openModal(activeTabKey)}>Create</Button>
                     </Form.Item>
                 </Form>
             </Modal>

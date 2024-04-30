@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Form, Input , Card,Alert} from 'antd';
+import { Button, Form, Input , Card,Alert,message} from 'antd';
 import FacebookImage from '../images/fb.png';
 import GmailImage from '../images/g.png';
 import LinkedinImage from '../images/in.png';
@@ -12,8 +12,7 @@ import './media.css';
 const ForgotPassword = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+
     const [infoMessage, setInfoMessage] = useState('');
     const onFinishFailed = (errorInfo) => {
       console.log('Failed:', errorInfo);
@@ -39,7 +38,7 @@ const ForgotPassword = () => {
     
         if (response.ok) {
           console.log('Reset password request successful', responseData);
-          setSuccessMessage('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
+          message.success('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
           setTimeout(() => {
             navigate(`/ResetPassword?email=${email}&resetCodeExpiration=${responseData.resetCodeExpiration}`);
           }, 4000);
@@ -50,14 +49,14 @@ const ForgotPassword = () => {
             setTimeout(() => setInfoMessage(''), 2000);
           } else {
             console.error('User not found. Please verify the email address entered and try again', responseData);
-            setErrorMessage('User not found. Please verify the email address entered and try again');
-            setTimeout(() => setErrorMessage(''), 3000);
+            message.error('User not found. Please verify the email address entered and try again');
+            setTimeout(() => message.error(''), 3000);
           }
         }
       } catch (error) {
         console.error('An error occurred', error);
-        setErrorMessage('An error occurred');
-        setTimeout(() => setErrorMessage(''), 3000);
+        message.error('An error occurred');
+        setTimeout(() => message.error(''), 3000);
       }
     };
   return (
@@ -85,10 +84,10 @@ const ForgotPassword = () => {
       
           }}>
  <div style={{ float: 'left', textAlign: 'left', width: '50%', marginTop: '10px' }}>
- {successMessage && <Alert message={successMessage} type="success" showIcon/>}
+
    {infoMessage && <Alert message={infoMessage} type="info" showIcon/>}
  
-{errorMessage && <Alert message={errorMessage} type="error"   showIcon/>}
+
     <div style={{ fontFamily: 'cursive', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold'}}>
     <h2>Forgot Password ?</h2>
     <p style={{ color: 'grey'}}>Reset password with BillPayVisto </p> 

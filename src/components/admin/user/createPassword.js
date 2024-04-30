@@ -22,21 +22,24 @@ function CreatePassword() {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      message.success('Password reset successful');
-      setTimeout(() => {
-        window.location.href = '/SignIn'; // Redirection
-      }, 3000);
-    } catch (error) {
-      console.error('Error:', error);
-      message.error(error.message || 'An error occurred while resetting the password. Please try again.');
-    } finally {
-      setLoading(false);
+      if (response.ok) {
+        message.success('Password reset successful');
+        setTimeout(() => {
+          window.location.href = '/SignIn'; // Redirection après succès
+        }, 3000);
+      } else {
+  
+      // Récupérez le message d'erreur du serveur
+      const errorData = await response.json();
+      console.error('The password should be strong:', errorData.message); // Afficher l'erreur dans la console
+      message.error(errorData.message); // Affiche le message d'erreur sur l'interface utilisateur
     }
+  } catch (error) {
+    console.error('An error occurred', error);
+    message.error('An error occurred while trying to reset the password.'); // Affiche un message d'erreur générique si une exception est levée
+  } finally {
+    setLoading(false); // Désactiver le chargement à la fin, réussie ou échouée
+  }
   };
   return (
     <div  className="media" style={{ backgroundColor:'#EEEEEE',minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -99,7 +102,7 @@ function CreatePassword() {
             </Form.Item>
           
         <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%'}}>
+            <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%' , backgroundColor:'#022452'}}>
               Reset Password
             </Button>
           </Form.Item>

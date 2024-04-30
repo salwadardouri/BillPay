@@ -153,7 +153,7 @@ const ServiceList = () => {
 
   return (
     <>
-      <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />} style={{ float: 'right' }}>
+      <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />} style={{ float: 'right' ,backgroundColor:'#022452' }}>
         New service
       </Button>
 
@@ -165,7 +165,7 @@ const ServiceList = () => {
         extra={
           <Space>
             <Button onClick={onCloseDrawer}>Cancel</Button>
-            <Button type="primary" onClick={() => form.submit()}>Submit</Button>
+            <Button  style={{ backgroundColor:'#022452'}} type="primary" onClick={() => form.submit()}>Submit</Button>
           </Space>
         }
       >

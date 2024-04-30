@@ -27,13 +27,13 @@ function CreatePassword() {
         throw new Error(errorData.message);
       }
 
-      message.success('Password reset successful');
+      message.success('Password created successful');
       setTimeout(() => {
         window.location.href = '/SignIn'; // Redirection
       }, 3000);
     } catch (error) {
       console.error('Error:', error);
-      message.error(error.message || 'An error occurred while resetting the password. Please try again.');
+      message.error(error.message || 'The password should be strong');
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ function CreatePassword() {
             </Form.Item>
           
         <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%'}}>
+            <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%', backgroundColor:'#022452'}}>
               Reset Password
             </Button>
           </Form.Item>

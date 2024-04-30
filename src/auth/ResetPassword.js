@@ -18,7 +18,7 @@ const ResetPassword = () => {
   const resetCodeExpiration = searchParams.get('resetCodeExpiration');
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [countdownInterval, setCountdownInterval] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
+
   const [infoMessage, setInfoMessage] = useState('');
   useEffect(() => {
     if (resetCodeExpiration) {
@@ -101,7 +101,6 @@ const ResetPassword = () => {
       // Gérer l'erreur
     }
   };
-
   const handleResetPasswordSubmit = async (values) => {
     try {
       const response = await fetch('http://localhost:5000/auth/reset-password', {
@@ -114,20 +113,24 @@ const ResetPassword = () => {
 
       const responseData = await response.json();
 
-      if (response.ok) {
-        console.log('Password reset successful', responseData);
-        // Afficher une alerte de succès
-        setSuccessMessage('Password reset successful');
-        setTimeout(() => {
-          setSuccessMessage('');
-          navigate('/SignIn'); // Rediriger vers la page de connexion après la réinitialisation du mot de passe
-        }, 3000); // Supprime le message de succès après 3 secondes
-      }
+        if (response.ok) {
+            console.log('Password reset successful', responseData);
+            // Afficher une alerte de succès
+            message.success('Password reset successful');
+            setTimeout(() => {
+                navigate('/SignIn'); // Rediriger vers la page de connexion après la réinitialisation du mot de passe
+            }, 3000); // Supprime le message de succès après 3 secondes
+        } else {
+            // Afficher le message d'erreur renvoyé par le serveur
+            console.error('The password should be strong:', responseData.message);
+            message.error(responseData.message); // Affiche le message d'erreur sur l'interface utilisateur
+        }
     } catch (error) {
-      console.error('An error occurred', error);
-      // Gérer l'erreur
+        console.error('An error occurred', error);
+        message.error('An error occurred while trying to reset the password.'); // Affiche un message d'erreur générique si la requête n'atteint pas le serveur
     }
-  };
+};
+
 
   const handleResetPasswordRequest = async () => {
     try {
@@ -145,8 +148,8 @@ const ResetPassword = () => {
       if (response.ok) {
         console.log('Reset password request successful', responseData);
       
-        setSuccessMessage('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
-        setTimeout(() => setSuccessMessage(''), 2000);
+        message.success('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
+        setTimeout(() => message.success(''), 2000);
         // Réinitialiser secondsRemaining à 0
         resetSecondsRemaining();
      
@@ -214,22 +217,7 @@ const ResetPassword = () => {
             />
           </Space>
         )}
-        {successMessage && (
-          <Space
-            direction="vertical"
-            style={{
-              width: '100%',
-            }}
-          >
-            <Alert
-              message="Success"
-              description={successMessage}
-              type="success"
-              showIcon
-              closable
-            />
-          </Space>
-        )}
+      
          {infoMessage && <Alert message={infoMessage} type="info" showIcon/>}
           <Title>{step === 1 ? 'Code Verification' : 'Reset Password'}</Title>
           
@@ -247,7 +235,7 @@ const ResetPassword = () => {
                 <Form.Item>
 
                   <Button type="link" onClick={handleResetPasswordRequest}>Request a new code</Button>
-                  <Button type="primary" htmlType="submit" onClick={() => { setErrorMessage(''); handleCodeSubmit() }}>Submit</Button>
+                  <Button type="primary" style={{ backgroundColor:'#022452'}} htmlType="submit" onClick={() => { setErrorMessage(''); handleCodeSubmit() }}>Submit</Button>
                 </Form.Item>
               </Form>
             </>
@@ -299,7 +287,7 @@ const ResetPassword = () => {
           
             
                 <Form.Item>
-                  <Button type="primary" htmlType="submit"  style={{ width:'100%'}} >Reset Password</Button>
+                  <Button type="primary" htmlType="submit"  style={{ width:'100%',backgroundColor:'#022452'}} >Reset Password</Button>
                 </Form.Item>
                 
               </Form>
