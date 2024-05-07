@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Drawer, Form, Input, Row, Col, Space, Alert, Select, InputNumber, Table, Popconfirm } from 'antd';
+import { Button, Drawer, Form, Input, Row, Col, Space, Alert, Select, InputNumber, Table, Popconfirm} from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -25,25 +25,25 @@ const ServiceList = () => {
       setLoading(false);
     }
   };
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/clients');
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
+  const fetchTvaList = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/tva');
+      setTvaList(response.data);
+    } catch (error) {
+      console.error('Error fetching TVA:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/clients');
-        setClients(response.data);
-      } catch (error) {
-        console.error('Error fetching clients:', error);
-      }
-    };
-
-    const fetchTvaList = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/tva');
-        setTvaList(response.data);
-      } catch (error) {
-        console.error('Error fetching TVA:', error);
-      }
-    };
 
     fetchClients();
     fetchTvaList();
@@ -115,7 +115,7 @@ const ServiceList = () => {
       dataIndex: '_id',
       key: 'actions',
       render: (_, record) => (
-        <>
+        <>  <Space style={{float:'left'}}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
             title="Are you sure to delete this service?"
@@ -124,7 +124,7 @@ const ServiceList = () => {
             cancelText="No"
           >
             <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm> </Space>
         </>
       ),
     },
@@ -238,7 +238,7 @@ const ServiceList = () => {
         columns={columns}
         dataSource={services}
         loading={loading}
-        rowKey="_id"
+    
       />
     </>
   );

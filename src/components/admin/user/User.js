@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Tooltip,Button, Tabs, Select, Drawer, Space, Form, Input, Col, Row, Alert} from 'antd';
-import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Table, Popconfirm, Switch,Tooltip,Button, Tabs, Select, Drawer, Badge, Space, message, Form, Input, Col, Row, Alert} from 'antd';
+import { DeleteOutlined, EditOutlined, UserAddOutlined ,UserOutlined} from '@ant-design/icons';
 import './User.css';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import countryList from 'react-select-country-list';
 import { components } from 'react-select';
-
+import axios from 'axios';
 import ReactSelect from 'react-select';
+import { debounce } from 'lodash';//pour search pro 
+const { Search } = Input;
 const { TabPane } = Tabs;
 const { Option } = Select;
 const CountryOption = (props) => {
@@ -35,57 +37,96 @@ const User = () => {
     const [errorAlert, setErrorAlert] = useState(false);
     const [isMatriculeEnabled, setIsMatriculeEnabled] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState(null);
-
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
     const countryOptions = countryList().getData();
+    const [checkStrictly, setCheckStrictly] = useState(false);
+    const [searchText, setSearchText] = useState(''); 
     const showDrawer = () => {
         setOpen(true);
     };
-
     const onClose = () => {
         setOpen(false);
     };
-
     useEffect(() => {
-        fetchClients();
-        fetchFinanciers();
+        fetchClientsActive();
+        fetchClientsInactive();
+        fetchFinanciersActive();
+        fetchFinanciersInactive();
+       
     }, []);
-  
-
-    const fetchClients = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:5000/clients');
-            if (response.ok) {
-                const data = await response.json();
-                setClients(data);
-            } else {
-                console.error('Failed to fetch clients');
-            }
-        } catch (error) {
-            console.error('Error fetching clients:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchFinanciers = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:5000/financier');
-            if (response.ok) {
-                const data = await response.json();
-                setFinanciers(data);
-            } else {
-                console.error('Failed to fetch financiers');
-            }
-        } catch (error) {
-            console.error('Error fetching financiers:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+const fetchFinanciersInactive = async () => {
+  setLoading(true);
+  try {
+      const response = await fetch('http://localhost:5000/financier');
+      if (response.ok) {
+          const data = await response.json();
+          // Filtrer les financiers ayant status=true
+          const filteredFinanciers = data.filter(financier => financier.status === false);
+          setFinanciers(filteredFinanciers);
+      } else {
+          console.error('Failed to fetch financiers');
+      }
+  } catch (error) {
+      console.error('Error fetching financiers:', error);
+  } finally {
+      setLoading(false);
+  }
+};
+const fetchFinanciersActive = async () => {
+  setLoading(true);
+  try {
+      const response = await fetch('http://localhost:5000/financier');
+      if (response.ok) {
+          const data = await response.json();
+          // Filtrer les financiers ayant status=true
+          const filteredFinanciers = data.filter(financier => financier.status === true);
+          setFinanciers(filteredFinanciers);
+      } else {
+          console.error('Failed to fetch financiers');
+      }
+  } catch (error) {
+      console.error('Error fetching financiers:', error);
+  } finally {
+      setLoading(false);
+  }
+};
+const fetchClientsActive = async () => {
+  setLoading(true);
+  try {
+      const response = await fetch('http://localhost:5000/clients');
+      if (response.ok) {
+          const data = await response.json();
+          setClients(data);
+          const filteredClients = data.filter(client => client.status === true);
+          setClients(filteredClients);
+      } else {
+          console.error('Failed to fetch clients');
+      }
+  } catch (error) {
+      console.error('Error fetching clients:', error);
+  } finally {
+      setLoading(false);
+  }
+};
+const fetchClientsInactive = async () => {
+  setLoading(true);
+  try {
+      const response = await fetch('http://localhost:5000/clients');
+      if (response.ok) {
+          const data = await response.json();
+          setClients(data);
+          const filteredClients = data.filter(client => client.status === false);
+          setClients(filteredClients);
+      } else {
+          console.error('Failed to fetch clients');
+      }
+  } catch (error) {
+      console.error('Error fetching clients:', error);
+  } finally {
+      setLoading(false);
+  }
+};
     const handleChangePhoneNumber = (value) => {
         setPhoneNumber(value);
         setValidPhoneNumber(validatePhoneNumber(value));
@@ -122,14 +163,13 @@ const User = () => {
                 setOpen(false);
             }, 2000);
     
-            fetchFinanciers();
+            fetchFinanciersActive();
         } catch (error) {
             console.error('Error:', error);
             setErrorAlert(true);
             setTimeout(() => setErrorAlert(false), 3000);
         }
     };
-
     const onFinishClient = async  (values) => {
         values.roles = ["CLIENT"];
         let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
@@ -157,23 +197,84 @@ const User = () => {
           setOpen(false); // Ferme le Drawer
     
         }, 2000);
-        fetchClients();
+        fetchClientsActive();
       } catch (error) {
         console.error('Error:', error);
         setErrorAlert(true);
         setTimeout(() => setErrorAlert(false), 3000);
       }
     };
-    
     const handleDelete = async (record) => {
         console.log('Deleting record:', record);
     };
-
     const onTabChange = (key) => {
         setActiveTabKey(key);
     };
+    const handleSwitchChange = (checked) => {
+      setCheckStrictly(checked);
+  };
+  useEffect(() => {
+    if (checkStrictly) {
+        fetchClientsActive();
+    } else {
+        fetchClientsInactive();
+    }
+}, [checkStrictly]);
+useEffect(() => {
+  if (checkStrictly) {
+    fetchFinanciersActive();
+  } else {
+    fetchFinanciersInactive();
+  }
+}, [checkStrictly]);
 
+const onSearch = debounce(async (query) => {
+  setLoading(true);
+  try {
+    if (activeTabKey === 'Clients') {
+      if (query.trim() === '') {
+        fetchClientsActive();
+        fetchClientsInactive(); 
+        
+      } else {
+        const res = await axios.post(`http://localhost:5000/clients/search?key=${query}`);
+        setClients(res.data);
+      }
+    } else {
+      if (query.trim() === '') {
+        fetchFinanciersActive();
+        fetchFinanciersInactive();
+      } else {
+        const res = await axios.post(`http://localhost:5000/financier/search?key=${query}`);
+        setFinanciers(res.data);
+      }
+    }
+  } catch (error) {
+    message.error('Error during search');
+  } finally {
+    setLoading(false);
+  }
+}, 300);
     const columnsFinancier = [
+      {
+        dataIndex: 'status',
+        key: 'status',
+        width: 20, // Définit la largeur de la colonne à 10 pixels
+        render: (status) => {
+          const color = status ? 'green' :'red';
+          const shadow = `0 0 4px ${color}`;
+            return (
+                <Badge
+                    dot
+                    style={{
+                      backgroundColor: color,
+                      boxShadow: shadow, // Ajout de l'effet d'ombre
+                   }}
+                >
+                </Badge>
+            );
+        },
+    },
         {
             title: 'Fullname',
             dataIndex: 'fullname',
@@ -229,6 +330,44 @@ const User = () => {
     ];
 
     const columnsClient = [
+      {
+        dataIndex: 'status',
+        key: 'status',
+
+        width: 20, // Définit la largeur de la colonne à 10 pixels
+        render: (status) => {
+          const color = status ? 'green' :'red';
+          const shadow = `0 0 4px ${color}`;
+            return (
+                <Badge
+                    dot
+                    style={{
+                      backgroundColor: color,
+                      boxShadow: shadow, // Ajout de l'effet d'ombre
+                   }}
+                >
+                </Badge>
+            );
+        },
+    },
+    {
+      title: 'Logo',
+      dataIndex: 'logo',
+      render: (logo) => {
+        if (logo && logo !== 'No field') {
+          const logoURL = `http://localhost:5000/uploads/logos/${logo}`;
+          return (
+            <img
+              src={logoURL}
+              alt="Client Logo"
+              style={{ width: 50, height: 50, borderRadius: '50%' }}
+            />
+          );
+        }
+        return <UserOutlined style={{ fontSize: '18px', color: 'gray' }} />;
+      },
+    },
+
         {
             title: 'Ref',
             dataIndex: 'refClient',
@@ -570,6 +709,16 @@ const User = () => {
             <div style={{ marginBottom: 16, float: 'right' }}>
                 <Button type="primary" style={{ backgroundColor:'#022452'}} icon={<UserAddOutlined />} onClick={showDrawer}>New account</Button>
             </div>
+            <Search
+        placeholder="Search "
+        value={searchText}
+        onChange={(e) => {
+          const text = e.target.value;
+          setSearchText(text);
+          onSearch(text);
+        }}
+        style={{ maxWidth: 780, marginBottom: 20 }}
+      />
             <Drawer
                 title="Create a new account"
                 width={720}
@@ -596,26 +745,47 @@ const User = () => {
             </Drawer>
 
             <div style={{ clear: 'both' }}>
-                <Tabs activeKey={activeTabKey} onChange={onTabChange} >
+                <Tabs activeKey={activeTabKey} onChange={onTabChange}  >
                     <TabPane tab="Clients" key="Clients">
-                        <Select defaultValue="all" style={{ width: 200, marginBottom: 20 }} onChange={handleClientTypeChange}>
+                    <Select defaultValue="all" style={{ width: 200, marginBottom: 20 }} onChange={handleClientTypeChange}>
                             <Option value="all">All</Option>
                             <Option value="morale">Moral</Option>
                             <Option value="physique">Physical</Option>
+                         
                         </Select>
-                        <Table
-                            dataSource={clientTypeFilter === 'all' ? clients : clients.filter(client => client.type === clientTypeFilter)}
-                            columns={columnsClient}
-                            pagination={{ pageSize: 12 }}
-                            loading={loading}
-                        />
+                        <br/>
+                      
+                        <Space
+                            align="center"
+                            style={{
+                                marginBottom: 16,
+                            }}
+                        >
+                            <Switch
+                                checked={checkStrictly}
+                                onChange={handleSwitchChange}
+                            />
+                            <span>{checkStrictly ? "Activated" : "Inactivated"}</span>
+                        </Space>
+                    <Table
+  dataSource={clientTypeFilter === 'all' ? clients : clients.filter(client => client.type === clientTypeFilter)}
+  columns={columnsClient}
+  pagination={{ pageSize: 12 }}
+  loading={loading}
+/>
+
                     </TabPane>
                     <TabPane tab="Financiers" key="Financiers">
+                    <Space style={{ marginBottom: 16 }}>
+                            <Switch checked={checkStrictly} onChange={handleSwitchChange} />
+                            <span>{checkStrictly ? "Activated" : "Inactivated"}</span>
+                        </Space>
                         <Table 
                             dataSource={financiers}
                             columns={columnsFinancier}
                             pagination={{ pageSize: 12 }}
                             loading={loading}
+                      
                         />
                     </TabPane>
                 </Tabs>

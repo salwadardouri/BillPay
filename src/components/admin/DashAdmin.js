@@ -1,36 +1,141 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Button } from 'antd';
-import { TeamOutlined, MenuFoldOutlined, MenuUnfoldOutlined ,SettingOutlined,LogoutOutlined} from '@ant-design/icons';
-import User from './user/User';
-import ParametreVisto from './Parametre/ParametreVisto';
-import Services from './Services/ServiceList';
+import {MenuFoldOutlined, MenuUnfoldOutlined,LogoutOutlined} from '@ant-design/icons';
+
 import Logo from "../../images/Logo.png"; 
 import Bill from "../../images/Bill4.png"; 
+import User from './user/User';
+import ServiceList from './Services/ServiceList';
+import BasicInformation from './Parametre/BasicInformation';
+import Categories from './Parametre/Categories';
+import Tax from './Parametre/TaxVisto';
+
 
 const { Header, Footer, Sider, Content } = Layout;
 
 const DashAdmin = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenuKey, setSelectedMenuKey] = useState(null);
+  const [selectedMenuKey, setSelectedMenuKey] = useState('User'); 
+  const handleMenuItemClick = (key) => {
+    setSelectedMenuKey(key);
+  };
 
   const renderContent = () => {
     switch (selectedMenuKey) {
       case 'User':
         return <User />;
-       
-          case 'Parametre':
-            return <ParametreVisto />;
-            case 'Services':
-              return <Services/>;
-      
+      case 'Services':
+        return <ServiceList />;
+      case 'BasicInformation':
+        return <BasicInformation />;
+      case 'Categories':
+        return <Categories />;
+      case 'Tax':
+        return <Tax />;
       default:
         return null;
     }
   };
+  const getMenuItems = (onClickMenuItem) => [
+    {
+      key: 'User',
+      label:   <div
+      onClick={() => onClickMenuItem('User')}
+      style={{
+        color: selectedMenuKey === 'User' ? 'white' : '#B5C0D0',
+        fontFamily: 'sans-serif',
+        fontSize: '15px',
+        backgroundColor: selectedMenuKey === 'User' ? 'transparent' : 'transparent',
+        textShadow: selectedMenuKey === 'User' ? '1px 1px 5px rgba(0, 0, 0, 0.3)' : 'none', // Added textShadow for user button
+      }}
+    >
+      User
+    </div>
+    },
+    {
+      key: 'Services',
+      label:    <div
+      onClick={() => onClickMenuItem('Services')}
+      style={{
+        color: selectedMenuKey === 'Services' ? 'white' : '#B5C0D0',
+        fontFamily: 'sans-serif',
+        fontSize: '15px',
+        background: selectedMenuKey === 'Services' ? 'transparent' : 'transparent',
+      }}
+    >
+      Services
+    </div>
+    },
+    {
+      key: 'Settings',
+      label: (
+        <div
+          onClick={() => onClickMenuItem('BasicInformation')}
+          style={{
+            color: selectedMenuKey === 'Settings' ? 'white' : '#B5C0D0',
+            fontFamily: 'sans-serif',
+            fontSize: '15px',
+            background: selectedMenuKey === 'Settings' ? 'transparent' : 'transparent',
+          }}
+        >
+         Settings
+        </div>
+      ),
+      children: [
+        {
+          key: 'BasicInformation',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('BasicInformation')}
+              style={{
+                color: selectedMenuKey === 'BasicInformation' ? 'white' : '#B5C0D0',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                background: selectedMenuKey === 'BasicInformation' ? 'transparent' : 'transparent',
+              }}
+            >
+              Basic Information
+            </div>
+          ),
+        },
+        {
+          key: 'Categories',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('Categories')}
+              style={{
+                color: selectedMenuKey === 'Categories' ? 'white' : '#B5C0D0',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                background: selectedMenuKey === 'Categories' ? 'transparent' : 'transparent',
+              }}
+            >
+              Category
+            </div>
+          ),
+        },
+        {
+          key: 'Tax',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('Tax')}
+              style={{
+                color: selectedMenuKey === 'Tax' ? 'white' : '#B5C0D0',
+                textShadow: selectedMenuKey === 'Tax' ? '1px 1px 5px rgba(0, 0, 0, 0.3)' : 'transparent',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                backgroundColor: selectedMenuKey === 'Tax' ? 'transparent' : 'transparent',
+              }}
+            >
+              Tax
+            </div>
+          ),
+        },
+      ],
+    },
+  ];
+  
 
-  const handleMenuClick = (e) => {
-    setSelectedMenuKey(e.key);
-  };
   const handleLogout = async () => {
     try {
       const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
@@ -57,61 +162,15 @@ const DashAdmin = () => {
   return (
     <div className="DashAdmin" style={{ background: '#EFECEC' }}>
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider className={`sidebar ${collapsed  ? "collapsed" : ""}` } trigger={null} collapsible collapsed={collapsed} style={{ background: '#222831' }}>
+        <Sider  className={`sidebar ${collapsed  ? "collapsed" : ""}` } trigger={null} collapsible collapsed={collapsed} style={{ background: '#222831' }}>
         <div className={`logo-container ${collapsed ? "collapsed" : ""}`} style={{display: 'flex',alignItems: 'center',justifyContent: 'start', padding: '10px',}}>
           <div> 
              <img src={Logo} alt="Menu Logo" className="sidebar-logo"  style={{ width: '30px',height: '25px',  marginRight: '10px',}}/>
           </div>
           <div style={{ whiteSpace: 'nowrap',}}>  {!collapsed && <img src={Bill} alt="BillPayVisto" className="sidebar-logo"  style={{width: '120px',  height: '30px', marginRight: '10px',marginTop:'15px'}}/>}</div>
         </div>
-        <div style={{ height: '0.2px', backgroundColor: 'grey', width: '100%' }}></div>  {/* Ligne blanche mince ajoutée ici */}
-
-        <Menu
-      mode="inline"
-      selectedKeys={[selectedMenuKey]}
-     onClick={handleMenuClick}
-      style={{ background: '#222831', marginTop: '20px' , width:'auto'   }}
-    >
-    <Menu.Item
-          icon={<TeamOutlined style={{ marginLeft: '-15px' }} />}
-          style={{
-            color: selectedMenuKey === 'User' ? 'white' : '#B5C0D0',
-            fontFamily: 'sans-serif',
-            fontSize: '15px',
-            background: selectedMenuKey === 'User' ? 'transparent' : 'transparent',
-     
-          }}
-          key="User"
-        >
-          <span>Users</span>
-        </Menu.Item>
-        <Menu.Item
-          icon={<TeamOutlined style={{ marginLeft: '-15px' }} />}
-          style={{
-            color: selectedMenuKey === 'Services' ? 'white' : '#B5C0D0',
-            fontFamily: 'sans-serif',
-            fontSize: '15px',
-            background: selectedMenuKey === 'Services' ? 'transparent' : 'transparent',
-     
-          }}
-          key="Services"
-        >
-          <span>Services</span>
-        </Menu.Item>
-        <Menu.Item
-          icon={<SettingOutlined style={{ marginLeft: '-15px' }} />}
-          style={{
-            color: selectedMenuKey === 'Parametre' ? 'white' : '#B5C0D0',
-            fontFamily: 'sans-serif',
-            fontSize: '15px',
-            background: selectedMenuKey === 'Parametre' ? 'transparent' : 'transparent',
-     
-          }}
-          key="Parametre"
-        >
-          <span>Settings</span>
-        </Menu.Item>
-    </Menu>
+        <div style={{ height: '0.2px', backgroundColor: 'grey', width: '100%' }}></div>
+         <Menu style={{ background: '#222831', marginTop: '20px', width: 'auto' }} mode="inline" items={getMenuItems(handleMenuItemClick)} defaultSelectedKeys={['User']} />
         </Sider>
         <Layout>
           <Header style={{ padding: 0, background: 'white', height: '68px' }}>
@@ -134,7 +193,7 @@ const DashAdmin = () => {
           </Header>
       
           <Content style={{ margin: '30px 20px', padding: 24, minHeight: 280, background: 'white', borderRadius: '10px' }}>
-            {renderContent()}
+          {renderContent()} 
           </Content>
           <Footer style={{ textAlign: 'center' }}>BillPayVisto ©{new Date().getFullYear()} Created by Visto</Footer>
         </Layout>

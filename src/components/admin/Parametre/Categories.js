@@ -1,118 +1,212 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, Modal ,message} from 'antd';
+import { Table, Button, Form, Input, Modal, Popconfirm, message, Space, Row, Col } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const CollectionCreateForm = ({ initialValues, onFormInstanceReady }) => {
+import { debounce } from 'lodash';//pour search pro 
+const { Search } = Input;
+const Categories = () => {
+  const [open, setOpen] = useState(false);
+  const [categoryData, setCategoryData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const [editRecord, setEditRecord] = useState(null);
+  const [searchText, setSearchText] = useState(''); 
 
   useEffect(() => {
-    onFormInstanceReady(form);
-  }, [form, onFormInstanceReady]);
+    fetchCategory();
+  }, []);
 
-  return (
-    <Form layout="vertical" form={form} name="form_in_modal" initialValues={initialValues}>
-      <Form.Item
-        name="Titre_Categorie"
-        label="Title"
-        rules={[
-          {
-            required: true,
-            message: 'Please input the title of the collection!',
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item name="Description_Categorie" label="Description" rules={[
-          {
-            required: true,
-            message: 'Please input the title of the collection!',
-          },
-        ]}>
-        <Input.TextArea />
-      </Form.Item>
-      
-    </Form>
-  );
-};
+  const fetchCategory = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/categories');
+      if (response.status === 200) {
+        setCategoryData(response.data);
+      } else {
+        console.error('Failed to fetch category data');
+      }
+    } catch (error) {
+      console.error('Error fetching category data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const CollectionCreateFormModal = ({ open, onCreate, onCancel, initialValues }) => {
-  const [formInstance, setFormInstance] = useState(null);
+  const handleEdit = (record) => {
+    setEditRecord(record);
+    setOpen(true);
+    form.setFieldsValue(record);
+  };
 
-  return (
-    <Modal
-      open={open}
-      title="Create a new collection"
-      okText="Create"
-      cancelText="Cancel"
-      okButtonProps={{ autoFocus: true }}
-      onCancel={onCancel}
-      onOk={async () => {
-        try {
-          const values = await formInstance?.validateFields();
-          onCreate(values);
-        } catch (error) {
-          console.error('Failed:', error);
-        }
-      }}
-      destroyOnClose
-    >
-      <CollectionCreateForm
-        initialValues={initialValues}
-        onFormInstanceReady={setFormInstance}
-      />
-    </Modal>
-  );
-};
+  const handleFormSubmit = async (values) => {
+    if (editRecord) {
+      await updateCategory(values);
+    } else {
+      await createCategory(values);
+    }
+  };
 
-const Categories = () => {
-  // eslint-disable-next-line
-  const [formValues, setFormValues] = useState({});
-  const [open, setOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
- 
-
-  const onCreate = async (values) => {
+  const createCategory = async (values) => {
     try {
       const response = await axios.post('http://localhost:5000/categories', values);
-      if (!response.status === 201) {
-        throw new Error('Failed to create category'); // Erreur générale si le statut n'est pas correct
-      }
-  
-      console.log('Created category:', response.data);
-  
-      // Ajoutez la nouvelle catégorie à l'état local
-      setCategories([...categories, response.data]);
-  
-      // Fermez le formulaire
-      setOpen(false);
-   
-      // Affichez un message de succès
-      message.success('Category created successfully!');
-    } catch (error) {
-      // Si une erreur est survenue, affichez le message d'erreur correspondant
-      if (error.response && error.response.data && error.response.data.message) {
-        message.error(`Error creating category: ${error.response.data.message}`);
+      if (response.status === 201) {
+        message.success('Category created successfully');
+        setOpen(false);
+        fetchCategory();
       } else {
-        message.error('An error occurred while creating the category.');
+        throw new Error('Failed to create category');
       }
-  
-      console.error('Error creating category:', error); // Loggez l'erreur dans la console
-    } 
+    } catch (error) {
+      message.error('Failed to create category');
+      console.error('Error creating category:', error);
+    }
   };
+
+  const updateCategory = async (values) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/categories/${editRecord._id}`, values);
+      if (response.status === 200) {
+        message.success('Category updated successfully');
+        setOpen(false);
+        fetchCategory();
+      } else {
+        throw new Error('Failed to update category');
+      }
+    } catch (error) {
+      message.error('Failed to update category');
+      console.error('Error updating category:', error);
+    }
+  };
+
+  const handleDelete = async (record) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/categories/${record._id}`);
+      if (response.status === 200) {
+        message.success('Category deleted successfully');
+        fetchCategory();
+      } else {
+        throw new Error('Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      message.error('Failed to delete category');
+    }
+  };
+
+  const onSearch = debounce(async (query) => {
+    setLoading(true);
+    try {
+      if (query.trim() === '') {
+        // Si le champ de recherche est vide, rechargez toutes les catégories
+        fetchCategory();
+      } else {
+        // Recherche des catégories avec la clé de recherche
+        const response = await axios.post(`http://localhost:5000/categories/search?key=${query}`);
+        setCategoryData(response.data); // Met à jour les données de la table avec les résultats de recherche
+      }
+    } catch (error) {
+      message.error('Error during search');
+    } finally {
+      setLoading(false);
+    }
+  }, 300); // Debouncing de 300 ms pour réduire les appels API
+
+  const columnsCategory = [
+    { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie' },
+    { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' },
+    {
+      title: 'Actions',
+      render: (_, record) => (
+        <Space style={{ float: 'left' }}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Popconfirm
+            title="Are you sure to delete this category?"
+            onConfirm={() => handleDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="link" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <>
-      <Button type="primary" onClick={() => setOpen(true)}>
-        New Collection
-      </Button>
-
-  
-      <CollectionCreateFormModal
-        open={open}
-        onCreate={onCreate}
-        onCancel={() => setOpen(false)}
-        initialValues={{ modifier: 'public' }}
+      <div style={{ marginBottom: 16, float: 'right' }}>
+        <Button
+          type="primary"
+          style={{ backgroundColor: '#022452' }}
+          onClick={() => setOpen(true)}
+        >
+          New Collection
+        </Button>      </div>
+        <Search
+        placeholder="Search "
+        value={searchText}
+        onChange={(e) => {
+          const text = e.target.value;
+          setSearchText(text);
+          onSearch(text);
+        }}
+        style={{ maxWidth: 780, marginBottom: 20 }}
       />
+
+      <div style={{ clear: 'both' }}>
+        <Table
+          columns={columnsCategory}
+          dataSource={categoryData}
+          loading={loading}
+          pagination={{ pageSize: 12 }}
+          style={{ clear: 'both', marginTop: '60px' }}
+        />
+      </div>
+
+      <Modal
+        title={editRecord ? "Edit Category" : "Create New Category"}
+        visible={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+      >
+        <Form form={form} layout="vertical" style={{ marginTop: '20px' }} onFinish={handleFormSubmit}>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="Titre_Categorie"
+                rules={[
+                  { required: true, message: 'Please enter the category title.' },
+                ]}
+              >
+                <Input name="Titre_Categorie" placeholder="Category title" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={12}>
+              <Form.Item
+                name="Description_Categorie"
+                rules={[
+                  { required: true, message: 'Please enter the category description.' },
+                ]}
+              >
+                <Input name="Description_Categorie" placeholder="Category description" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item>
+            <Button
+              type="primary"
+              style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
+              htmlType="submit"
+            >
+              {editRecord ? 'Update' : 'Create'}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 };
