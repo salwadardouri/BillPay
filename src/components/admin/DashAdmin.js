@@ -9,6 +9,7 @@ import ServiceList from './Services/ServiceList';
 import BasicInformation from './Parametre/BasicInformation';
 import Categories from './Parametre/Categories';
 import Tax from './Parametre/TaxVisto';
+import DeviseParam from './Parametre/DeviseParam';
 
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -32,6 +33,8 @@ const DashAdmin = () => {
         return <Categories />;
       case 'Tax':
         return <Tax />;
+        case 'DeviseParam':
+          return <DeviseParam />;
       default:
         return null;
     }
@@ -128,6 +131,23 @@ const DashAdmin = () => {
               }}
             >
               Tax
+            </div>
+          ),
+        },
+        {
+          key: 'DeviseParam',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('DeviseParam')}
+              style={{
+                color: selectedMenuKey === 'DeviseParam' ? 'white' : '#B5C0D0',
+                textShadow: selectedMenuKey === 'DeviseParam' ? '1px 1px 5px rgba(0, 0, 0, 0.3)' : 'transparent',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                backgroundColor: selectedMenuKey === 'Tax' ? 'transparent' : 'transparent',
+              }}
+            >
+              Devise
             </div>
           ),
         },

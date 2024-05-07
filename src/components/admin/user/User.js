@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Popconfirm, Switch,Tooltip,Button, Tabs, Select, Drawer, Badge, Space, message, Form, Input, Col, Row, Alert} from 'antd';
-import { DeleteOutlined, EditOutlined, UserAddOutlined ,UserOutlined} from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, UserAddOutlined} from '@ant-design/icons';
 import './User.css';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -24,6 +24,7 @@ const CountryOption = (props) => {
       </components.Option>
     );
   };
+  
 const User = () => {
     const [clients, setClients] = useState([]);
     const [financiers, setFinanciers] = useState([]);
@@ -92,23 +93,29 @@ const fetchFinanciersActive = async () => {
   }
 };
 const fetchClientsActive = async () => {
-  setLoading(true);
-  try {
+    setLoading(true);
+    try {
       const response = await fetch('http://localhost:5000/clients');
       if (response.ok) {
-          const data = await response.json();
-          setClients(data);
-          const filteredClients = data.filter(client => client.status === true);
-          setClients(filteredClients);
+        const data = await response.json();
+        // Filtrer les clients avec status true
+        const filteredClients = data.filter(client => client.status === true);
+        // Ajouter l'URL complète du logo à chaque client
+        const clientsWithLogoUrl = filteredClients.map(client => ({
+          ...client,
+          logoUrl: `/uploads/logos/${client.logo}`
+        }));
+        setClients(clientsWithLogoUrl);
       } else {
-          console.error('Failed to fetch clients');
+        console.error('Failed to fetch clients');
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error fetching clients:', error);
-  } finally {
+    } finally {
       setLoading(false);
-  }
-};
+    }
+  };
+  
 const fetchClientsInactive = async () => {
   setLoading(true);
   try {
@@ -352,20 +359,11 @@ const onSearch = debounce(async (query) => {
     },
     {
       title: 'Logo',
-      dataIndex: 'logo',
-      render: (logo) => {
-        if (logo && logo !== 'No field') {
-          const logoURL = `http://localhost:5000/uploads/logos/${logo}`;
-          return (
-            <img
-              src={logoURL}
-              alt="Client Logo"
-              style={{ width: 50, height: 50, borderRadius: '50%' }}
-            />
-          );
-        }
-        return <UserOutlined style={{ fontSize: '18px', color: 'gray' }} />;
-      },
+      dataIndex: 'logoUrl', 
+      key: 'logo',
+      render: (logoUrl) => (
+        <img src={logoUrl} alt="Logo" style={{ width: '100px' }} />
+      ),
     },
 
         {

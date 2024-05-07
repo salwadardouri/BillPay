@@ -13,6 +13,8 @@ const ServiceList = () => {
   const [clients, setClients] = useState([]);
   const [tvaList, setTvaList] = useState([]);
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);  
+  const [devise, setDevise] = useState([]);
   const [loading, setLoading] = useState(false);
   const fetchServices = async () => {
     setLoading(true);
@@ -42,9 +44,24 @@ const ServiceList = () => {
       console.error('Error fetching TVA:', error);
     }
   };
-
+  const fetchDevise = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/devise');
+      setDevise(response.data);
+    } catch (error) {
+      console.error('Error fetching Devise:', error);
+    }
+  };  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching Categories:', error);
+    }
+  };
   useEffect(() => {
-
+    fetchDevise();
+    fetchCategories();
     fetchClients();
     fetchTvaList();
     fetchServices();
@@ -109,6 +126,16 @@ const ServiceList = () => {
       title: 'TVA',
       dataIndex: ['tva', 'Pourcent_TVA'],
       key: 'tva_Pourcent_TVA',
+    },
+    {
+      title: 'Devise',
+      dataIndex: ['devise', 'Nom_D'],
+      key: 'devise_Nom_D',
+    },
+    {
+      title: 'Categories',
+      dataIndex: ['categories', 'Titre_Categorie'],
+      key: 'categories_Titre_Categorie',
     },
     {
       title: 'Actions',
@@ -216,6 +243,7 @@ const ServiceList = () => {
                 </Select>
               </Form.Item>
             </Col>
+            
             <Col span={12}>
               <Form.Item
                 name="tvaId"
@@ -225,6 +253,32 @@ const ServiceList = () => {
                 <Select placeholder="Select a TVA">
                   {tvaList.map(tva => (
                     <Option key={tva._id} value={tva._id}>{tva.Pourcent_TVA}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="categoriesId"
+                label="Categories"
+                rules={[{ required: true, message: 'Please select a Categories' }]}
+              >
+                <Select placeholder="Select a Categories">
+                  {categories.map(categories => (
+                    <Option key={categories._id} value={categories._id}>{categories.Titre_Categorie}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="deviseId"
+                label="Devise"
+                rules={[{ required: true, message: 'Please select a Devise' }]}
+              >
+                <Select placeholder="Select a Devise">
+                  {devise.map(devise => (
+                    <Option key={devise._id} value={devise._id}>{devise.Nom_D}</Option>
                   ))}
                 </Select>
               </Form.Item>
