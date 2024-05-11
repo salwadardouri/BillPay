@@ -7,7 +7,6 @@ const PasswordImage = require('../../../images/password.jpg');
 function CreatePassword() {
   const [loading, setLoading] = useState(false);
   const { token } = useParams();
-
   const handleResetPasswordSubmit = async (values) => {
     setLoading(true);
     try {
@@ -21,26 +20,32 @@ function CreatePassword() {
           token, // Envoyer le token avec la requête
         }),
       });
-
+  
       if (response.ok) {
         message.success('Password reset successful');
         setTimeout(() => {
           window.location.href = '/SignIn'; // Redirection après succès
         }, 3000);
       } else {
+        const errorData = await response.json();
+        console.error('Server error:', errorData.message); // Afficher l'erreur dans la console
   
-      // Récupérez le message d'erreur du serveur
-      const errorData = await response.json();
-      console.error('The password should be strong:', errorData.message); // Afficher l'erreur dans la console
-      message.error(errorData.message); // Affiche le message d'erreur sur l'interface utilisateur
+        if (response.status === 400) {
+          message.error(errorData.message); // Affiche le message d'erreur sur l'interface utilisateur
+        } else if (response.status === 404) {
+          message.error('Client not found.'); // Message d'erreur spécifique pour le client introuvable
+        } else {
+          message.error('An unexpected error occurred.'); // Message d'erreur générique pour les autres erreurs
+        }
+      }
+    } catch (error) {
+      console.error('An error occurred', error);
+      message.error('An error occurred while trying to reset the password.'); // Affiche un message d'erreur générique si une exception est levée
+    } finally {
+      setLoading(false); // Désactiver le chargement à la fin, réussie ou échouée
     }
-  } catch (error) {
-    console.error('An error occurred', error);
-    message.error('An error occurred while trying to reset the password.'); // Affiche un message d'erreur générique si une exception est levée
-  } finally {
-    setLoading(false); // Désactiver le chargement à la fin, réussie ou échouée
-  }
   };
+  
   return (
     <div  className="media" style={{ backgroundColor:'#EEEEEE',minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
@@ -103,7 +108,7 @@ function CreatePassword() {
           
         <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%' , backgroundColor:'#022452'}}>
-              Reset Password
+              Create Password
             </Button>
           </Form.Item>
     

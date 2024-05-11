@@ -105,7 +105,7 @@ const BasicInformation = () => {
       // Vérifiez si une valeur de pays est sélectionnée
       const countryLabel = selectedCountry ? selectedCountry.label : '';
   
-      const formattedPhoneNumber = `+${Num_Phone_S.replace(/\s/g, '')}`;
+      const formattedPhoneNumber = `${Num_Phone_S.replace(/\s/g, '')}`;
   
       const postData = {
         Nom_S,

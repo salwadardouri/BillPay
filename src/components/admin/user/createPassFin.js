@@ -74,7 +74,7 @@ function CreatePassword() {
         
         <Form.Item
                   name="newPassword"
-                  rules={[{ required: true, message: 'Please enter your new password.' }]}
+                  rules={[{ required: true, message: 'Please enter your  password.' }]}
                 >
                   <Input.Password placeholder="Please enter a new Password" />
                 </Form.Item>
@@ -101,7 +101,7 @@ function CreatePassword() {
           
         <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} style={{ width:'100%', backgroundColor:'#022452'}}>
-              Reset Password
+              Create Password
             </Button>
           </Form.Item>
     

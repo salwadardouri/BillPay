@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Switch,Tooltip,Button, Tabs, Select, Drawer, Badge, Space, message, Form, Input, Col, Row, Alert} from 'antd';
+import { Table, Popconfirm,Tooltip,Button, Tabs, Select, Drawer, Badge, Space, message, Form, Input, Col, Row, Alert} from 'antd';
 import { DeleteOutlined, EditOutlined, UserAddOutlined} from '@ant-design/icons';
 import './User.css';
 import PhoneInput from 'react-phone-input-2';
@@ -41,7 +41,8 @@ const User = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
     const countryOptions = countryList().getData();
-    const [checkStrictly, setCheckStrictly] = useState(false);
+    const [clientStatusFilter, setClientStatusFilter] = useState('all');
+    const [financierStatusFilter, setFinancierStatusFilter] = useState('all');
     const [searchText, setSearchText] = useState(''); 
     const showDrawer = () => {
         setOpen(true);
@@ -50,90 +51,48 @@ const User = () => {
         setOpen(false);
     };
     useEffect(() => {
-        fetchClientsActive();
-        fetchClientsInactive();
-        fetchFinanciersActive();
-        fetchFinanciersInactive();
+        fetchClients();
+       
+        fetchFinanciers();
+
        
     }, []);
-const fetchFinanciersInactive = async () => {
-  setLoading(true);
-  try {
-      const response = await fetch('http://localhost:5000/financier');
-      if (response.ok) {
-          const data = await response.json();
-          // Filtrer les financiers ayant status=true
-          const filteredFinanciers = data.filter(financier => financier.status === false);
-          setFinanciers(filteredFinanciers);
-      } else {
-          console.error('Failed to fetch financiers');
+
+    const fetchFinanciers = async () => {
+      setLoading(true);
+      try {
+          const response = await fetch('http://localhost:5000/financier');
+          if (response.ok) {
+              const data = await response.json();
+              setFinanciers(data);
+          } else {
+              console.error('Failed to fetch financiers');
+          }
+      } catch (error) {
+          console.error('Error fetching financiers:', error);
+      } finally {
+          setLoading(false);
       }
-  } catch (error) {
-      console.error('Error fetching financiers:', error);
-  } finally {
-      setLoading(false);
-  }
-};
-const fetchFinanciersActive = async () => {
-  setLoading(true);
-  try {
-      const response = await fetch('http://localhost:5000/financier');
-      if (response.ok) {
-          const data = await response.json();
-          // Filtrer les financiers ayant status=true
-          const filteredFinanciers = data.filter(financier => financier.status === true);
-          setFinanciers(filteredFinanciers);
-      } else {
-          console.error('Failed to fetch financiers');
+  };
+
+  const fetchClients = async () => {
+      setLoading(true);
+      try {
+          const response = await fetch('http://localhost:5000/clients');
+          if (response.ok) {
+              const data = await response.json();
+              setClients(data);
+          } else {
+              console.error('Failed to fetch clients');
+          }
+      } catch (error) {
+          console.error('Error fetching clients:', error);
+      } finally {
+          setLoading(false);
       }
-  } catch (error) {
-      console.error('Error fetching financiers:', error);
-  } finally {
-      setLoading(false);
-  }
-};
-const fetchClientsActive = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:5000/clients');
-      if (response.ok) {
-        const data = await response.json();
-        // Filtrer les clients avec status true
-        const filteredClients = data.filter(client => client.status === true);
-        // Ajouter l'URL complète du logo à chaque client
-        const clientsWithLogoUrl = filteredClients.map(client => ({
-          ...client,
-          logoUrl: `/uploads/logos/${client.logo}`
-        }));
-        setClients(clientsWithLogoUrl);
-      } else {
-        console.error('Failed to fetch clients');
-      }
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    } finally {
-      setLoading(false);
-    }
   };
   
-const fetchClientsInactive = async () => {
-  setLoading(true);
-  try {
-      const response = await fetch('http://localhost:5000/clients');
-      if (response.ok) {
-          const data = await response.json();
-          setClients(data);
-          const filteredClients = data.filter(client => client.status === false);
-          setClients(filteredClients);
-      } else {
-          console.error('Failed to fetch clients');
-      }
-  } catch (error) {
-      console.error('Error fetching clients:', error);
-  } finally {
-      setLoading(false);
-  }
-};
+
     const handleChangePhoneNumber = (value) => {
         setPhoneNumber(value);
         setValidPhoneNumber(validatePhoneNumber(value));
@@ -170,7 +129,7 @@ const fetchClientsInactive = async () => {
                 setOpen(false);
             }, 2000);
     
-            fetchFinanciersActive();
+            fetchFinanciers();
         } catch (error) {
             console.error('Error:', error);
             setErrorAlert(true);
@@ -204,7 +163,7 @@ const fetchClientsInactive = async () => {
           setOpen(false); // Ferme le Drawer
     
         }, 2000);
-        fetchClientsActive();
+        fetchClients();
       } catch (error) {
         console.error('Error:', error);
         setErrorAlert(true);
@@ -217,31 +176,14 @@ const fetchClientsInactive = async () => {
     const onTabChange = (key) => {
         setActiveTabKey(key);
     };
-    const handleSwitchChange = (checked) => {
-      setCheckStrictly(checked);
-  };
-  useEffect(() => {
-    if (checkStrictly) {
-        fetchClientsActive();
-    } else {
-        fetchClientsInactive();
-    }
-}, [checkStrictly]);
-useEffect(() => {
-  if (checkStrictly) {
-    fetchFinanciersActive();
-  } else {
-    fetchFinanciersInactive();
-  }
-}, [checkStrictly]);
 
 const onSearch = debounce(async (query) => {
   setLoading(true);
   try {
     if (activeTabKey === 'Clients') {
       if (query.trim() === '') {
-        fetchClientsActive();
-        fetchClientsInactive(); 
+        fetchClients();
+      
         
       } else {
         const res = await axios.post(`http://localhost:5000/clients/search?key=${query}`);
@@ -249,8 +191,8 @@ const onSearch = debounce(async (query) => {
       }
     } else {
       if (query.trim() === '') {
-        fetchFinanciersActive();
-        fetchFinanciersInactive();
+        fetchFinanciers();
+        
       } else {
         const res = await axios.post(`http://localhost:5000/financier/search?key=${query}`);
         setFinanciers(res.data);
@@ -266,21 +208,10 @@ const onSearch = debounce(async (query) => {
       {
         dataIndex: 'status',
         key: 'status',
-        width: 20, // Définit la largeur de la colonne à 10 pixels
-        render: (status) => {
-          const color = status ? 'green' :'red';
-          const shadow = `0 0 4px ${color}`;
-            return (
-                <Badge
-                    dot
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: shadow, // Ajout de l'effet d'ombre
-                   }}
-                >
-                </Badge>
-            );
-        },
+        width: 20,
+        render: (status) => (
+            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        ),
     },
         {
             title: 'Fullname',
@@ -340,22 +271,10 @@ const onSearch = debounce(async (query) => {
       {
         dataIndex: 'status',
         key: 'status',
-
-        width: 20, // Définit la largeur de la colonne à 10 pixels
-        render: (status) => {
-          const color = status ? 'green' :'red';
-          const shadow = `0 0 4px ${color}`;
-            return (
-                <Badge
-                    dot
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: shadow, // Ajout de l'effet d'ombre
-                   }}
-                >
-                </Badge>
-            );
-        },
+        width: 20,
+        render: (status) => (
+            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        ),
     },
     {
       title: 'Logo',
@@ -443,7 +362,13 @@ const onSearch = debounce(async (query) => {
     const handleSelectChange = (value) => {
         setSelectedOption(value);
     };
+    const handleClientStatusChange = (value) => {
+      setClientStatusFilter(value);
+  };
 
+  const handleFinancierStatusChange = (value) => {
+      setFinancierStatusFilter(value);
+  };
     const toggleMatricule = (value) => {
         setIsMatriculeEnabled(value === 'morale');
     };
@@ -745,46 +670,46 @@ const onSearch = debounce(async (query) => {
             <div style={{ clear: 'both' }}>
                 <Tabs activeKey={activeTabKey} onChange={onTabChange}  >
                     <TabPane tab="Clients" key="Clients">
-                    <Select defaultValue="all" style={{ width: 200, marginBottom: 20 }} onChange={handleClientTypeChange}>
+                  
+                    <Select defaultValue="all" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
                             <Option value="all">All</Option>
                             <Option value="morale">Moral</Option>
                             <Option value="physique">Physical</Option>
                          
                         </Select>
-                        <br/>
+                        <Select defaultValue="all" style={{ width: 150, marginBottom: 20,marginLeft:'10px' }} onChange={handleClientStatusChange}>
+                            <Option value="all">All</Option>
+                            <Option value="activated">Activated</Option>
+                            <Option value="inactivated">Inactivated</Option>
+                        </Select>
+                
                       
-                        <Space
-                            align="center"
-                            style={{
-                                marginBottom: 16,
-                            }}
-                        >
-                            <Switch
-                                checked={checkStrictly}
-                                onChange={handleSwitchChange}
-                            />
-                            <span>{checkStrictly ? "Activated" : "Inactivated"}</span>
-                        </Space>
-                    <Table
-  dataSource={clientTypeFilter === 'all' ? clients : clients.filter(client => client.type === clientTypeFilter)}
-  columns={columnsClient}
-  pagination={{ pageSize: 12 }}
-  loading={loading}
+                        <Table
+    dataSource={
+        clientTypeFilter === 'all'
+            ? clients.filter(client => client.status === (clientStatusFilter === 'all' ? client.status : clientStatusFilter === 'activated'))
+            : clients.filter(client => client.type === clientTypeFilter && client.status === (clientStatusFilter === 'all' ? client.status : clientStatusFilter === 'activated'))
+    }
+    columns={columnsClient}
+    pagination={{ pageSize: 12 }}
+    loading={loading}
 />
 
                     </TabPane>
                     <TabPane tab="Financiers" key="Financiers">
-                    <Space style={{ marginBottom: 16 }}>
-                            <Switch checked={checkStrictly} onChange={handleSwitchChange} />
-                            <span>{checkStrictly ? "Activated" : "Inactivated"}</span>
-                        </Space>
-                        <Table 
-                            dataSource={financiers}
-                            columns={columnsFinancier}
-                            pagination={{ pageSize: 12 }}
-                            loading={loading}
-                      
-                        />
+                        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleFinancierStatusChange}>
+                            <Option value="all">All</Option>
+                            <Option value="activated">Activated</Option>
+                            <Option value="inactivated">Inactivated</Option>
+                        </Select>
+                        <Table
+    dataSource={
+        financierStatusFilter === 'all' ? financiers : financiers.filter(financier => financier.status === (financierStatusFilter === 'activated'))
+    }
+    columns={columnsFinancier}
+    pagination={{ pageSize: 12 }}
+    loading={loading}
+/>
                     </TabPane>
                 </Tabs>
             </div>
