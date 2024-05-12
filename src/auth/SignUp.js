@@ -52,75 +52,75 @@ const SignUp = () => {
         const phoneNumberPattern = /^\+?[1-9]\d{1,14}$/;
         return phoneNumberPattern.test(phoneNumber);
     };
-
     const onFinish = async (values) => {
-        try {
-          const {
-            fullname,
-            email,
-            password,
-            country,
-            num_phone,
-            address,
-            code_postal,
-            matricule,
-          } = values;
-    
+      try {
+          const { fullname, email, password, country, num_phone, address, code_postal, matricule } = values;
+
           // Formater le numéro de téléphone
           const formattedPhoneNumber = `+${num_phone.replace(/\s/g, '')}`;
-    
+
           const postData = {
-            fullname,
-            email,
-            password,
-            country: country.label,
-            num_phone: formattedPhoneNumber,
-            address,
-            code_postal,
-            roles: ['CLIENT'],
-            matricule_fiscale: clientType === 'Client Morale' ? matricule : undefined,
+              fullname,
+              email, // Ajout de l'email
+              password,
+              country: country.label,
+              num_phone: formattedPhoneNumber,
+              address,
+              code_postal,
+              roles: ['CLIENT'],
+              matricule_fiscale: clientType === 'Client Morale' ? matricule : undefined,
           };
-    
+
+          // Envoi des données d'inscription à votre backend
           const response = await fetch('http://localhost:5000/auth/signupclient', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(postData),
-            credentials: 'include', // pour les cookies et les sessions
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(postData),
+              credentials: 'include', // pour les cookies et les sessions
           });
-    
+
           const responseData = await response.json();
-    
+
           if (response.ok) {
-            // Si tout est correct
-            message.success('Utilisateur créé avec succès');
-            setTimeout(() => {
-              navigate('/Client');
-            }, 3000); // Naviguer après 3 secondes
+              // Demander le code de création de compte à l'API NestJS
+              const responseCode = await fetch('http://localhost:5000/auth/request-code-signup', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email }), // Envoyer l'email de l'utilisateur
+              });
+
+              if (responseCode.ok) {
+                  message.success('Utilisateur créé avec succès. Code de création de compte envoyé !');
+              } else {
+                  message.error('Échec de l\'envoi du code de création de compte.');
+              }
+
+              // Naviguer après la création du compte
+              setTimeout(() => {
+                navigate('/SendcodeAuth?email=' + email); // Passer l'e-mail comme paramètre dans l'URL
+            }, 3000);
           } else {
-            // Gérer les erreurs spécifiques
-            if (response.status === 409) {
-              // Conflit, comme un email déjà existant
-              message.error('L\'email existe déjà');
-            } else if (response.status === 400) {
-              // Erreur de validation
-              message.error(`Erreur de validation: ${responseData.message}`);
-            } else {
-              // Autres erreurs
-              message.error('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial');
-            }
-            // Effacer le message d'erreur après un certain temps
-            setTimeout(() => message.error(''), 3000);
+              // Gérer les erreurs
+              if (response.status === 409) {
+                  message.error('L\'email existe déjà');
+              } else if (response.status === 400) {
+                  message.error(`Erreur de validation: ${responseData.message}`);
+              } else {
+                  message.error('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial');
+              }
+              setTimeout(() => message.error(''), 3000);
           }
-        } catch (error) {
-          // Gestion des exceptions non prévues
+      } catch (error) {
           console.error('Une erreur s\'est produite', error);
           message.error('Une erreur s\'est produite');
           setTimeout(() => message.error(''), 3000);
-        }
-      };
-  
+      }
+  };
+
       const countryOptions = countryList().getData();
     const handleClientTypeChange = (value) => {
         setClientType(value);

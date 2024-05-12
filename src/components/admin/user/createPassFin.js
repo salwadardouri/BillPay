@@ -21,24 +21,31 @@ function CreatePassword() {
           token, // Envoyer le token avec la requête
         }),
       });
-
-      if (!response.ok) {
+  
+      if (response.ok) {
+        message.success('Password reset successful');
+        setTimeout(() => {
+          window.location.href = '/SignIn'; // Redirection après succès
+        }, 3000);
+      } else {
         const errorData = await response.json();
-        throw new Error(errorData.message);
+        console.error('Server error:', errorData.message); // Afficher l'erreur dans la console
+  
+        if (response.status === 400) {
+          message.error(errorData.message); // Affiche le message d'erreur sur l'interface utilisateur
+        } else if (response.status === 404) {
+          message.error('Client not found.'); // Message d'erreur spécifique pour le client introuvable
+        } else {
+          message.error('An unexpected error occurred.'); // Message d'erreur générique pour les autres erreurs
+        }
       }
-
-      message.success('Password created successful');
-      setTimeout(() => {
-        window.location.href = '/SignIn'; // Redirection
-      }, 3000);
     } catch (error) {
-      console.error('Error:', error);
-      message.error(error.message || 'The password should be strong');
+      console.error('An error occurred', error);
+      message.error('An error occurred while trying to reset the password.'); // Affiche un message d'erreur générique si une exception est levée
     } finally {
-      setLoading(false);
+      setLoading(false); // Désactiver le chargement à la fin, réussie ou échouée
     }
   };
-
   return (
     <div  className="media" style={{ backgroundColor:'#EEEEEE',minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
