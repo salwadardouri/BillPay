@@ -6,6 +6,7 @@ import Logo from "../../images/Logo.png";
 import Bill from "../../images/Bill4.png"; 
 import User from './user/User';
 import ServiceList from './Services/ServiceList';
+import FactureList from './Facture/FactureList';
 import BasicInformation from './Parametre/BasicInformation';
 import Categories from './Parametre/Categories';
 import Tax from './Parametre/TaxVisto';
@@ -27,6 +28,8 @@ const DashAdmin = () => {
         return <User />;
       case 'Services':
         return <ServiceList />;
+        case 'Factures':
+          return <FactureList />;
       case 'BasicInformation':
         return <BasicInformation />;
       case 'Categories':
@@ -67,6 +70,20 @@ const DashAdmin = () => {
       }}
     >
       Services
+    </div>
+    },
+    {
+      key: 'Factures',
+      label:    <div
+      onClick={() => onClickMenuItem('Factures')}
+      style={{
+        color: selectedMenuKey === 'Factures' ? 'white' : '#B5C0D0',
+        fontFamily: 'sans-serif',
+        fontSize: '15px',
+        background: selectedMenuKey === 'Factures' ? 'transparent' : 'transparent',
+      }}
+    >
+     Factures
     </div>
     },
     {

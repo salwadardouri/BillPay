@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Drawer, Form, Input, Row, Col, Space, Alert, Select, InputNumber,message, Table, Popconfirm} from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import { debounce } from 'lodash';//pour search pro 
+const { Search } = Input;
 const { Option } = Select;
 
 const ServiceList = () => {
@@ -10,17 +11,13 @@ const ServiceList = () => {
   const [form] = Form.useForm();
   const [successAlert, setSuccessAlert] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
-  const [clients, setClients] = useState([]);
-  const [tvaList, setTvaList] = useState([]);
+  const [searchText, setSearchText] = useState(''); 
+
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);  
   const [devise, setDevise] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [quantite, setQuantite] = useState(0);
-  const [prix_unitaire, setPrixUnitaire] = useState(0);
-  const [montant_HT, setMontant_HT] = useState(0);
-  const [montant_TTC, setMontant_TTC] = useState(0);
-  const [selectedTVA, setSelectedTVA] = useState(null);
+
   const [editRecord, setEditRecord] = useState(null);
 
   const fetchServices = async () => {
@@ -34,22 +31,8 @@ const ServiceList = () => {
       setLoading(false);
     }
   };
-  const fetchClients = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/clients');
-      setClients(response.data);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    }
-  };
-  const fetchTvaList = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/tva');
-      setTvaList(response.data);
-    } catch (error) {
-      console.error('Error fetching TVA:', error);
-    }
-  };
+
+
   const fetchDevise = async () => {
     try {
       const response = await axios.get('http://localhost:5000/devise');
@@ -69,19 +52,10 @@ const ServiceList = () => {
   useEffect(() => {
     fetchDevise();
     fetchCategories();
-    fetchClients();
-    fetchTvaList();
+
     fetchServices();
   }, []);
-  useEffect(() => {
-    if (clients.length > 0) {
-       // eslint-disable-next-line
-      const clientOptions = clients.map((client) => ({
-        label: client.fullname,
-        value: client._id,
-      }));
-    }
-  }, [clients]); 
+
   const showDrawer = () => setDrawerVisible(true);
 
   const onCloseDrawer = () => {
@@ -108,40 +82,9 @@ const ServiceList = () => {
     }
   };
 
-  const handleQuantiteChange = (value) => {
-    setQuantite(value);
-    calculateMontantHT(value, prix_unitaire);
-  };
 
-  const handlePrixUnitaireChange = (value) => {
-    setPrixUnitaire(value);
-    calculateMontantHT(quantite, value);
-  };
-  
-  const calculateMontantHT = (quantite, prix_unitaire) => {
-    const montant_HT = quantite * prix_unitaire;
-    setMontant_HT(montant_HT);
-    calculateMontantTTC(montant_HT, selectedTVA); // Mettre à jour le montant TTC lors du changement du montant HT
-    form.setFieldsValue({ montant_HT: montant_HT })// Mettre à jour la valeur dans le formulaire
 
-  };
- 
-  const calculateMontantTTC = (montant_HT, tva) => {
-    if (tva) {
-      let pourcent_TVA = parseFloat(tva.slice(0, -1)); // Enlever le dernier caractère (si besoin)
-      const montant_TTC = montant_HT * (1 + pourcent_TVA / 100);
-      setMontant_TTC(montant_TTC);
-      form.setFieldsValue({ montant_TTC });
-    }
-  };
-// eslint-disable-next-line
-const handleTVAChange = (value) => {
-  const tva = tvaList.find(tva => tva._id === value);
-  if (tva) {
-    setSelectedTVA(tva.Pourcent_TVA);
-    calculateMontantTTC(montant_HT, tva.Pourcent_TVA);
-  }
-};
+
 
 const handleFormSubmit = async (values) => {
   if (editRecord) { // Si nous sommes en mode édition
@@ -155,15 +98,14 @@ const handleEdit = (record) => {
   setEditRecord(record);
 
   form.setFieldsValue({
-    clientId: record.client?._id,
+
     deviseId: record.devise?._id,
-    tvaId: record.tva?._id,
+ 
     categoriesId: record.categories?._id,
     libelle: record.libelle,
-    quantite: record.quantite,
+    reference: record.reference,
     prix_unitaire: record.prix_unitaire,
-    montant_HT: record.montant_HT,
-    montant_TTC: record.montant_TTC,
+
   });
 
 
@@ -185,6 +127,27 @@ const updateRecord = async (values) => {
     console.error('Error updating service:', error);
   }
 };
+const onSearch = debounce(async (query) => {
+  setLoading(true);
+  try {
+    if (query.trim() === '') {
+      // Si le champ de recherche est vide, rechargez toutes les catégories
+      fetchServices();
+      fetchCategories();
+      fetchDevise();
+    } else {
+      // Recherche des catégories avec la clé de recherche
+      const response = await axios.post(`http://localhost:5000/services/search?key=${query}`);
+      setDevise(response.data);
+      setCategories(response.data);
+      setServices(response.data); // Met à jour les données de la table avec les résultats de recherche
+    }
+  } catch (error) {
+    message.error('Error during search');
+  } finally {
+    setLoading(false);
+  }
+}, 300); // Debouncing de 300 ms pour réduire les appels API
 
 
   const columns = [
@@ -214,11 +177,7 @@ const updateRecord = async (values) => {
       dataIndex: 'libelle',
       key: 'libelle',
     },
-    {
-      title: 'Quantity',
-      dataIndex: 'quantite',
-      key: 'quantite',
-    },
+ 
 
     {
       title: 'Unit Price',
@@ -232,36 +191,10 @@ const updateRecord = async (values) => {
   
     },
 
-    {
-      title: 'Client',
-      key: 'client_fullname',
-      render: (record) => (
-        <div>
-          <span>{record.client.fullname}</span>
-          <br />
-          <span style={{ color: 'gray' }}>{record.client.email}</span>
-        </div>
-      ),
-    },
-
-    {
-      title: 'TVA',
-      dataIndex: ['tva', 'Pourcent_TVA'],
-      key: 'tva_Pourcent_TVA',
-    },
  
-    {
-      title: 'montant_HT',
-      dataIndex: 'montant_HT',
-      key: 'montant_HT',
-  
-    },
-    {
-      title: 'montant_TTC',
-      dataIndex: 'montant_TTC',
-      key: 'montant_TTC',
-  
-    },
+
+ 
+
     {
       title: 'Actions',
       render: (_, record) => (
@@ -308,6 +241,16 @@ const updateRecord = async (values) => {
       <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />} style={{ float: 'right' ,backgroundColor:'#022452' }}>
         New service
       </Button>
+      <Search
+        placeholder="Search "
+        value={searchText}
+        onChange={(e) => {
+          const text = e.target.value;
+          setSearchText(text);
+          onSearch(text);
+        }}
+        style={{ maxWidth: 780, marginBottom: 20 }}
+      />
 
       <Drawer
         title={editRecord ? 'Edit service' : 'Create a new service'} 
@@ -327,29 +270,24 @@ const updateRecord = async (values) => {
         {errorAlert && <Alert message="Error" description="Failed to create the service. Please try again later." type="error" showIcon />}
         
         <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-           <Row gutter={[16, 16]}>
-     <Col span={12} style={{ marginBottom: '16px' }}>   
+
+        <Col span={12} style={{ marginBottom: '16px' }}>      
        <Form.Item
-                name="clientId"
-                label="Client"
-                rules={[{ required: true, message: 'Please select a client!' }]}
-              >
-                <Select placeholder="Select a client"
-               
-               style={{ height: '60px' }}>
-                  {clients.map(client => (
-                    <Option key={client._id} value={client._id} >
-                          <div style={{ padding: '10px 0' }}>
-                <span>{client.fullname}</span>
-                <br />
-                <span style={{ fontSize: '0.9em', color: 'gray' }}>{client.email}</span>
-              </div></Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              
-            </Col>
-            </Row>
+  name="reference"
+  label="Reference"
+  // Vous pouvez ajouter d'autres règles de validation au besoin
+  rules={[
+    { 
+      required: editRecord, 
+      message: 'Please input the reference!' 
+    }
+  ]}
+  style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est pas nécessaire
+>
+  <Input placeholder="Enter the reference" />
+</Form.Item>
+
+        </Col>
         <Row gutter={[16, 16]}>
         <Col span={12} style={{ marginBottom: '16px' }}>      
               <Form.Item
@@ -382,19 +320,7 @@ const updateRecord = async (values) => {
          </Col>
          </Row>
          <Row gutter={[16, 16]}>
-         <Col span={12} style={{ marginBottom: '16px' }}>      
-             <Form.Item
-              name="quantite"
-              label="Quantity"
-               rules={[{ required: true, message: 'Please input the quantity!' }]}>
-                  <InputNumber
-                  style={{ width: '100%' }}
-                
-                  placeholder="Enter the quantity"
-                  onChange={handleQuantiteChange}
-                  />
-              </Form.Item>
-        </Col>
+
         <Col span={12} style={{ marginBottom: '16px' }}>
               <Form.Item
               name="prix_unitaire"
@@ -403,35 +329,12 @@ const updateRecord = async (values) => {
                 <InputNumber
                 style={{ width: '100%' }}
                 placeholder="Enter the unit price"
-                onChange={handlePrixUnitaireChange}
+           
              
                      />
                </Form.Item>
      </Col>
-     </Row>
-     
-    <Row gutter={[16, 16]}>
-    <Col span={12} style={{ marginBottom: '16px' }}>       
-    
-        
-    <Form.Item
-                name="tvaId"
-                label="TVA"
-                rules={[{ required: true, message: 'Please select a TVA' }]}
-              >
-                <Select placeholder="Select a TVA"
-               
-                 onChange={handleTVAChange}  // Relier l'événement `onChange` à `handleTVAChange`
-                 >
-                  {tvaList.map(tva => (
-                    <Option key={tva._id} value={tva._id}>{tva.Pourcent_TVA}</Option>
-                  ))}
-                </Select>
-              </Form.Item>  
-    
-    
-    
-    </Col>
+
     <Col span={12} style={{ marginBottom: '16px' }}><Form.Item
                 name="categoriesId"
                 label="Categories"
@@ -444,38 +347,7 @@ const updateRecord = async (values) => {
                 </Select>
               </Form.Item> </Col>
     </Row>
-    <Row gutter={[16, 16]}>
-     <Col span={12} style={{ marginBottom: '16px' }}>    
-     <Form.Item
-  name="montant_HT"
-  label="Montant HT"
-  rules={[{ required: true, message: 'Please input the Montant_HT!' }]}
->
-  <InputNumber
-    style={{ width: '100%',border: 'none'  }}
-  
-    value={montant_HT}
-    onChange={(value) => setMontant_HT(value)} 
-    readOnly
-  />
-</Form.Item>         
-            </Col>
-            <Col span={12} style={{ marginBottom: '16px' }}>
-            <Form.Item
-                name="montant_TTC"
-                label="Montant TTC"
-                rules={[{ required: true, message: 'Please input the Montant TTC!' }]}>
-                <InputNumber
-                  style={{ width: '100%',border: 'none' }}
-                  value={montant_TTC}
-               
-                  onChange={(value) => setMontant_TTC(value)}
-                  readOnly
-                />
-              </Form.Item>
-            </Col>
-      
-    </Row>
+
             
 
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Button, Tabs, Modal, Form, Input, Space, message, Col, Row } from 'antd';
+import { Table, Popconfirm, Button, Tabs, Modal, Form,  Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
 import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
 const { TabPane } = Tabs;
-
+const { Option } = Select;
 const TaxVisto = () => {
   const [tvaData, setTvaData] = useState([]);
   const [timbreData, setTimbreData] = useState([]);
@@ -15,11 +15,21 @@ const TaxVisto = () => {
   const [editRecord, setEditRecord] = useState(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState(''); 
+  const [devise, setDevise] = useState([]);
 
   useEffect(() => {
     fetchData();
+    fetchDevise();
   }, []);
 
+  const fetchDevise = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/devise');
+      setDevise(response.data);
+    } catch (error) {
+      console.error('Error fetching Devise:', error);
+    }
+  };
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -69,6 +79,8 @@ const TaxVisto = () => {
     }
   };
 
+  
+
   const deleteRecord = async (record) => {
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
     try {
@@ -83,7 +95,11 @@ const TaxVisto = () => {
   const handleEditRecord = (record) => {
     setEditRecord(record);
     setModalVisible(true);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      
+      Valeur:record.Valeur,
+      deviseId: record.devise?._id,
+    });
   };
 
   const handleModalClose = () => {
@@ -118,7 +134,12 @@ const TaxVisto = () => {
 
   const columns = {
     Tva: [
-      { title: 'Pourcent_TVA', dataIndex: 'Pourcent_TVA', key: 'Pourcent_TVA' },
+      { 
+        title: 'Pourcent_TVA', 
+        dataIndex: 'Pourcent_TVA', 
+        key: 'Pourcent_TVA', 
+        render: (pourcentTva) => `${pourcentTva}%`, // Ajout du symbole '%' à côté de la valeur
+      },
       {
         title: 'Actions',
         render: (_, record) => (
@@ -138,6 +159,12 @@ const TaxVisto = () => {
     ],
     Timbre: [
       { title: 'Valeur', dataIndex: 'Valeur', key: 'Valeur' },
+      {
+        title: 'Devise',
+        dataIndex: ['devise', 'Symbole'],
+        key: 'devise_Symbole',
+    
+      },
       {
         title: 'Actions',
         render: (_, record) => (
@@ -187,43 +214,73 @@ const TaxVisto = () => {
         </TabPane>
       </Tabs>
       <Modal
-        title={editRecord ? 'Edit Record' : 'Create New Record'}
-        visible={modalVisible}
-        onCancel={handleModalClose}
-        footer={null}
-      >
-        <Form form={form} onFinish={handleFormSubmit}>
-          {activeTabKey === 'Tva' && (
-            <Row>
-              <Col>
-                <Form.Item
-                  name="Pourcent_TVA"
-                  rules={[
-                    { required: true, message: 'Please enter the TVA percentage.' },
-                  ]}
-                >
-                  <Input placeholder="TVA percentage" />
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-          {activeTabKey === 'Timbre' && (
-            <Form.Item
-              name="Valeur"
-              rules={[
-                { required: true, message: 'Please enter the stamp value.' },
-              ]}
-            >
-              <Input placeholder="Stamp value" />
-            </Form.Item>
-          )}
-          <Form.Item>
-            <Button type="primary" htmlType="submit"style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}>
-              {editRecord ? 'Update' : 'Create'}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+  title={editRecord ? 'Edit Record' : 'Create New Record'}
+  visible={modalVisible}
+  onCancel={handleModalClose}
+  footer={null}
+>
+  <Form form={form} onFinish={handleFormSubmit}>
+    {activeTabKey === 'Tva' && (
+      <Row>
+  <Col>
+    <Form.Item
+      name="Pourcent_TVA"
+      rules={[
+        { required: true, message: 'Please enter the TVA percentage.' },
+        { type: 'number', message: 'TVA percentage must be a number.' }, // Ajout de la règle pour s'assurer que la valeur est un nombre
+      ]}
+    >
+      <Input.Group compact>
+        <InputNumber 
+        name="Pourcent_TVA"
+          style={{ width: '90%' }} // Ajustez la largeur selon vos besoins
+          placeholder="TVA percentage" 
+        />
+        <span style={{ marginLeft: '8px' }}>%</span> {/* Ajout du symbole % */}
+      </Input.Group>
+    </Form.Item>
+  </Col>
+</Row>
+
+    )}
+    {activeTabKey === 'Timbre' && (
+      <>
+        <Form.Item
+          name="Valeur"
+          rules={[
+            { required: true, message: 'Please enter the stamp value.' },
+            { type: 'number', message: 'Stamp value must be a number.' }, // Ajout de la règle pour s'assurer que la valeur est un nombre
+          ]}
+        >
+          <InputNumber placeholder="Stamp value" />
+        </Form.Item>
+        <Form.Item
+          name="deviseId"
+          label="Devise"
+          rules={[{ required: true, message: 'Please select a Devise' }]}
+        >
+          <Select  name="deviseId" placeholder="Select a Devise">
+            {devise.map(devise => (
+              <Option key={devise._id} value={devise._id}>
+                <div>
+                  <span>
+                    {devise.Nom_D} ({devise.Symbole})
+                  </span>
+                </div>
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </>
+    )}
+    <Form.Item>
+      <Button type="primary" htmlType="submit" style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}>
+        {editRecord ? 'Update' : 'Create'}
+      </Button>
+    </Form.Item>
+  </Form>
+</Modal>
+
     </div>
   );
 };
