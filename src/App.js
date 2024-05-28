@@ -9,6 +9,7 @@ import ResetPassword from './auth/ResetPassword';
 import ForgotPassword from './auth/ForgotPassword';
 import SendcodeAuth from './auth/SendcodeAuth';
 import AccueilClient from './components/client/AccueilClient';
+import DevisAjout from './components/client/Devis/DevisAjout';
 import DashFinancier from './components/financier/DashFinancier';
 import DashAdmin from './components/admin/DashAdmin';
 import User from './components/admin/user/User';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/ForgotPassword" element={<ForgotPassword/>} />
           <Route path="/SendcodeAuth" element={<SendcodeAuth/>} />
           <Route path="/Client" element={<AccueilClient/>} /> 
+          <Route path="/Client/Devis" element={<DevisAjout/>} /> 
           <Route path="/DashAdmin" element={<DashAdmin/>} />
           <Route path="/DashFinancier" element={<DashFinancier/>} />
           <Route path="/Users" element={<User/>} />

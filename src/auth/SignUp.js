@@ -54,73 +54,75 @@ const SignUp = () => {
     };
     const onFinish = async (values) => {
       try {
-          const { fullname, email, password, country, num_phone, address, code_postal, matricule } = values;
-
-          // Formater le numéro de téléphone
-          const formattedPhoneNumber = `+${num_phone.replace(/\s/g, '')}`;
-
-          const postData = {
-              fullname,
-              email, // Ajout de l'email
-              password,
-              country: country.label,
-              num_phone: formattedPhoneNumber,
-              address,
-              code_postal,
-              roles: ['CLIENT'],
-              matricule_fiscale: clientType === 'Client Morale' ? matricule : undefined,
-          };
-
-          // Envoi des données d'inscription à votre backend
-          const response = await fetch('http://localhost:5000/auth/signupclient', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(postData),
-              credentials: 'include', // pour les cookies et les sessions
+        const { fullname, email, password, country, num_phone, address, code_postal, matricule } = values;
+    
+        // Formater le numéro de téléphone
+        const formattedPhoneNumber = `+${num_phone.replace(/\s/g, '')}`;
+    
+        const postData = {
+          fullname,
+          email, // Ajout de l'email
+          password,
+          country: country.label,
+          num_phone: formattedPhoneNumber,
+          address,
+          code_postal,
+          roles: ['CLIENT'],
+          matricule_fiscale: clientType === 'Client Morale' ? matricule : undefined,
+        };
+    
+        // Envoi des données d'inscription à votre backend
+        const response = await fetch('http://localhost:5000/auth/signupclient', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(postData),
+          credentials: 'include', // pour les cookies et les sessions
+        });
+    
+        const responseData = await response.json();
+    
+        if (response.ok) {
+          // Demander le code de création de compte à l'API NestJS
+          const resetPasswordResponse = await fetch('http://localhost:5000/auth/reset-password-request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }), // Envoyer l'email de l'utilisateur
           });
-
-          const responseData = await response.json();
-
-          if (response.ok) {
-              // Demander le code de création de compte à l'API NestJS
-              const responseCode = await fetch('http://localhost:5000/auth/request-code-signup', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ email }), // Envoyer l'email de l'utilisateur
-              });
-
-              if (responseCode.ok) {
-                  message.success('Utilisateur créé avec succès. Code de création de compte envoyé !');
-              } else {
-                  message.error('Échec de l\'envoi du code de création de compte.');
-              }
-
-              // Naviguer après la création du compte
-              setTimeout(() => {
-                navigate('/SendcodeAuth?email=' + email); // Passer l'e-mail comme paramètre dans l'URL
-            }, 3000);
+    
+          const resetPasswordData = await resetPasswordResponse.json();
+    
+          if (resetPasswordResponse.ok) {
+            message.success('Utilisateur créé avec succès. Code de création de compte envoyé !');
+    
+            // Naviguer après la création du compte
+            setTimeout(() => {
+              navigate(`/SendcodeAuth?email=${email}&resetCodeExpiration=${resetPasswordData.resetCodeExpiration}`);
+            }, 4000);
           } else {
-              // Gérer les erreurs
-              if (response.status === 409) {
-                  message.error('L\'email existe déjà');
-              } else if (response.status === 400) {
-                  message.error(`Erreur de validation: ${responseData.message}`);
-              } else {
-                  message.error('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial');
-              }
-              setTimeout(() => message.error(''), 3000);
+            message.error('Échec de l\'envoi du code de création de compte.');
           }
-      } catch (error) {
-          console.error('Une erreur s\'est produite', error);
-          message.error('Une erreur s\'est produite');
+        } else {
+          // Gérer les erreurs
+          if (response.status === 409) {
+            message.error('L\'email existe déjà');
+          } else if (response.status === 400) {
+            message.error(`Erreur de validation: ${responseData.message}`);
+          } else {
+            message.error('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial');
+          }
           setTimeout(() => message.error(''), 3000);
+        }
+      } catch (error) {
+        console.error('Une erreur s\'est produite', error);
+        message.error('Une erreur s\'est produite');
+        setTimeout(() => message.error(''), 3000);
       }
-  };
-
+    };
+    
       const countryOptions = countryList().getData();
     const handleClientTypeChange = (value) => {
         setClientType(value);
@@ -128,7 +130,7 @@ const SignUp = () => {
 
     return (
         <div  className="media"  style={{ 
-            backgroundColor: '#AAB8FD', 
+            backgroundColor: '#EEEEEE', 
             minHeight: '100vh', // Ensure the background color fills the viewport
         
       
@@ -159,9 +161,12 @@ const SignUp = () => {
               
                         <h2>Create New Account !</h2>
                         <p style={{ color: 'grey' }}>Get your free BillPayVisto account now </p>
+               <br/>  <p style={{color:'#004AAD' ,textAlign: 'justify' , marginLeft:'30px', marginRight:'70px'}}>The password should be a minimum of 6 characters. To make it stronger, use both uppercase and lowercase letters, numbers, and symbols such as ! ? $ ù % @ | &  </p>
                     </div>
-                    <div style={{ marginTop: '30px' }}>
+                    <div style={{ marginTop: '10px' }}>
+                
 
+                
                     <Form
     form={form}
     name="basic"

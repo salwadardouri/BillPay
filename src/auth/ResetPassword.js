@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, Form, Input, Space, Alert, message ,Col } from 'antd';
+import { Card, Button, Typography, Form, Input, Space, Alert, message  } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './media.css'; 
 import SignInImage from '../images/password.jpg';
@@ -249,9 +249,9 @@ const ResetPassword = () => {
  
    
     <div style={{ float: 'left', textAlign: 'left', width: '50%', marginTop: '10px' }}>
-    <Col span={20}   style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px',  marginLeft:'30px', fontFamily: 'Inter',backgroundColor:'#FFF67E' , textAlign:'justify'}}>
-<span style={{marginLeft:'20px' , marginRight:'20px'}}>The password should be a <span style={{color:'red'}}> minimum of 6 characters </span>. To make it stronger, use both uppercase and lowercase letters, numbers, and symbols such as <span style={{color:'red '}}>! ? $ ù % @ | &  </span>
-</span></Col>  
+    <div style={{ fontFamily: 'cursive', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>
+    <p style={{color:'#004AAD' ,textAlign: 'justify' , marginLeft:'30px', marginRight:'70px'}}>The password should be a minimum of 6 characters. To make it stronger, use both uppercase and lowercase letters, numbers, and symbols such as ! ? $ ù % @ | &  </p>
+</div>
 
 <div  style={{ marginTop: '40px' }}>
               <Form onFinish={handleResetPasswordSubmit} style={{

@@ -38,7 +38,7 @@ const ForgotPassword = () => {
     
         if (response.ok) {
           console.log('Reset password request successful', responseData);
-          message.success('Please check your inbox for an email containing a link to reset your password. Click on the link to access the password reset interface');
+          message.success('Please check your inbox for an email containing a code to reset your password. Click on the link to access the password reset interface');
           setTimeout(() => {
             navigate(`/ResetPassword?email=${email}&resetCodeExpiration=${responseData.resetCodeExpiration}`);
           }, 4000);
@@ -61,7 +61,7 @@ const ForgotPassword = () => {
     };
   return (
 <div  className="media"  style={{ 
-      backgroundColor: '#AAB8FD', 
+       backgroundColor: '#EEEEEE',
       minHeight: '100vh', // Ensure the background color fills the viewport 
      }}>
       <div style={{paddingTop: '10px'}} >
@@ -95,10 +95,9 @@ const ForgotPassword = () => {
     
  
     </div>
-
-
-    <div style={{marginLeft:'30px', marginRight:'40px', fontFamily:'Poppins',textAlign:'justify', color:'#004AAD', fontSize:'15px'}}>Enter Your Mail Send Code Your Mail Please Check And Varify If Your Mail Before Account Create You Have A Code Inbox. Create Code  & Your New Password  !</div>
-   <div  style={{ marginTop: '30px' }}>
+    <div style={{ fontFamily: 'cursive', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>
+    <p style={{color:'#004AAD' ,textAlign: 'justify' , marginLeft:'30px', marginRight:'70px'}}>Enter Your Mail Send Code Your Mail Please Check And Varify If Your Mail Before Account Create You Have A Code Inbox. Create Code  & Your New Password  !s </p>
+    </div> <div  style={{ marginTop: '30px' }}>
  
 <Form 
  name="basic"

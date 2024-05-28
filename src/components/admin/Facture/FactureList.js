@@ -178,8 +178,8 @@ const FactureList = () => {
   };
   
 
-  const calculateMontantHT = (quantite, prix_unitaire) => {
-    const montant_HT = quantite * prix_unitaire; // Calculer le montant_HT en fonction de la quantité et du prix unitaire
+  const calculateMontantHT = (quantite, prix_unitaire,remise) => {
+    const montant_HT = (quantite * prix_unitaire); 
     setMontant_HT(montant_HT);
     calculateMontantTTC(montant_HT, selectedTVA);
     form.setFieldsValue({ montant_HT: montant_HT });

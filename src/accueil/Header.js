@@ -25,6 +25,12 @@ const Header = () => {
             SignIn
           </Button>
         </Link>
+        <Link to="/SignUp">
+          {/* Rediriger vers /SignIn au lieu de /signup */}
+          <Button type="link" style={{ color: '#022452', fontSize: '1rem' ,marginTop:"1px" ,fontFamily: 'cursive',cursor: 'pointer'}}>
+            SignUp
+          </Button>
+        </Link>
         <Link to="/">
           {/* Rediriger vers /SignIn au lieu de /signup */}
           <Button type="link" style={{ color: '#022452', fontSize: '1rem' ,marginTop:"1px",fontFamily: 'cursive',cursor: 'pointer' }}>

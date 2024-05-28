@@ -7,6 +7,8 @@ import Bill from "../../images/Bill4.png";
 import User from './user/User';
 import ServiceList from './Services/ServiceList';
 import FactureList from './Facture/FactureList';
+import DevisList from './Devis/DevisList';
+import CreateInvoice from './Facture/CreateInvoice';
 import BasicInformation from './Parametre/BasicInformation';
 import Categories from './Parametre/Categories';
 import Tax from './Parametre/TaxVisto';
@@ -26,14 +28,19 @@ const DashAdmin = () => {
     switch (selectedMenuKey) {
       case 'User':
         return <User />;
+        case 'Devis':
+          return <DevisList />;
+        case 'Categories':
+          return <Categories />;
       case 'Services':
         return <ServiceList />;
         case 'Factures':
           return <FactureList />;
+          case 'Facture':
+            return <CreateInvoice />;
       case 'BasicInformation':
         return <BasicInformation />;
-      case 'Categories':
-        return <Categories />;
+
       case 'Tax':
         return <Tax />;
         case 'DeviseParam':
@@ -59,19 +66,73 @@ const DashAdmin = () => {
     </div>
     },
     {
-      key: 'Services',
-      label:    <div
-      onClick={() => onClickMenuItem('Services')}
+      key: 'Devis',
+      label:   <div
+      onClick={() => onClickMenuItem('Devis')}
       style={{
-        color: selectedMenuKey === 'Services' ? 'white' : '#B5C0D0',
+        color: selectedMenuKey === 'Devis' ? 'white' : '#B5C0D0',
         fontFamily: 'sans-serif',
         fontSize: '15px',
-        background: selectedMenuKey === 'Services' ? 'transparent' : 'transparent',
+        backgroundColor: selectedMenuKey === 'Devis' ? 'transparent' : 'transparent',
+        textShadow: selectedMenuKey === 'Devis' ? '1px 1px 5px rgba(0, 0, 0, 0.3)' : 'none', 
       }}
     >
-      Services
+      Devis
     </div>
     },
+    {
+      key: 'Catalogue',
+      label: (
+        <div
+          onClick={() => onClickMenuItem('Categories')}
+          style={{
+            color: selectedMenuKey === 'Catalogue' ? 'white' : '#B5C0D0',
+            fontFamily: 'sans-serif',
+            fontSize: '15px',
+            background: selectedMenuKey === 'Catalogue' ? 'transparent' : 'transparent',
+          }}
+        >
+         Catalog
+        </div>
+      ),
+      children: [
+       
+        {
+          key: 'Categories',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('Categories')}
+              style={{
+                color: selectedMenuKey === 'Categories' ? 'white' : '#B5C0D0',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                background: selectedMenuKey === 'Categories' ? 'transparent' : 'transparent',
+              }}
+            >
+              Category
+            </div>
+          ),
+        },
+       {
+          key: 'Services',
+          label: (
+            <div
+            onClick={() => onClickMenuItem('Services')}
+            style={{
+              color: selectedMenuKey === 'Services' ? 'white' : '#B5C0D0',
+              fontFamily: 'sans-serif',
+              fontSize: '15px',
+              background: selectedMenuKey === 'Services' ? 'transparent' : 'transparent',
+            }}
+          >
+         Services
+            </div>
+          ),
+        },
+      ],
+    },
+
+    
     {
       key: 'Factures',
       label:    <div
@@ -86,6 +147,23 @@ const DashAdmin = () => {
      Factures
     </div>
     },
+    {
+      key: 'Facture',
+      label:    <div
+      onClick={() => onClickMenuItem('Facture')}
+      style={{
+        color: selectedMenuKey === 'Facture' ? 'white' : '#B5C0D0',
+        fontFamily: 'sans-serif',
+        fontSize: '15px',
+        background: selectedMenuKey === 'Facture' ? 'transparent' : 'transparent',
+      }}
+    >
+     Facture
+    </div>
+    },
+
+
+
     {
       key: 'Settings',
       label: (
@@ -118,22 +196,7 @@ const DashAdmin = () => {
             </div>
           ),
         },
-        {
-          key: 'Categories',
-          label: (
-            <div
-              onClick={() => onClickMenuItem('Categories')}
-              style={{
-                color: selectedMenuKey === 'Categories' ? 'white' : '#B5C0D0',
-                fontFamily: 'sans-serif',
-                fontSize: '15px',
-                background: selectedMenuKey === 'Categories' ? 'transparent' : 'transparent',
-              }}
-            >
-              Category
-            </div>
-          ),
-        },
+
         {
           key: 'Tax',
           label: (
@@ -170,6 +233,19 @@ const DashAdmin = () => {
         },
       ],
     },
+
+
+
+
+
+
+
+
+
+
+
+
+
   ];
   
 

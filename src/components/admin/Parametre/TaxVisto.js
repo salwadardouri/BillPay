@@ -99,6 +99,7 @@ const TaxVisto = () => {
       
       Valeur:record.Valeur,
       deviseId: record.devise?._id,
+      Pourcent_TVA:record.Pourcent_TVA,
     });
   };
 
@@ -225,19 +226,22 @@ const TaxVisto = () => {
   <Col>
     <Form.Item
       name="Pourcent_TVA"
+      label={
+        <span>
+          TVA (%)
+        </span>
+      }
       rules={[
         { required: true, message: 'Please enter the TVA percentage.' },
-        { type: 'number', message: 'TVA percentage must be a number.' }, // Ajout de la règle pour s'assurer que la valeur est un nombre
+  
       ]}
     >
-      <Input.Group compact>
         <InputNumber 
-        name="Pourcent_TVA"
-          style={{ width: '90%' }} // Ajustez la largeur selon vos besoins
+      
+          style={{ width: '100%' }}
           placeholder="TVA percentage" 
         />
-        <span style={{ marginLeft: '8px' }}>%</span> {/* Ajout du symbole % */}
-      </Input.Group>
+
     </Form.Item>
   </Col>
 </Row>
@@ -249,16 +253,17 @@ const TaxVisto = () => {
           name="Valeur"
           rules={[
             { required: true, message: 'Please enter the stamp value.' },
-            { type: 'number', message: 'Stamp value must be a number.' }, // Ajout de la règle pour s'assurer que la valeur est un nombre
+          
           ]}
         >
-          <InputNumber placeholder="Stamp value" />
+   
+          <InputNumber style={{ width: '100%' }} placeholder="Stamp value" />
         </Form.Item>
         <Form.Item
           name="deviseId"
           label="Devise"
           rules={[{ required: true, message: 'Please select a Devise' }]}
-        >
+        >  
           <Select  name="deviseId" placeholder="Select a Devise">
             {devise.map(devise => (
               <Option key={devise._id} value={devise._id}>

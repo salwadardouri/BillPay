@@ -86,7 +86,7 @@ const SignIn = () => {
   return (
 
 <div  className="signin"  style={{ 
-      backgroundColor: '#AAB8FD', 
+      backgroundColor: '#EEEEEE',
       minHeight: '100vh', // Ensure the background color fills the viewport
     }}>
       <div style={{paddingTop: '10px'}} >
