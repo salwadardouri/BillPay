@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Form, Input, Col,Select, Row, Checkbox,message, Modal, Tooltip,Popconfirm, Space,Badge } from 'antd';
+import { Table, Button, Form, Input, Col, Row, message, Modal, Popconfirm, Space } from 'antd';
 import { EditOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -8,7 +8,7 @@ import { components } from 'react-select';
 import ReactSelect from 'react-select';
 import { debounce } from 'lodash';//pour search pro 
 import axios from 'axios';
-const { Option } = Select;
+
 const { Search } = Input;
 const CountryOption = (props) => {
   return (
@@ -35,35 +35,32 @@ const BasicInformation = () => {
   const [searchText, setSearchText] = useState(''); 
   // eslint-disable-next-line
   const [selectedCountry, setSelectedCountry] = useState(null);
-  const [parametreStatusFilter, setParametreStatusFilter] = useState('all');
-  const [status, setStatus] = useState(null);
-  const handleCheckboxChange = (event) => {
-    const { value } = event.target;
-    setStatus(value === 'true');
-  };
-  const handleParametreStatusChange = (value) => {
-    setParametreStatusFilter(value);
-};
+
+
   useEffect(() => {
     fetchData();
-  }, []);
 
-  const fetchData = async () => {
+}, []);
+
+
+const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/parametre');
-      if (response.ok) {
-        const data = await response.json();
-        setData(data);
-      } else {
-        console.error('Failed to fetch data');
-      }
+        const response = await fetch('http://localhost:5000/parametre');
+        if (response.ok) {
+            const data = await response.json();
+            // Filtrer les clients avec status=true
+            const paramWithTrueStatus = data.filter(parametre => parametre.status === true);
+            setData(paramWithTrueStatus);
+        } else {
+            console.error('Failed to fetch parametre');
+        }
     } catch (error) {
-      console.error('Error fetching data:', error);
+        console.error('Error fetching parametre:', error);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
   const handleEdit = (record) => {
     setEditRecord(record);
     setOpen(true);
@@ -78,10 +75,15 @@ const BasicInformation = () => {
     });
   };
 
+
   const handleDelete = async (record) => {
     try {
-      const response = await fetch(`http://localhost:5000/parametre/${record._id}`, {
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:5000/parametre/activated/${record._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' // Ajoutez l'en-tête Content-Type
+        },
+        body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
       });
       if (response.ok) {
         message.success('Data deleted successfully');
@@ -94,7 +96,7 @@ const BasicInformation = () => {
       message.error('Failed to delete data');
     }
   };
-
+  
   const handleFormSubmit = async (values) => {
     if (editRecord) {
       await updateBasicInformation(values);
@@ -103,15 +105,9 @@ const BasicInformation = () => {
     }
   };
 
-  useEffect(() => {
-    if (editRecord) {
-      setStatus(editRecord.status);
-    }
-  }, [editRecord]);
-
   const updateBasicInformation = async (values) => {
     try {
-      const { Nom_S, Email_S, Address_S, Code_Postal_S, Matricule_Fiscale_S, Num_Phone_S,status } = values;
+      const { Nom_S, Email_S, Address_S, Code_Postal_S, Matricule_Fiscale_S, Num_Phone_S } = values;
   
       // Récupérez la valeur du pays du formulaire
       const selectedCountry = form.getFieldValue('Paye_S');
@@ -126,9 +122,9 @@ const BasicInformation = () => {
         Email_S,
         Paye_S: countryLabel,
         Address_S,
-        status,
         Code_Postal_S,
         Matricule_Fiscale_S,
+        status:true,
         Num_Phone_S: formattedPhoneNumber,
       };
   
@@ -153,7 +149,7 @@ const BasicInformation = () => {
       console.error('Error updating data:', error);
     }
   };
-
+  
   
   const handleChangePhoneNumber = (value) => {
     setPhoneNumber(value);
@@ -185,9 +181,9 @@ const BasicInformation = () => {
         Paye_S: countryValue,
         Address_S,
         Code_Postal_S,
-        status:true,
         Matricule_Fiscale_S,
         Num_Phone_S: formattedPhoneNumber,
+        status:true,
       };
   
       const response = await fetch('http://localhost:5000/parametre', {
@@ -231,29 +227,13 @@ const BasicInformation = () => {
 
   
   const columnsVisto = [
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 80,
-      render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
-      ),
-  },
-    { title: 'FullName', dataIndex: 'Nom_S', key: 'Nom_S' , ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Email', dataIndex: 'Email_S', key: 'Email_S', ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
-    { title: 'Country', dataIndex: 'Paye_S', key: 'Paye_S' , ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Address', dataIndex: 'Address_S', key: 'Address_S' , ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Phone number', dataIndex: 'Num_Phone_S', key: 'Num_Phone_S', ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
-    { title: 'Postal code', dataIndex: 'Code_Postal_S', key: 'Code_Postal_S' , ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Tax identification number', dataIndex: 'Matricule_Fiscale_S', key: 'Matricule_Fiscale_S' , ellipsis: true,
-    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
+    { title: 'FullName', dataIndex: 'Nom_S', key: 'Nom_S' },
+    { title: 'Email', dataIndex: 'Email_S', key: 'Email_S' },
+    { title: 'Country', dataIndex: 'Paye_S', key: 'Paye_S' },
+    { title: 'Address', dataIndex: 'Address_S', key: 'Address_S' },
+    { title: 'Phone number', dataIndex: 'Num_Phone_S', key: 'Num_Phone_S' },
+    { title: 'Postal code', dataIndex: 'Code_Postal_S', key: 'Code_Postal_S' },
+    { title: 'Tax identification number', dataIndex: 'Matricule_Fiscale_S', key: 'Matricule_Fiscale_S' },
     {
       title: 'Actions',
       render: (_, record) => (
@@ -290,23 +270,14 @@ const BasicInformation = () => {
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
       <div style={{ clear: 'both' }}>
-      <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleParametreStatusChange}>
-                            <Option value="all">All</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
-                        </Select>
         <Table
           columns={columnsVisto}
-
-          dataSource={
-            parametreStatusFilter === 'all' ? data : data.filter(data => data.status === (parametreStatusFilter === 'activated'))
-        }
+          dataSource={data}
           loading={loading}
           pagination={{ pageSize: 12 }}
           style={{ clear: 'both', marginTop: '60px' }}
         />
       </div>
-      
       <Modal
        title={editRecord ? "Edit Data" : "Create New data"}
         visible={open}
@@ -315,42 +286,6 @@ const BasicInformation = () => {
       >
         <Form form={form} onFinish={handleFormSubmit}>
           <>
-          {editRecord && (
-  <Row>
-    <Col span={24}>
-      <Form.Item
-        name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
-        initialValue={false}
-      >
-        <Row>
-          <Col span={12}>
-            <Checkbox
-              checked={status === true}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'green' : 'red' }}
-              value={true}
-            >
-              Activated
-            </Checkbox>
-          </Col>
-          <Col span={12}>
-            <Checkbox
-              checked={status === false}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'red' : 'green' }}
-              value={false}
-            >
-              Inactivated
-            </Checkbox>
-          </Col>
-        </Row>
-      </Form.Item>
-    </Col>
-  </Row>
-)} 
-
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item

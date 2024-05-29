@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Button, Tabs, Modal, Form,  Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
+import { Table, Popconfirm, Button, Tabs, Modal, Badge,Form,Checkbox,  Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
 import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
@@ -16,7 +16,9 @@ const TaxVisto = () => {
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState(''); 
   const [devise, setDevise] = useState([]);
-
+  const [status, setStatus] = useState(null);
+  const [tvaStatusFilter, setTvaStatusFilter] = useState('all');
+  const [timbreStatusFilter, setTimbreStatusFilter] = useState('all');
   useEffect(() => {
     fetchData();
     fetchDevise();
@@ -46,6 +48,16 @@ const TaxVisto = () => {
       setLoading(false);
     }
   };
+  const handleCheckboxChange = (event) => {
+    const { value } = event.target;
+    setStatus(value === 'true');
+  };
+  useEffect(() => {
+    if (editRecord) {
+      setStatus(editRecord.status);
+    }
+  }, [editRecord]);
+
 
   const handleFormSubmit = async (values) => {
     if (editRecord) {
@@ -60,6 +72,7 @@ const TaxVisto = () => {
   };
 
   const createRecord = async (values) => {
+    values.status = true;
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
     try {
       await axios.post(`http://localhost:5000/${url}`, values);
@@ -70,6 +83,7 @@ const TaxVisto = () => {
   };
 
   const updateRecord = async (values) => {
+  
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
     try {
       await axios.put(`http://localhost:5000/${url}/${editRecord._id}`, values);
@@ -100,6 +114,7 @@ const TaxVisto = () => {
       Valeur:record.Valeur,
       deviseId: record.devise?._id,
       Pourcent_TVA:record.Pourcent_TVA,
+      status:record.status
     });
   };
 
@@ -132,9 +147,23 @@ const TaxVisto = () => {
       setLoading(false);
     }
   }, 300);
-
+  const handleTvaStatusChange = (value) => {
+    setTvaStatusFilter(value);
+};
+const handleTimbreStatusChange = (value) => {
+  setTimbreStatusFilter(value);
+};
   const columns = {
     Tva: [
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        width: 80,
+        render: (status) => (
+            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        ),
+    },
       { 
         title: 'Pourcent_TVA', 
         dataIndex: 'Pourcent_TVA', 
@@ -159,6 +188,15 @@ const TaxVisto = () => {
       },
     ],
     Timbre: [
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        width: 80,
+        render: (status) => (
+            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        ),
+    },
       { title: 'Valeur', dataIndex: 'Valeur', key: 'Valeur' },
       {
         title: 'Devise',
@@ -208,10 +246,27 @@ const TaxVisto = () => {
       />
       <Tabs activeKey={activeTabKey} onChange={setActiveTabKey}>
         <TabPane tab="Tva" key="Tva">
-          <Table dataSource={tvaData} columns={columns.Tva} loading={loading} pagination={{ pageSize: 12 }} />
+        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleTvaStatusChange}>
+                            <Option value="all">All</Option>
+                            <Option value="activated">Activated</Option>
+                            <Option value="inactivated">Inactivated</Option>
+                        </Select>
+          <Table 
+           dataSource={
+            tvaStatusFilter === 'all' ? tvaData : tvaData.filter(tvaData =>  tvaData.status === (tvaStatusFilter === 'activated'))
+        }
+          columns={columns.Tva} loading={loading} pagination={{ pageSize: 12 }} />
         </TabPane>
         <TabPane tab="Timbre" key="Timbre">
-          <Table dataSource={timbreData} columns={columns.Timbre} loading={loading} pagination={{ pageSize: 12 }} />
+        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleTimbreStatusChange}>
+                            <Option value="all">All</Option>
+                            <Option value="activated">Activated</Option>
+                            <Option value="inactivated">Inactivated</Option>
+                        </Select>
+          <Table         dataSource={
+            timbreStatusFilter === 'all' ? timbreData : timbreData.filter(timbreData => timbreData.status === (timbreStatusFilter === 'activated'))
+        }
+          columns={columns.Timbre} loading={loading} pagination={{ pageSize: 12 }} />
         </TabPane>
       </Tabs>
       <Modal
@@ -222,69 +277,155 @@ const TaxVisto = () => {
 >
   <Form form={form} onFinish={handleFormSubmit}>
     {activeTabKey === 'Tva' && (
-      <Row>
-  <Col>
-    <Form.Item
-      name="Pourcent_TVA"
-      label={
-        <span>
-          TVA (%)
-        </span>
-      }
-      rules={[
-        { required: true, message: 'Please enter the TVA percentage.' },
-  
-      ]}
-    >
-        <InputNumber 
-      
-          style={{ width: '100%' }}
-          placeholder="TVA percentage" 
-        />
-
-    </Form.Item>
-  </Col>
-</Row>
-
-    )}
-    {activeTabKey === 'Timbre' && (
       <>
-        <Form.Item
-          name="Valeur"
-          rules={[
-            { required: true, message: 'Please enter the stamp value.' },
-          
-          ]}
-        >
-   
-          <InputNumber style={{ width: '100%' }} placeholder="Stamp value" />
-        </Form.Item>
-        <Form.Item
-          name="deviseId"
-          label="Devise"
-          rules={[{ required: true, message: 'Please select a Devise' }]}
-        >  
-          <Select  name="deviseId" placeholder="Select a Devise">
-            {devise.map(devise => (
-              <Option key={devise._id} value={devise._id}>
-                <div>
-                  <span>
-                    {devise.Nom_D} ({devise.Symbole})
-                  </span>
-                </div>
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+        {editRecord && (
+          <Row>
+            <Col span={24}>
+              <Form.Item
+                name="status"
+                label="Status"
+                rules={[{ required: true, message: 'Please select the status!' }]}
+                initialValue={true}
+              >
+                <Row>
+                  <Col span={12}>
+                    <Checkbox
+                      checked={status === true}
+                      onChange={handleCheckboxChange}
+                      style={{ color: status ? 'green' : 'red' }}
+                      value={true}
+                    >
+                      Activated
+                    </Checkbox>
+                  </Col>
+                  <Col span={12}>
+                    <Checkbox
+                      checked={status === false}
+                      onChange={handleCheckboxChange}
+                      style={{ color: status ? 'red' : 'green' }}
+                      value={false}
+                    >
+                      Inactivated
+                    </Checkbox>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Col>
+          </Row>
+        )}
+
+        <Row>
+          <Col span={24}>
+            <Form.Item
+              name="Pourcent_TVA"
+              label={<span>TVA (%)</span>}
+              rules={[
+                { required: true, message: 'Please enter the TVA percentage.' },
+              ]}
+            >
+              <InputNumber 
+                style={{ width: '100%' }}
+                placeholder="TVA percentage" 
+              />
+            </Form.Item>
+          </Col>
+        </Row>
       </>
     )}
+
+    {activeTabKey === 'Timbre' && (
+      <>
+        {editRecord && (
+          <Row>
+            <Col span={24}>
+              <Form.Item
+                name="status"
+                label="Status"
+                rules={[{ required: true, message: 'Please select the status!' }]}
+                initialValue={true}
+              >
+                <Row>
+                  <Col span={12}>
+                    <Checkbox
+                      checked={status === true}
+                      onChange={handleCheckboxChange}
+                      style={{ color: status ? 'green' : 'red' }}
+                      value={true}
+                    >
+                      Activated
+                    </Checkbox>
+                  </Col>
+                  <Col span={12}>
+                    <Checkbox
+                      checked={status === false}
+                      onChange={handleCheckboxChange}
+                      style={{ color: status ? 'red' : 'green' }}
+                      value={false}
+                    >
+                      Inactivated
+                    </Checkbox>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Col>
+          </Row>
+        )}
+
+        <Row>
+          <Col span={24}>
+            <Form.Item
+              name="Valeur"
+              label="Stamp Value"
+              rules={[
+                { required: true, message: 'Please enter the stamp value.' },
+              ]}
+            >
+              <InputNumber 
+                style={{ width: '100%' }}
+                placeholder="Stamp value" 
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={24}>
+            <Form.Item
+              name="deviseId"
+              label="Devise"
+              rules={[{ required: true, message: 'Please select a Devise' }]}
+            >  
+              <Select  
+                name="deviseId" 
+                placeholder="Select a Devise"
+              >
+                {devise.map(devise => (
+                  <Option key={devise._id} value={devise._id}>
+                    <div>
+                      <span>
+                        {devise.Nom_D} ({devise.Symbole})
+                      </span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      </>
+    )}
+
     <Form.Item>
-      <Button type="primary" htmlType="submit" style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}>
+      <Button 
+        type="primary" 
+        htmlType="submit" 
+        style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
+      >
         {editRecord ? 'Update' : 'Create'}
       </Button>
     </Form.Item>
   </Form>
 </Modal>
+
 
     </div>
   );

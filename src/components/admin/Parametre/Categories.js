@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Input, Modal, Popconfirm, message, Space, Row, Col } from 'antd';
+import { Table, Button, Form, Input, Modal,Select, Badge,Tooltip,Popconfirm,  message, Space, Row, Checkbox,Col } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
+const { Option } = Select;
 const Categories = () => {
   const [open, setOpen] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -12,7 +13,15 @@ const Categories = () => {
   const [form] = Form.useForm();
   const [editRecord, setEditRecord] = useState(null);
   const [searchText, setSearchText] = useState(''); 
-
+  const [categoriesStatusFilter, setCategoriesStatusFilter] = useState('all');
+  const [status, setStatus] = useState(null);
+  const handleCheckboxChange = (event) => {
+    const { value } = event.target;
+    setStatus(value === 'true');
+  };
+  const handleCategoriesStatusChange = (value) => {
+    setCategoriesStatusFilter(value);
+};
   useEffect(() => {
     fetchCategory();
   }, []);
@@ -46,8 +55,14 @@ const Categories = () => {
       await createCategory(values);
     }
   };
+  useEffect(() => {
+    if (editRecord) {
+      setStatus(editRecord.status);
+    }
+  }, [editRecord]);
 
   const createCategory = async (values) => {
+    values.status = true;
     try {
       const response = await axios.post('http://localhost:5000/categories', values);
       if (response.status === 201) {
@@ -113,8 +128,19 @@ const Categories = () => {
   }, 300); // Debouncing de 300 ms pour réduire les appels API
 
   const columnsCategory = [
-    { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie' },
-    { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      width: 80,
+      render: (status) => (
+          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+      ),
+  },
+    { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie'  , ellipsis: true,
+    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
+    { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' , ellipsis: true,
+    render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
     {
       title: 'Actions',
       render: (_, record) => (
@@ -155,9 +181,17 @@ const Categories = () => {
       />
 
       <div style={{ clear: 'both' }}>
+      <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleCategoriesStatusChange}>
+                            <Option value="all">All</Option>
+                            <Option value="activated">Activated</Option>
+                            <Option value="inactivated">Inactivated</Option>
+                        </Select>
         <Table
           columns={columnsCategory}
-          dataSource={categoryData}
+          dataSource={
+            categoriesStatusFilter === 'all' ? categoryData: categoryData.filter(categoryData =>categoryData.status === (categoriesStatusFilter === 'activated'))
+        }
+    
           loading={loading}
           pagination={{ pageSize: 12 }}
           style={{ clear: 'both', marginTop: '60px' }}
@@ -171,6 +205,41 @@ const Categories = () => {
         footer={null}
       >
         <Form form={form} layout="vertical" style={{ marginTop: '20px' }} onFinish={handleFormSubmit}>
+        {editRecord && (
+  <Row>
+    <Col span={24}>
+      <Form.Item
+        name="status"
+        label="Status"
+        rules={[{ required: true, message: 'Please select the status!' }]}
+        initialValue={false}
+      >
+        <Row>
+          <Col span={12}>
+            <Checkbox
+              checked={status === true}
+              onChange={handleCheckboxChange}
+              style={{ color: status ? 'green' : 'red' }}
+              value={true}
+            >
+              Activated
+            </Checkbox>
+          </Col>
+          <Col span={12}>
+            <Checkbox
+              checked={status === false}
+              onChange={handleCheckboxChange}
+              style={{ color: status ? 'red' : 'green' }}
+              value={false}
+            >
+              Inactivated
+            </Checkbox>
+          </Col>
+        </Row>
+      </Form.Item>
+    </Col>
+  </Row>
+)} 
 
           <Row gutter={16}>
             <Col span={12}>

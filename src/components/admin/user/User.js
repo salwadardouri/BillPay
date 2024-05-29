@@ -577,7 +577,7 @@ const onSearch = debounce(async (query) => {
     const handleClientTypeChange = (value) => {
         setClientTypeFilter(value);
     };
-// eslint-disable-next-line
+
     const handleSelectChange = (value) => {
         setSelectedOption(value);
     };

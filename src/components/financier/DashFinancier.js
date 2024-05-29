@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Button } from 'antd';
 import {MenuFoldOutlined, MenuUnfoldOutlined,LogoutOutlined} from '@ant-design/icons';
-
+import BasicInformation from './Parametre/BasicInformation';
 import Logo from "../../images/Logo.png"; 
 import Bill from "../../images/Bill4.png"; 
 import User from './user/User';
-
+import Tax from './Parametre/TaxVisto';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -20,8 +20,11 @@ const DashFinancier= () => {
     switch (selectedMenuKey) {
       case 'User':
         return <User />;
-        case 'Devis':
-
+ 
+          case 'BasicInformation':
+            return <BasicInformation />;
+            case 'Tax':
+              return <Tax />;
       default:
         return null;
     }
@@ -43,6 +46,58 @@ const DashFinancier= () => {
     </div>
     },
    
+    {
+      key: 'Settings',
+      label: (
+        <div
+          onClick={() => onClickMenuItem('BasicInformation')}
+          style={{
+            color: selectedMenuKey === 'Settings' ? 'white' : '#B5C0D0',
+            fontFamily: 'sans-serif',
+            fontSize: '15px',
+            background: selectedMenuKey === 'Settings' ? 'transparent' : 'transparent',
+          }}
+        >
+         Settings
+        </div>
+      ),
+      children: [
+        {
+          key: 'BasicInformation',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('BasicInformation')}
+              style={{
+                color: selectedMenuKey === 'BasicInformation' ? 'white' : '#B5C0D0',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                background: selectedMenuKey === 'BasicInformation' ? 'transparent' : 'transparent',
+              }}
+            >
+              Basic Information
+            </div>
+          ),
+        },
+        
+        {
+          key: 'Tax',
+          label: (
+            <div
+              onClick={() => onClickMenuItem('Tax')}
+              style={{
+                color: selectedMenuKey === 'Tax' ? 'white' : '#B5C0D0',
+                textShadow: selectedMenuKey === 'Tax' ? '1px 1px 5px rgba(0, 0, 0, 0.3)' : 'transparent',
+                fontFamily: 'sans-serif',
+                fontSize: '15px',
+                backgroundColor: selectedMenuKey === 'Tax' ? 'transparent' : 'transparent',
+              }}
+            >
+              Tax
+            </div>
+          ),
+        },
+      ],
+    },
 
 
   ];
