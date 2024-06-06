@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Row, Col,Checkbox, Modal,Space, Alert,Tooltip, Select,Badge, InputNumber,message, Table, Popconfirm} from 'antd';
+import { Button, Form, Input, Row, Col, Modal,Space, Alert,Tooltip, Select,InputNumber,message, Table, Popconfirm} from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
@@ -19,28 +19,29 @@ const ServiceList = () => {
   const [devise, setDevise] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
-  const [servicesStatusFilter, setServicesStatusFilter] = useState('all');
-  const [status, setStatus] = useState(null);
-  const handleCheckboxChange = (event) => {
-    const { value } = event.target;
-    setStatus(value === 'true');
-  };
-  const handleServicesStatusChange = (value) => {
-    setServicesStatusFilter(value);
-};
+
   const fetchServices = async () => {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/services');
-      setServices(response.data);
+      if (response.status === 200) {
+        // Filtrer les services ayant le statut true
+        const filteredServices = response.data.filter(service => service.status === true);
+        setServices(filteredServices);
+      } else {
+        console.error('Failed to fetch service data');
+      }
     } catch (error) {
       console.error('Error fetching services:', error);
     } finally {
       setLoading(false);
     }
   };
-
-
+  const handleCloseModal = () => {
+    form.resetFields(); // Réinitialiser les champs du formulaire
+    setOpen(false); // Fermer le modèle
+  };
+  
   const fetchDevise = async () => {
     try {
       const response = await axios.get('http://localhost:5000/devise');
@@ -116,12 +117,13 @@ const handleEdit = (record) => {
     libelle: record.libelle,
     reference: record.reference,
     prix_unitaire: record.prix_unitaire,
-    status: record.status,
+   
 
   });
   setOpen(true);
 };
 const updateRecord = async (values) => {
+  values.status = true;
   try {
     const response = await axios.put(`http://localhost:5000/services/${editRecord._id}`, values); // Utilisez l'ID de `editRecord`
     if (response.status === 200) {
@@ -160,15 +162,7 @@ const onSearch = debounce(async (query) => {
 
 
   const columns = [
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 80,
-      render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
-      ),
-  },
+
     {
       title: 'Ref',
       dataIndex: 'reference',
@@ -206,13 +200,22 @@ const onSearch = debounce(async (query) => {
       key: 'prix_unitaire', ellipsis: true,
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
-   
     {
       title: 'Devise',
-      dataIndex: ['devise', 'Nom_D'],
-      key: 'devise_Nom_D',
-  
+      dataIndex: 'devise', // Change this to just 'devise' since we will handle the rest in render
+      key: 'devise_Symbole',
+      ellipsis: true,
+      render: (text, record) => {
+        // Combine Nom_D and Symbole
+        const displayText = `${record.devise.Nom_D} (${record.devise.Symbole})`;
+        return (
+          <Tooltip placement="topLeft" title={displayText}>
+            {displayText}
+          </Tooltip>
+        );
+      }
     },
+    
 
  
 
@@ -280,45 +283,11 @@ const onSearch = debounce(async (query) => {
         title={editRecord ? "Edit Category" : "Create New Category"}
         visible={open}
         width={800}
-        onCancel={() => setOpen(false)}
+       
         footer={null}
+        onCancel={handleCloseModal}
       >  <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-      {editRecord && (
-<Row>
-  <Col span={24}>
-    <Form.Item
-      name="status"
-      label="Status"
-      rules={[{ required: true, message: 'Please select the status!' }]}
-      initialValue={false}
-    >
-      <Row>
-        <Col span={12}>
-          <Checkbox
-            checked={status === true}
-            onChange={handleCheckboxChange}
-            style={{ color: status ? 'green' : 'red' }}
-            value={true}
-          >
-            Activated
-          </Checkbox>
-        </Col>
-        <Col span={12}>
-          <Checkbox
-            checked={status === false}
-            onChange={handleCheckboxChange}
-            style={{ color: status ? 'red' : 'green' }}
-            value={false}
-          >
-            Inactivated
-          </Checkbox>
-        </Col>
-      </Row>
-    </Form.Item>
-  </Col>
-</Row>
-)} 
-
+  
       <Col span={12} style={{ marginBottom: '16px' }}>      
      <Form.Item
 name="reference"
@@ -413,19 +382,18 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
 
       </Form>
     </Modal>
+ 
+
       <div style={{ clear: 'both' ,marginTop:"30px"}}>
-      <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleServicesStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
-                        </Select>
+
       <Table
         style={{ marginTop: '10px' ,clear: 'both'}}
         columns={columns}
-        dataSource={
-          servicesStatusFilter === 'all' ? services: services.filter(services =>services.status === (servicesStatusFilter === 'activated'))
-      }
+        dataSource={services}
+        
         loading={loading}
+
+      
       />  </div>
     </>
   );

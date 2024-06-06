@@ -169,7 +169,7 @@ const FactureList = () => {
     calculateMontantHT(quantite, value); // Utiliser la valeur du prix unitaire mise à jour
   };
   
-  const handleServiceChange = (serviceId) => {
+  const handleServiceChangeCalcule = (serviceId) => {
     const selectedService = services.find(service => service._id === serviceId);
     if (selectedService) {
       setPrixUnitaire(selectedService.prix_unitaire);
@@ -187,21 +187,13 @@ const FactureList = () => {
   
 
   const calculateMontantTTC = (montant_HT, tva) => {
-    if (tva) {
-        let pourcent_TVA;
-        if (typeof tva === 'string') {
-            pourcent_TVA = parseFloat(tva.slice(0, -1)); // Enlever le dernier caractère (si besoin)
-        } else if (typeof tva === 'number') {
-            pourcent_TVA = tva;
-        } else {
-            // Handle the case where tva is not a string or number
-            console.error('Invalid type for tva:', typeof tva);
-            return;
-        }
+  
+
+        const pourcent_TVA = tva;
         const montant_TTC = montant_HT * (1 + pourcent_TVA / 100);
         setMontant_TTC(montant_TTC);
         form.setFieldsValue({ montant_TTC });
-    }
+    
 };
 
 
@@ -357,7 +349,9 @@ width={900}
     label="Service"
     rules={[{ required: true, message: 'Please select a Service' }]}
   >
-    <Select placeholder="Select a Service" onChange={handleServiceChange}>
+    <Select placeholder="Select a Service" onChange={handleServiceChangeCalcule
+
+    }>
       {services.map(service => (
         <Select.Option key={service._id} value={service._id}>
           {service.libelle}

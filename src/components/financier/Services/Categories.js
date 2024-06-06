@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Input, Modal,Select, Badge,Tooltip,Popconfirm,  message, Space, Row, Checkbox,Col } from 'antd';
+import { Table, Button, Form, Input, Modal, Tooltip,Popconfirm,  message, Space, Row,Col } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
-const { Option } = Select;
+
 const Categories = () => {
   const [open, setOpen] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -13,15 +13,8 @@ const Categories = () => {
   const [form] = Form.useForm();
   const [editRecord, setEditRecord] = useState(null);
   const [searchText, setSearchText] = useState(''); 
-  const [categoriesStatusFilter, setCategoriesStatusFilter] = useState('all');
-  const [status, setStatus] = useState(null);
-  const handleCheckboxChange = (event) => {
-    const { value } = event.target;
-    setStatus(value === 'true');
-  };
-  const handleCategoriesStatusChange = (value) => {
-    setCategoriesStatusFilter(value);
-};
+
+
   useEffect(() => {
     fetchCategory();
   }, []);
@@ -31,7 +24,9 @@ const Categories = () => {
     try {
       const response = await axios.get('http://localhost:5000/categories');
       if (response.status === 200) {
-        setCategoryData(response.data);
+        // Filtrer les catégories ayant le statut true
+        const filteredCategories = response.data.filter(category => category.status === true);
+        setCategoryData(filteredCategories);
       } else {
         console.error('Failed to fetch category data');
       }
@@ -41,7 +36,6 @@ const Categories = () => {
       setLoading(false);
     }
   };
-
   const handleEdit = (record) => {
     setEditRecord(record);
     setOpen(true);
@@ -55,11 +49,6 @@ const Categories = () => {
       await createCategory(values);
     }
   };
-  useEffect(() => {
-    if (editRecord) {
-      setStatus(editRecord.status);
-    }
-  }, [editRecord]);
 
   const createCategory = async (values) => {
     values.status = true;
@@ -79,6 +68,7 @@ const Categories = () => {
   };
 
   const updateCategory = async (values) => {
+    values.status = true;
     try {
       const response = await axios.put(`http://localhost:5000/categories/${editRecord._id}`, values);
       if (response.status === 200) {
@@ -128,23 +118,13 @@ const Categories = () => {
   }, 300); // Debouncing de 300 ms pour réduire les appels API
 
   const columnsCategory = [
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 80,
-      render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
-      ),
-  },
+ 
     { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie'  , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
     {
       title: 'Actions',
-      width: 110,
-        align: 'left',
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
@@ -160,7 +140,11 @@ const Categories = () => {
       ),
     },
   ];
-
+  const handleCloseModal = () => {
+    form.resetFields(); // Réinitialiser les champs du formulaire
+    setOpen(false); // Fermer le modèle
+  };
+  
   return (
     <>
       <div style={{ marginBottom: 16, float: 'right' }}>
@@ -181,89 +165,48 @@ const Categories = () => {
         }}
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
-
-      <div style={{ clear: 'both' ,marginTop:"30px"}}>
-      <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleCategoriesStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
-                        </Select>
+      <div style={{ clear: 'both' }}>
+   
         <Table
           columns={columnsCategory}
-          dataSource={
-            categoriesStatusFilter === 'all' ? categoryData: categoryData.filter(categoryData =>categoryData.status === (categoriesStatusFilter === 'activated'))
-        }
-    
+          dataSource={categoryData}
           loading={loading}
           pagination={{ pageSize: 12 }}
-          style={{ clear: 'both', marginTop: '10px' }}
+          style={{ clear: 'both', marginTop: '60px' }}
         />
       </div>
 
       <Modal
         title={editRecord ? "Edit Category" : "Create New Category"}
         visible={open}
-        onCancel={() => setOpen(false)}
+    
         footer={null}
+        onCancel={handleCloseModal}
       >
         <Form form={form} layout="vertical" style={{ marginTop: '20px' }} onFinish={handleFormSubmit}>
-        {editRecord && (
-  <Row>
-    <Col span={24}>
-      <Form.Item
-        name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
-        initialValue={false}
-      >
-        <Row>
-          <Col span={12}>
-            <Checkbox
-              checked={status === true}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'green' : 'red' }}
-              value={true}
-            >
-              Activated
-            </Checkbox>
-          </Col>
-          <Col span={12}>
-            <Checkbox
-              checked={status === false}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'red' : 'green' }}
-              value={false}
-            >
-              Inactivated
-            </Checkbox>
-          </Col>
-        </Row>
-      </Form.Item>
-    </Col>
-  </Row>
-)} 
+      
 
-          <Row gutter={18}>
-            <Col span={18}>
+          <Row gutter={16}>
+            <Col span={12}>
               <Form.Item
                 name="Titre_Categorie"
                 rules={[
                   { required: true, message: 'Please enter the category title.' },
                 ]}
               >
-                <Input name="Titre_Categorie" placeholder="Category title"    style={{ width: '100%' }} />
+                <Input name="Titre_Categorie" placeholder="Category title" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
               </Form.Item>
             </Col>
           </Row>
           <Row>
-            <Col span={18}>
+            <Col span={12}>
               <Form.Item
                 name="Description_Categorie"
                 rules={[
                   { required: true, message: 'Please enter the category description.' },
                 ]}
               >
-                  <Input.TextArea name="Description_Categorie" placeholder="Category description"    style={{ width: '100%' , height:'100px'}}/>
+                <Input name="Description_Categorie" placeholder="Category description" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
               </Form.Item>
             </Col>
           </Row>

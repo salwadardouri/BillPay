@@ -256,6 +256,8 @@ const BasicInformation = () => {
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     {
       title: 'Actions',
+ 
+
       render: (_, record) => (
         <>
           <Space style={{ float: 'left' }}>
@@ -289,9 +291,9 @@ const BasicInformation = () => {
         }}
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
-      <div style={{ clear: 'both' }}>
+      <div style={{ clear: 'both',marginTop:"30px" }}>
       <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleParametreStatusChange}>
-                            <Option value="all">All</Option>
+                            <Option value="all">All of status </Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>
@@ -303,7 +305,7 @@ const BasicInformation = () => {
         }
           loading={loading}
           pagination={{ pageSize: 12 }}
-          style={{ clear: 'both', marginTop: '60px' }}
+          style={{ clear: 'both', marginTop: '10px' }}
         />
       </div>
       

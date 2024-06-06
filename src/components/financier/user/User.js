@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm,Tooltip,Button,  Modal,Select, Drawer, Badge,Checkbox, Space, message, Form, Input, Col, Row, Alert} from 'antd';
+import { Table, Popconfirm,Tooltip,Button,  Modal,Select, Drawer,  Space, message, Form, Input, Col, Row, Alert} from 'antd';
 import { DeleteOutlined, EditOutlined, UserAddOutlined ,EyeOutlined,CheckCircleOutlined, CloseCircleOutlined} from '@ant-design/icons';import './User.css';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -30,9 +30,7 @@ const CountryOption = (props) => {
 const User = () => {
      // eslint-disable-next-line
     const [clients, setClients] = useState([]);
-
     const [loading, setLoading] = useState(false);
-
     const [clientTypeFilter, setClientTypeFilter] = useState('all');
     // eslint-disable-next-line
     const [selectedOption, setSelectedOption] = useState('client');
@@ -45,27 +43,18 @@ const User = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
     const countryOptions = countryList().getData();
-
-
     const [searchText, setSearchText] = useState(''); 
     const [editRecordClient, setEditRecordClient] = useState(null);
-
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const [status, setStatus] = useState(null);
     const [visible, setVisible] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
-
     const handleViewClient = (recordClient) => {
       setSelectedClient(recordClient);
       setVisible(true);
   };
 
   
-    const handleCheckboxChange = (event) => {
-      const { value } = event.target;
-      setStatus(value === 'true');
-    };
-  
+
     const showDrawer = () => {
         setOpen(true);
     };
@@ -138,15 +127,10 @@ const User = () => {
     };
 
 
-    useEffect(() => {
-      if (editRecordClient) {
-        setStatus(editRecordClient.status);
-      }
-    }, [editRecordClient]);
-  
+
     const updateClient = async (values) => {
       try {
-        const { fullname, email,status, code_postal, siteweb, Nom_entreprise, address, matricule_fiscale, num_phone, num_fax, num_bureau } = values;
+        const { fullname, email, code_postal, siteweb, Nom_entreprise, address, matricule_fiscale, num_phone, num_fax, num_bureau } = values;
 
     
         // Récupérez la valeur du pays du formulaire
@@ -166,7 +150,7 @@ const User = () => {
         
           matricule_fiscale,
           code_postal,
-          status,
+          status:true,
             Nom_entreprise,
 
   siteweb,
@@ -276,16 +260,6 @@ const User = () => {
 
 
     const columnsClient = [
-      {    title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        width: 80,
-        render: (status) => (
-            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
-        ),
-    },
-
-
 
         {
             title: 'Fullname',
@@ -376,42 +350,6 @@ const User = () => {
     };
     const drawerContentClient= () => (
     <Form form={form} layout="vertical" onFinish={handleFormSubmitClient}>
-   
-   {editRecordClient && (
-  <Row>
-    <Col span={24}>
-      <Form.Item
-        name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
-        initialValue={false}
-      >
-        <Row>
-          <Col span={12}>
-            <Checkbox
-              checked={status === true}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'green' : 'red' }}
-              value={true}
-            >
-              Activated
-            </Checkbox>
-          </Col>
-          <Col span={12}>
-            <Checkbox
-              checked={status === false}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'red' : 'green' }}
-              value={false}
-            >
-              Inactivated
-            </Checkbox>
-          </Col>
-        </Row>
-      </Form.Item>
-    </Col>
-  </Row>
-)} 
 
 
    <Row gutter={[16, 16]}>
@@ -465,7 +403,7 @@ const User = () => {
                           <Input placeholder="Please enter full name" />
                         </Form.Item>
                       </Col>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
+                      <Col span={12} >
                         <Form.Item
                           name="email"
                           label="E-mail"
@@ -480,7 +418,7 @@ const User = () => {
                    
                     </Row>
     <Row gutter={[16, 16]}>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
+                      <Col span={12} >
                   
                                         <Form.Item
                                             name="num_phone"
@@ -502,7 +440,7 @@ const User = () => {
                                             <p>Please enter a valid phone number.</p>
                                         )}
                                     </Col>
-                                    <Col span={12} style={{ marginBottom: '16px' }}>
+                                    <Col span={12} >
                                     <Form.Item
       name="country"
       label='Country'
@@ -538,7 +476,7 @@ const User = () => {
      
                     </Row>
                     <Row gutter={[16, 16]}>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
+                      <Col span={12} >
                         <Form.Item
                           name="address"
                           label="Address"
@@ -547,7 +485,7 @@ const User = () => {
                           <Input placeholder="Please input your address!" />
                         </Form.Item>
                       </Col>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
+                      <Col span={12} >
                         <Form.Item
                           name="code_postal"
                           label="Postal Code"
@@ -578,7 +516,7 @@ const User = () => {
         </Col>
         </Row>
         <Row gutter={[16, 16]}>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
+                      <Col span={12}>
                   
                                         <Form.Item
                                             name="num_fax"
@@ -673,7 +611,7 @@ const User = () => {
 
 
 
-            <div style={{ clear: 'both' }}>
+            <div style={{ clear: 'both' , marginTop:"30px" }}>
         
                 
                   

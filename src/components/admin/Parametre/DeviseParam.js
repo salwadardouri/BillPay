@@ -117,6 +117,8 @@ const DeviseParam = () => {
     { title: 'Symbole', dataIndex: 'Symbole', key: 'Symbole' },
     {
       title: 'Actions',
+      width: 50,
+        align: 'left',
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
@@ -180,7 +182,7 @@ const DeviseParam = () => {
                   { required: true, message: 'Please enter the devise title.' },
                 ]}
               >
-                <Input name="Nom_D" placeholder="Nom_D" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
+                <Input name="Nom_D" placeholder="Nom_D"    style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -192,7 +194,7 @@ const DeviseParam = () => {
                   { required: true, message: 'Please enter the symbole description.' },
                 ]}
               >
-                <Input name="Symbole" placeholder="Symbole" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '450px', borderBottom: '0.5px solid grey' }} />
+                <Input name="Symbole" placeholder="Symbole"    style={{ width: '100%' }}/>
               </Form.Item>
             </Col>
           </Row>

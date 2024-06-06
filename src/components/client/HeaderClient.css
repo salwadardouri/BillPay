@@ -4,27 +4,12 @@
     justify-content: space-between;
     align-items: center;
     background-color: #292559;
-    height: 50px;
+    height: 60px;
     /* Rend le fond du header transparent */
 
 }
 
-.buttons .ant-btn {
-    margin-left: 10px;
-    /* Espacement entre les boutons */
 
-}
-
-.background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Pour remplir la zone de manière responsive */
-    z-index: -1;
-    /* Pour placer l'image derrière le contenu */
-}
 
 /* Small devices (portrait phones, less than 576px) */
 @media (max-width: 575.98px) {

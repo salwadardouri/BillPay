@@ -61,7 +61,7 @@ const SignUp = () => {
     
         const postData = {
           fullname,
-          email, // Ajout de l'email
+          email,
           password,
           country: country.label,
           num_phone: formattedPhoneNumber,
@@ -78,12 +78,17 @@ const SignUp = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(postData),
-          credentials: 'include', // pour les cookies et les sessions
         });
     
         const responseData = await response.json();
     
         if (response.ok) {
+          // Stocker les jetons dans localStorage
+          localStorage.setItem('accessToken', responseData.accessToken);
+          localStorage.setItem('refreshToken', responseData.refreshToken);
+    
+          message.success('Utilisateur créé avec succès.');
+    
           // Demander le code de création de compte à l'API NestJS
           const resetPasswordResponse = await fetch('http://localhost:5000/auth/reset-password-request', {
             method: 'POST',
@@ -96,7 +101,7 @@ const SignUp = () => {
           const resetPasswordData = await resetPasswordResponse.json();
     
           if (resetPasswordResponse.ok) {
-            message.success('Utilisateur créé avec succès. Code de création de compte envoyé !');
+            message.success('Code de création de compte envoyé !');
     
             // Naviguer après la création du compte
             setTimeout(() => {

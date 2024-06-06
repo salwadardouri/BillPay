@@ -172,6 +172,8 @@ const handleTimbreStatusChange = (value) => {
       },
       {
         title: 'Actions',
+        width: 50,
+        align: 'left',
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
@@ -206,6 +208,8 @@ const handleTimbreStatusChange = (value) => {
       },
       {
         title: 'Actions',
+        width: 50,
+        align: 'left',
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
@@ -244,9 +248,9 @@ const handleTimbreStatusChange = (value) => {
         }}
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
-      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey}>
+      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} style={{marginTop:"30px"}}>
         <TabPane tab="Tva" key="Tva">
-        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleTvaStatusChange}>
+        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 ,marginTop:"10px"}} onChange={handleTvaStatusChange}>
                             <Option value="all">All</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
@@ -258,8 +262,8 @@ const handleTimbreStatusChange = (value) => {
           columns={columns.Tva} loading={loading} pagination={{ pageSize: 12 }} />
         </TabPane>
         <TabPane tab="Timbre" key="Timbre">
-        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleTimbreStatusChange}>
-                            <Option value="all">All</Option>
+        <Select defaultValue="all" style={{ width: 150, marginBottom: 20 ,marginTop:"10px"}} onChange={handleTimbreStatusChange}>
+                            <Option value="all">All of status</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>

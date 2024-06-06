@@ -31,29 +31,32 @@ const SignIn = () => {
       try {
         const { email, password } = values;
     
-        // Prepare data based on your API requirements
+        // Prépare les données pour l'API de connexion
         const postData = {
           email,
           password,
         };
     
-        // Make a POST request to your login API
+        // Faire une requête POST à votre API de connexion
         const response = await fetch('http://localhost:5000/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(postData),
-          credentials: 'include',
         });
     
         const responseData = await response.json();
     
         if (response.ok) {
-          // Handle successful login
+          // Stocker les jetons dans localStorage
+          localStorage.setItem('accessToken', responseData.accessToken);
+          localStorage.setItem('refreshToken', responseData.refreshToken);
+    
+          // Gérer la connexion réussie
           console.log('Login successful', responseData);
     
-          // Set success message and navigate after 1 second
+          // Afficher un message de succès et naviguer après 1 seconde
           setSuccessMessage('Login successful');
           setTimeout(() => {
             const { roles } = responseData.user;
@@ -68,19 +71,17 @@ const SignIn = () => {
             }
           }, 3000);
         } else {
-          // Handle errors
+          // Gérer les erreurs
           console.error('Error logging in', responseData);
           setErrorMessage('Invalid credentials');
-          setTimeout(() => setErrorMessage(''), 2000); // Clear error message after 1 second
+          setTimeout(() => setErrorMessage(''), 2000); // Effacer le message d'erreur après 2 secondes
         }
       } catch (error) {
         console.error('An error occurred', error);
         setErrorMessage('An error occurred');
-        setTimeout(() => setErrorMessage(''), 2000); // Clear error message after 1 second
+        setTimeout(() => setErrorMessage(''), 2000); // Effacer le message d'erreur après 2 secondes
       }
     };
-
-    
     
    
   return (

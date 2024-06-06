@@ -7,13 +7,10 @@ import countryList from 'react-select-country-list';
 import { components } from 'react-select';
 import axios from 'axios';
 import ReactSelect from 'react-select';
-import { debounce } from 'lodash';//pour search pro 
+import { debounce } from 'lodash';
 const { Search } = Input;
 const { TabPane } = Tabs;
 const { Option } = Select;
-
-
-
 const CountryOption = (props) => {
   return (
     <components.Option {...props}>
@@ -26,15 +23,12 @@ const CountryOption = (props) => {
     </components.Option>
   );
 };
-
 const User = () => {
     const [clients, setClients] = useState([]);
     const [financiers, setFinanciers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeTabKey, setActiveTabKey] = useState('Clients');
-    const [clientTypeFilter, setClientTypeFilter] = useState('all');
-    // eslint-disable-next-line
-    const [selectedOption, setSelectedOption] = useState('client');
+    const [clientTypeFilter, setClientTypeFilter] = useState('allclient');
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [successAlert, setSuccessAlert] = useState(false);
@@ -44,7 +38,7 @@ const User = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [validPhoneNumber, setValidPhoneNumber] = useState(true);
     const countryOptions = countryList().getData();
-    const [clientStatusFilter, setClientStatusFilter] = useState('all');
+    const [clientStatusFilter, setClientStatusFilter] = useState('allclient');
     const [financierStatusFilter, setFinancierStatusFilter] = useState('all');
     const [searchText, setSearchText] = useState(''); 
     const [editRecordClient, setEditRecordClient] = useState(null);
@@ -107,46 +101,72 @@ const User = () => {
   
     useEffect(() => {
         fetchClients();
-       
         fetchFinanciers();
-
-       
     }, []);
 
     const fetchFinanciers = async () => {
       setLoading(true);
       try {
-          const response = await fetch('http://localhost:5000/financier');
-          if (response.ok) {
-              const data = await response.json();
-              setFinanciers(data);
-          } else {
-              console.error('Failed to fetch financiers');
-          }
+        const accessToken = localStorage.getItem('accessToken');
+    
+        if (!accessToken) {
+          console.error('No access token found');
+          return;
+        }
+    
+        const response = await fetch('http://localhost:5000/financier?roles=FINANCIER', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          setFinanciers(data);
+        } else {
+          console.error('Failed to fetch financiers');
+        }
       } catch (error) {
-          console.error('Error fetching financiers:', error);
+        console.error('Error fetching financiers:', error);
       } finally {
-          setLoading(false);
+        setLoading(false);
       }
-  };
+    };
+    
 
-  const fetchClients = async () => {
+    const fetchClients = async () => {
       setLoading(true);
       try {
-          const response = await fetch('http://localhost:5000/clients');
-          if (response.ok) {
-              const data = await response.json();
-              setClients(data);
-          } else {
-              console.error('Failed to fetch clients');
-          }
+        const accessToken = localStorage.getItem('accessToken');
+    
+        if (!accessToken) {
+          console.error('No access token found');
+          return;
+        }
+    
+        const response = await fetch('http://localhost:5000/clients?roles=CLIENT', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          setClients(data);
+        } else {
+          console.error('Failed to fetch clients');
+        }
       } catch (error) {
-          console.error('Error fetching clients:', error);
+        console.error('Error fetching clients:', error);
       } finally {
-          setLoading(false);
+        setLoading(false);
       }
-  };
-  
+    };0
+    
 
     const handleChangePhoneNumber = (value) => {
         setPhoneNumber(value);
@@ -181,48 +201,51 @@ const User = () => {
   
     const updateClient = async (values) => {
       try {
-        const { fullname, email,status, code_postal, siteweb, Nom_entreprise, address, matricule_fiscale, num_phone, num_fax, num_bureau } = values;
-
+        const { fullname, status,email,code_postal, siteweb, Nom_entreprise, address, matricule_fiscale, num_phone, num_fax, num_bureau } = values;
     
         // Récupérez la valeur du pays du formulaire
         const selectedCountry = form.getFieldValue('country');
         
         // Vérifiez si une valeur de pays est sélectionnée
         const countryLabel = selectedCountry ? selectedCountry.label : '';
-     // Formatage des numéros de téléphone
-     const formattedPhoneNumber = num_phone.replace(/\s/g, '');
-     const formattedFaxNumber = num_fax.replace(/\s/g, '');
-     const formattedBureauNumber = num_bureau.replace(/\s/g, '');
-        const postData = {
-          fullname,
-          email,
-          country: countryLabel,
-          address,
         
-          matricule_fiscale,
-          code_postal,
-          status,
-            Nom_entreprise,
-
-  siteweb,
-  num_phone: formattedPhoneNumber,
-  num_fax: formattedFaxNumber,
-  num_bureau: formattedBureauNumber,
+        // Formatage des numéros de téléphone si présents
+        const formattedPhoneNumber = num_phone ? num_phone.replace(/\s/g, '') : null;
+        const formattedFaxNumber = num_fax ? num_fax.replace(/\s/g, '') : null;
+        const formattedBureauNumber = num_bureau ? num_bureau.replace(/\s/g, '') : null;
+     
+        // Construisez les données à envoyer en excluant les champs vides
+        const postData = {
+          fullname: fullname,
+          email: email ,
+          country: countryLabel ,
+          address: address ,
+          matricule_fiscale: matricule_fiscale ,
+          code_postal: code_postal ,
+          status: status ,
+          Nom_entreprise: Nom_entreprise ,
+          siteweb: siteweb,
+          num_phone: formattedPhoneNumber ,
+          num_fax: formattedFaxNumber ,
+          num_bureau: formattedBureauNumber,
         };
+        
+        // Filtrer les propriétés indéfinies
+        const filteredPostData = Object.fromEntries(Object.entries(postData).filter(([_, v]) => v !== undefined));
     
         const response = await fetch(`http://localhost:5000/clients/${editRecordClient._id}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(postData),
+          body: JSON.stringify(filteredPostData),
         });
     
         if (response.ok) {
           message.success('Data updated successfully');
-           form.resetFields();
+          form.resetFields();
           setOpen(false);
-          fetchClients();  // Recharger les données
+          fetchClients(); 
         } else {
           throw new Error('Failed to update data');
         }
@@ -231,13 +254,13 @@ const User = () => {
         console.error('Error updating data:', error);
       }
     };
+    
     useEffect(() => {
       if (editRecordFinancier) {
         setStatus(editRecordFinancier.status);
       }
     }, [editRecordFinancier]);
   
-   
     const updateFinancier = async (values) => {
       try {
         const { fullname, email, code_postal, num_phone,address ,status } = values;
@@ -262,7 +285,7 @@ const User = () => {
         };
     
         const response = await fetch(`http://localhost:5000/financier/${editRecordFinancier._id}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -287,77 +310,92 @@ const User = () => {
     };
     
     const onFinishFinancier = async (values) => {
-        let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
-       values.num_phone = formattedPhoneNumber;
-        values.roles = ["FINANCIER"];
-        values.country = selectedCountry ? selectedCountry.label : '';
-
-        try {
-            const response = await fetch('http://localhost:5000/financier/create-account', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(values)
-            });
-
-            if (!response.ok) throw new Error('Failed to create account.');
-
-            await response.json();
-
-            setSuccessAlert(true);
-
-            setTimeout(() => {
-                setSuccessAlert(false);
-                form.resetFields();
-                setOpen(false);
-            }, 2000);
+      let formattedPhoneNumber = `+${values.num_phone.replace(/\s/g, '')}`;
+      values.num_phone = formattedPhoneNumber;
+      values.roles = ["FINANCIER"];
+      values.country = selectedCountry ? selectedCountry.label : '';
     
-            fetchFinanciers();
-        } catch (error) {
-            console.error('Error:', error);
-            setErrorAlert(true);
-            setTimeout(() => setErrorAlert(false), 3000);
-        }
-    };
-    const onFinishClient = async  (values) => {
-        values.roles = ["CLIENT"];
-        let formattedPhoneNumber = `+${phoneNumber.replace(/\s/g, '')}`;
-        let formattedFaxNumber= `+${phoneNumber.replace(/\s/g, '')}`;
-        let formattedBureauNumber = `+${phoneNumber.replace(/\s/g, '')}`;
-        values.num_phone = formattedPhoneNumber;
-        values.num_bureau = formattedBureauNumber;
-        values.num_fax = formattedFaxNumber;
-        values.matricule_fiscale = isMatriculeEnabled ? values.matricule_fiscale_input : null;
-        values.country = selectedCountry ? selectedCountry.label : '';
-        try {
-          const response = await fetch('http://localhost:5000/clients/create-account', {
+      try {
+        const response = await fetch('http://localhost:5000/financier/create-account', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(values)
-        })
-        if (!response.ok) throw new Error('Failed to create account.');
-  
-        await response.json();
-        
-        setSuccessAlert(true);
-        
-        // Réinitialiser et fermer après 3 secondes
-        setTimeout(() => {
-          setSuccessAlert(false);
-          form.resetFields(); // Réinitialise le formulaire
-          setOpen(false); // Ferme le Drawer
+        });
     
-        }, 2000);
-        fetchClients();
+        const responseData = await response.json();
+    
+        if (response.ok) {
+          // Stocker les jetons dans localStorage
+          localStorage.setItem('accessToken', responseData.accessToken);
+          localStorage.setItem('refreshToken', responseData.refreshToken);
+    
+          setSuccessAlert(true);
+    
+          setTimeout(() => {
+            setSuccessAlert(false);
+            form.resetFields();
+            setOpen(false);
+          }, 2000);
+    
+          fetchFinanciers();
+        } else {
+          throw new Error('Failed to create account.');
+        }
       } catch (error) {
         console.error('Error:', error);
         setErrorAlert(true);
         setTimeout(() => setErrorAlert(false), 3000);
       }
     };
+    const onFinishClient = async (values) => {
+      values.roles = ["CLIENT"];
+      let formattedPhoneNumber = `+${values.num_phone.replace(/\s/g, '')}`;
+      let formattedFaxNumber = `+${values.num_fax.replace(/\s/g, '')}`;
+      let formattedBureauNumber = `+${values.num_bureau.replace(/\s/g, '')}`;
+      values.num_phone = formattedPhoneNumber;
+      values.num_bureau = formattedBureauNumber;
+      values.num_fax = formattedFaxNumber;
+      values.matricule_fiscale = isMatriculeEnabled ? values.matricule_fiscale_input : null;
+      values.country = selectedCountry ? selectedCountry.label : '';
+    
+      try {
+        const response = await fetch('http://localhost:5000/clients/create-account', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(values)
+        });
+    
+        const responseData = await response.json();
+    
+        if (response.ok) {
+          // Stocker les jetons dans localStorage
+          localStorage.setItem('accessToken', responseData.accessToken);
+          localStorage.setItem('refreshToken', responseData.refreshToken);
+    
+          setSuccessAlert(true);
+    
+          // Réinitialiser et fermer après 3 secondes
+          setTimeout(() => {
+            setSuccessAlert(false);
+            form.resetFields(); // Réinitialise le formulaire
+            setOpen(false); // Ferme le Drawer
+          }, 2000);
+    
+          fetchClients();
+        } else {
+          throw new Error('Failed to create account.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setErrorAlert(true);
+        setTimeout(() => setErrorAlert(false), 3000);
+      }
+    };
+    
     const handleDeleteClient = async (recordClient) => {
       try {
         const response = await fetch(`http://localhost:5000/clients/${recordClient._id}`, {
@@ -578,9 +616,6 @@ const onSearch = debounce(async (query) => {
         setClientTypeFilter(value);
     };
 
-    const handleSelectChange = (value) => {
-        setSelectedOption(value);
-    };
     const handleClientStatusChange = (value) => {
       setClientStatusFilter(value);
   };
@@ -781,7 +816,7 @@ const onSearch = debounce(async (query) => {
                 label="Name Society"
               
             >
-                <Input placeholder="Please enter Name Society" />
+                <Input  name="Nom_entreprise" placeholder="Please enter Name Society" />
             </Form.Item>
         </Col>
         <Col span={12}>
@@ -790,7 +825,7 @@ const onSearch = debounce(async (query) => {
                 label="Web Site"
               
             >
-                <Input placeholder="Please enter full name" />
+                <Input  name="siteweb" placeholder="Please enter full name" />
             </Form.Item>
         </Col>
         </Row>
@@ -1011,12 +1046,6 @@ const onSearch = debounce(async (query) => {
     visible={drawerVisible}
     extra={
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-{(!editRecordClient && !editRecordFinancier) && (
-  <Select defaultValue="client" style={{ width: 200, marginRight: '8px' }} onChange={handleSelectChange}>
-    <Option value="client">Client</Option>
-    <Option value="financier">Financier</Option>
-  </Select>
-)}
 
                         <Space>
                 <Button onClick={onClose}>Cancel</Button>
@@ -1041,18 +1070,18 @@ const onSearch = debounce(async (query) => {
 
 
 
-            <div style={{ clear: 'both' }}>
+            <div style={{ clear: 'both' ,marginTop:"30px" }}>
                 <Tabs activeKey={activeTabKey} onChange={onTabChange}  >
                     <TabPane tab="Clients" key="Clients">
                   
-                    <Select defaultValue="all" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
-                            <Option value="all">All</Option>
+                    <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
+                            <Option value="allclient">All</Option>
                             <Option value="morale">Moral</Option>
                             <Option value="physique">Physical</Option>
                          
                         </Select>
-                        <Select defaultValue="all" style={{ width: 150, marginBottom: 20,marginLeft:'10px' }} onChange={handleClientStatusChange}>
-                            <Option value="all">All</Option>
+                        <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20,marginLeft:'10px' }} onChange={handleClientStatusChange}>
+                            <Option value="allclient">All</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>
@@ -1060,9 +1089,9 @@ const onSearch = debounce(async (query) => {
                       
                         <Table
     dataSource={
-        clientTypeFilter === 'all'
-            ? clients.filter(client => client.status === (clientStatusFilter === 'all' ? client.status : clientStatusFilter === 'activated'))
-            : clients.filter(client => client.type === clientTypeFilter && client.status === (clientStatusFilter === 'all' ? client.status : clientStatusFilter === 'activated'))
+        clientTypeFilter === 'allclient'
+            ? clients.filter(clients => clients.status === (clientStatusFilter === 'allclient' ? clients.status : clientStatusFilter === 'activated'))
+            : clients.filter(clients=> clients.type === clientTypeFilter && clients.status === (clientStatusFilter === 'allclient' ? clients.status : clientStatusFilter === 'activated'))
     }
     columns={columnsClient}
     pagination={{ pageSize: 12 }}
@@ -1078,7 +1107,7 @@ const onSearch = debounce(async (query) => {
                         </Select>
                         <Table
     dataSource={
-        financierStatusFilter === 'all' ? financiers : financiers.filter(financier => financier.status === (financierStatusFilter === 'activated'))
+        financierStatusFilter === 'all' ? financiers : financiers.filter(financiers => financiers.status === (financierStatusFilter === 'activated'))
     }
     columns={columnsFinancier}
     pagination={{ pageSize: 12 }}

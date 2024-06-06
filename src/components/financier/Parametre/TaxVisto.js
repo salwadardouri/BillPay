@@ -11,12 +11,13 @@ const TaxVisto = () => {
   const [timbreData, setTimbreData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState('Tva');
-  const [modalVisible, setModalVisible] = useState(false);
+
   const [editRecord, setEditRecord] = useState(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState(''); 
   const [devise, setDevise] = useState([]);
 
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     fetchData();
     fetchDevise();
@@ -62,7 +63,7 @@ const TaxVisto = () => {
     }
     form.resetFields();
     setEditRecord(null);
-    setModalVisible(false);
+    setOpen(false);
     fetchData();
   };
 
@@ -77,6 +78,7 @@ const TaxVisto = () => {
     }
   };
 
+  
   const updateRecord = async (values) => {
     values.status = true;
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
@@ -116,7 +118,7 @@ const TaxVisto = () => {
 
   const handleEditRecord = (record) => {
     setEditRecord(record);
-    setModalVisible(true);
+    setOpen(true);
     form.setFieldsValue({
       
       Valeur:record.Valeur,
@@ -125,10 +127,11 @@ const TaxVisto = () => {
     });
   };
 
+  
   const handleModalClose = () => {
     setEditRecord(null);
     form.resetFields();
-    setModalVisible(false);
+    setOpen(false);
   };
   const onSearch = debounce(async (query) => {
     setLoading(true);
@@ -165,6 +168,8 @@ const TaxVisto = () => {
       },
       {
         title: 'Actions',
+        width: 50,
+        align: 'left',
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
@@ -190,6 +195,8 @@ const TaxVisto = () => {
       },
       {
         title: 'Actions',
+        width: 50,
+        align: 'left',
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
@@ -212,7 +219,7 @@ const TaxVisto = () => {
       <Button
         type="primary"
         icon={<UserAddOutlined />}
-        onClick={() => setModalVisible(true)}
+        onClick={() => setOpen(true)}
         style={{ marginBottom: 16, float: 'right', backgroundColor: '#022452' }}
      
       >
@@ -228,7 +235,7 @@ const TaxVisto = () => {
         }}
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
-      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey}>
+      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} style={{marginTop:"30px"}}>
         <TabPane tab="Tva" key="Tva">
           <Table dataSource={tvaData} columns={columns.Tva} loading={loading} pagination={{ pageSize: 12 }} />
         </TabPane>
@@ -238,7 +245,7 @@ const TaxVisto = () => {
       </Tabs>
       <Modal
   title={editRecord ? 'Edit Record' : 'Create New Record'}
-  visible={modalVisible}
+  visible={open}
   onCancel={handleModalClose}
   footer={null}
 >
