@@ -30,6 +30,13 @@ const CreateInvoiceForm = () => {
   const [remise, setRemise] = useState(0);
   const [Valeur_Remise, setValeur_Remise] = useState(0);
   const [montant_HT_Apres_Remise, setMontant_HT_Apres_Remise] = useState(0);
+  const [totalHT, setTotalHT] = useState(0);
+const [totalTVA, setTotalTVA] = useState(0);
+const [totalRemise, setTotalRemise] = useState(0);
+const [totalHTApresRemise, setTotalHTApresRemise] = useState(0);
+const [totalTTC, setTotalTTC] = useState(0);
+const [selectedTimbre, setSelectedTimbre] = useState(null);
+
  // eslint-disable-next-line
   const [valeur_TVA, setValeur_TVA] = useState(0);
   const [selectedTVA, setSelectedTVA] = useState(null);
@@ -74,9 +81,16 @@ const CreateInvoiceForm = () => {
       dataIndex: 'prix_unitaire',
       key: 'prix_unitaire',
       width: '120px',
-      render: (value) => (
+      render: (value, record, index) => (
         <Tooltip placement="topLeft" title={value}>
-          <InputNumber style={{ width: '100%', border: 'none' }} readOnly value={value} />
+          <InputNumber
+            style={{ width: '100%', border: 'none' }}
+            value={value}
+            onChange={(val) => {
+              handleServiceChange(val, index, 'prix_unitaire');
+              calculateServiceTotals(index);
+            }}
+          />
         </Tooltip>
       )
     },
@@ -111,31 +125,26 @@ const CreateInvoiceForm = () => {
         <InputNumber
           style={{ width: '100%' }}
           value={value}
-          onChange={(e) => {
-            handleServiceChange(e, index, 'quantite');
-            handleQuantiteChange(e); 
-                    }}
+          onChange={(val) => {
+            handleServiceChange(val, index, 'quantite');
+            calculateServiceTotals(index);
+          }}
         />
       )
     },
-
     {
       title: 'Montant HT',
       dataIndex: 'montant_HT',
       key: 'montant_HT',
       width: '180px',
-      render: (value, record, index) => (
+      render: (value) => (
         <InputNumber
           style={{ width: '100%' }}
-          value={montant_HT} 
-          onChange={(e) => handleServiceChange(e, index, 'montant_HT')}
-
+          value={value}
           readOnly
         />
       )
     },
-    
-
     {
       title: 'Remise (%)',
       dataIndex: 'remise',
@@ -145,10 +154,9 @@ const CreateInvoiceForm = () => {
         <InputNumber
           style={{ width: '100%' }}
           value={value}
-    
-          onChange={(e) => {
-            handleServiceChange(e, index, 'remise');
-            handleRemiseChange(e); // Appel de la deuxième fonction onChange
+          onChange={(val) => {
+            handleServiceChange(val, index, 'remise');
+            calculateServiceTotals(index);
           }}
         />
       )
@@ -158,11 +166,10 @@ const CreateInvoiceForm = () => {
     //   dataIndex: 'Valeur_Remise',
     //   key: 'Valeur_Remise',
     //   width: '180px',
-    //   render: (value, record, index) => (
+    //   render: (value) => (
     //     <InputNumber
     //       style={{ width: '100%' }}
-    //       value={Valeur_Remise} 
-    //       onChange={(e) => handleServiceChange(e, index, 'Valeur_Remise')}
+    //       value={value}
     //       readOnly
     //     />
     //   )
@@ -172,17 +179,14 @@ const CreateInvoiceForm = () => {
     //   dataIndex: 'montant_HT_Apres_Remise',
     //   key: 'montant_HT_Apres_Remise',
     //   width: '180px',
-    //   render: (value, record, index) => (
+    //   render: (value) => (
     //     <InputNumber
     //       style={{ width: '100%' }}
-    //       value={montant_HT_Apres_Remise} 
-    //       onChange={(e) => handleServiceChange(e, index, 'montant_HT_Apres_Remise')}
+    //       value={value}
     //       readOnly
     //     />
     //   )
     // },
-    
-
     {
       title: 'TVA (%)',
       dataIndex: 'tvaId',
@@ -192,9 +196,9 @@ const CreateInvoiceForm = () => {
         <Select
           placeholder="Select a TVA"
           value={value}
-          onChange={(e) => {
-            handleServiceChange(e, index, 'tvaId');
-            handleTVAChange(e); // Appel de la deuxième fonction onChange
+          onChange={(val) => {
+            handleServiceChange(val, index, 'tvaId');
+            calculateServiceTotals(index);
           }}
           style={{ width: '90px' }}
         >
@@ -211,34 +215,27 @@ const CreateInvoiceForm = () => {
     //   dataIndex: 'valeur_TVA',
     //   key: 'valeur_TVA',
     //   width: '180px',
-    //   render: (value, record, index) => (
+    //   render: (value) => (
     //     <InputNumber
     //       style={{ width: '100%' }}
-    //       value={valeur_TVA}
-    //       onChange={(e) => handleServiceChange(e, index, 'valeur_TVA')}
+    //       value={value}
     //       readOnly
     //     />
     //   )
     // },
-
     {
-  
       key: 'action',
       width: '40px',
       ellipsis: true,
-   
       render: (_, record, index) => (
         <Button
           type="text"
           icon={<CloseOutlined />}
           onClick={() => handleRemoveService(index)}
-          style={{color:'red',width:'100%'}}
+          style={{ color: 'red', width: '100%' }}
         />
       )
-     
     },
-    
-    
   ];
 
   useEffect(() => {
@@ -314,28 +311,34 @@ const CreateInvoiceForm = () => {
     const services = [...invoiceData.services];
     services[index][key] = value;
     setInvoiceData({ ...invoiceData, services });
-  };
+    calculateServiceTotals(index); // Mise à jour des valeurs de la ligne
+    calculateTotals(services); // Mise à jour des totaux globaux
+  }
+  
   const handleRemoveService = (indexToRemove) => {
     const updatedServices = invoiceData.services.filter((_, index) => index !== indexToRemove);
     setInvoiceData({ ...invoiceData, services: updatedServices });
+    calculateTotals(updatedServices); 
   };
-  
   const handleServiceSelect = (value) => {
     const selectedService = availableServices.find(service => service._id === value);
     const newService = {
       ...selectedService,
       unite: '',
-      montant_HT: '',
-      remise: '',
-   Valeur_Remise:'',
-   valeur_TVA:'',
-      montant_HT_Apres_Remise:'',
-      quantite: '',
-      deviseId:'',
-      tvaId:'',
+      montant_HT: 0,
+      remise: 0,
+      Valeur_Remise: 0,
+      valeur_TVA: 0,
+      montant_HT_Apres_Remise: 0,
+      quantite: 0,
+      deviseId: '',
+      tvaId: 0,
     };
-    setInvoiceData({ ...invoiceData, services: [...invoiceData.services, newService] });
+    const updatedServices = [...invoiceData.services, newService]; // Créer updatedServices ici
+    setInvoiceData({ ...invoiceData, services: updatedServices }); // Utiliser updatedServices pour mettre à jour l'état
+    calculateTotals(updatedServices); // Utiliser updatedServices pour calculer les totaux
   };
+  
 
   const handleSubmit = async () => {
     console.log("Submitting invoice data:", invoiceData);
@@ -373,8 +376,7 @@ const handleServiceChangeCalcule = (serviceId) => {
       calculateValeurTVA(montant_HT_Apres_Remise, selectedTVA);
   }
 };  
-  
-  
+  // eslint-disable-next-line
   const handleQuantiteChange = (value) => {
     setQuantite(value);
     calculateMontantHT(value, prix_unitaire); // Utiliser la valeur de la quantité mise à jour
@@ -391,7 +393,7 @@ const calculateMontantHT = (quantite, prix_unitaire) => {
     calculateValeur_Remise(montant_HT, remise);
     form.setFieldsValue({ montant_HT: montant_HT });
 };
-
+// eslint-disable-next-line
 const handleRemiseChange = (value) => {
   setRemise(value);
   calculateValeur_Remise(montant_HT, value); 
@@ -414,7 +416,7 @@ const calculateMontantHTApresRemise = (montant_HT, valeur_Remise, selectedTVA) =
   
   form.setFieldsValue({ montant_HT_Apres_Remise: montant_HT_Apres_Remise });
 };
-
+// eslint-disable-next-line
 const handleTVAChange = (value) => {
   const tva = tvaList.find(tva => tva._id === value);
   if (tva) {
@@ -423,15 +425,65 @@ const handleTVAChange = (value) => {
   }
 };
 
+// Fonction de calcul mise à jour pour chaque ligne service en utilisant l'index
+const calculateServiceTotals = (index) => {
+  const services = [...invoiceData.services];
+  const service = services[index];
+  if (service) {
+    const montant_HT = service.quantite * service.prix_unitaire;
+    const valeur_Remise = montant_HT * (service.remise / 100);
+    const montant_HT_Apres_Remise = montant_HT - valeur_Remise;
+    const tva = tvaList.find(tva => tva._id === service.tvaId);
+    const valeur_TVA = tva ? montant_HT_Apres_Remise * (tva.Pourcent_TVA / 100) : 0;
 
+    services[index] = {
+      ...service,
+      montant_HT,
+      Valeur_Remise: valeur_Remise,
+      montant_HT_Apres_Remise,
+      valeur_TVA,
+    };
 
-
+    setInvoiceData({ ...invoiceData, services });
+  }
+};
 const calculateValeurTVA = (montant_HT_Apres_Remise,tva) => {
   const pourcent_TVA = tva;
   const valeur_TVA = montant_HT_Apres_Remise * (pourcent_TVA / 100);
   setValeur_TVA(valeur_TVA);
   form.setFieldsValue({ valeur_TVA });
 };
+const calculateTotals = (services) => {
+  const totalHT = services.reduce((sum, service) => sum + service.montant_HT, 0);
+  const totalRemise = services.reduce((sum, service) => sum + service.Valeur_Remise, 0);
+  const totalHTApresRemise = services.reduce((sum, service) => sum + service.montant_HT_Apres_Remise, 0);
+  const totalTVA = services.reduce((sum, service) => sum + service.valeur_TVA, 0);
+
+  // Ajoutez la valeur du timbre si sélectionné
+  const timbreValeur = selectedTimbre ? selectedTimbre.Valeur : 0;
+  const totalTTC = totalHTApresRemise + totalTVA + timbreValeur;
+
+  setTotalHT(totalHT);
+  setTotalRemise(totalRemise);
+  setTotalHTApresRemise(totalHTApresRemise);
+  setTotalTVA(totalTVA);
+  setTotalTTC(totalTTC); // Mise à jour de l'état pour Total TTC
+
+  form.setFieldsValue({
+    total_HT: totalHT,
+    total_TVA: totalTVA,
+    total_Remise: totalRemise,
+    total_HT_Apres_Remise: totalHTApresRemise,
+    total_TTC: totalTTC, // Mise à jour du champ dans le formulaire
+  });
+};
+const handleTimbreChange = (value) => {
+  const selected = timbre.find(t => t._id === value);
+  setSelectedTimbre(selected);
+  calculateTotals(invoiceData.services);
+};
+
+
 
   return (
     <>
@@ -539,22 +591,23 @@ const calculateValeurTVA = (montant_HT_Apres_Remise,tva) => {
      
     
 
-
-            <Form.Item
-        name="timbreid"
-      
-        rules={[{ required: true, message: 'Please select a timbre!' }]}
-      >
-        <Select 
-          placeholder="Select a Timbre"   style={{ height: '60px' }}
-          onChange={(value) => handleChange({ target: { name: 'timbreid', value } })}
-        >
-          {timbre.map(timbre => (
-            <Option key={timbre._id} value={timbre._id}>{timbre.Valeur} {timbre.devise ? `(${timbre.devise.Symbole})` : ''}</Option>
-          ))}
-        </Select>
-      </Form.Item>
-
+       <Form.Item
+  name="timbreid"
+  rules={[{ required: true, message: 'Please select a timbre!' }]}
+>
+  <Select 
+    placeholder="Select a Timbre"   
+    style={{ height: '60px' }}
+    onChange={(value) => {
+      handleTimbreChange(value); // Appeler la fonction pour la gestion du changement de timbre
+      handleChange({ target: { name: 'timbreid', value } }); // Appeler la fonction handleChange pour gérer les changements dans le formulaire
+    }}
+  >
+    {timbre.map(t => (
+      <Option key={t._id} value={t._id}>{t.Valeur} {t.devise ? `(${t.devise.Symbole})` : ''}</Option>
+    ))}
+  </Select>
+</Form.Item>
 
 
 
@@ -567,46 +620,54 @@ const calculateValeurTVA = (montant_HT_Apres_Remise,tva) => {
       <Table columns={factureTable} dataSource={invoiceData.services} pagination={false} rowKey={(record) => record._id} />
       <Row gutter={[16, 16]} justify="end">
   <Col span={8}> 
-    <Form.Item 
-      label="Total HT" 
-      name="total_HT" 
-      labelAlign="left"
-      style={{marginTop:'10px',marginBottom:'10px'}}
-    >
-      <InputNumber readOnly type="number"  onChange={(e) => handleChange({ target: { name: 'total_HT', value: e.target.value } })}/>
-    </Form.Item>
-    <Form.Item 
-      label="Total TVA" 
-      name="total_TVA" 
-      labelAlign="left"
-      style={{marginBottom:'10px'}}
-    >
-      <InputNumber readOnly type="number"  onChange={(e) => handleChange({ target: { name: 'total_TVA', value: e.target.value } })}/>
-    </Form.Item>
-    <Form.Item 
-      label="Total Remise" 
-      name="total_Remise" 
-      labelAlign="left"
-      style={{marginBottom:'10px'}}
-    >
-      <InputNumber readOnly type="number"  onChange={(e) => handleChange({ target: { name: 'total_Remise', value: e.target.value } })}/>
-    </Form.Item>
-    <Form.Item 
-      label="Total HT Après Remise" 
-      name="total_HT_Apres_Remise" 
-      labelAlign="left"
-      style={{marginBottom:'10px'}}
-    >
-      <InputNumber readOnly type="number"  onChange={(e) => handleChange({ target: { name: 'total_HT_Apres_Remise', value: e.target.value } })}/>
-    </Form.Item>
-    <Form.Item 
-      label="Total TTC" 
-      name="total_TTC" 
-      labelAlign="left"
-      style={{marginBottom:'10px'}}
-    >
-      <InputNumber readOnly type="number"  onChange={(e) => handleChange({ target: { name: 'total_TTC', value: e.target.value } })}/>
-    </Form.Item>
+  <Form.Item 
+  label="Total HT" 
+  name="total_HT" 
+  labelAlign="left"
+  style={{ marginTop: '10px', marginBottom: '10px' }}
+>
+  <InputNumber readOnly value={totalHT} 
+      onChange={(value) => handleChange({ target: { name: 'total_HT', value } })} />
+</Form.Item>
+<Form.Item 
+  label="Total TVA" 
+  name="total_TVA" 
+  labelAlign="left"
+  style={{ marginBottom: '10px' }}
+>
+  <InputNumber readOnly value={totalTVA} 
+   onChange={(value) => handleChange({ target: { name: 'total_TVA', value } })} />
+
+</Form.Item>
+<Form.Item 
+  label="Total Remise" 
+  name="total_Remise" 
+  labelAlign="left"
+  style={{ marginBottom: '10px' }}
+>
+  <InputNumber readOnly value={totalRemise}
+     onChange={(value) => handleChange({ target: { name: 'total_Remise', value } })}  />
+</Form.Item>
+<Form.Item 
+  label="Total HT Après Remise" 
+  name="total_HT_Apres_Remise" 
+  labelAlign="left"
+  style={{ marginBottom: '10px' }}
+>
+  <InputNumber readOnly value={totalHTApresRemise}
+       onChange={(value) => handleChange({ target: { name: 'total_HT_Apres_Remise', value } })}  /> 
+</Form.Item>
+
+<Form.Item 
+  label="Total TTC" 
+  name="total_TTC" 
+  labelAlign="left"
+  style={{ marginBottom: '10px' }}
+>
+  <InputNumber readOnly value={totalTTC}  
+       onChange={(value) => handleChange({ target: { name: 'total_TTC', value } })}  /> 
+</Form.Item>
+
   </Col>
 </Row>
 
