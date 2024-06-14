@@ -231,14 +231,14 @@ const User = () => {
           body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
         });
         if (response.ok) {
-          message.success('Client deleted successfully');
+          message.success('Data  successfully inactivatedy');
           fetchClients();
         } else {
-          throw new Error('Failed to delete client');
+          throw new Error('Failed to deactivate data');
         }
       } catch (error) {
-        console.error('Error deleting client:', error);
-        message.error('Failed to delete client');
+        console.error('Error deactivating data:', error);
+        message.error('Failed to inactivate data');
       }
     };
     
@@ -291,6 +291,7 @@ const User = () => {
           dataIndex: 'type',
           ellipsis: true,
           width: 100,
+          sorter: (a, b) => a.status - b.status, 
           render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
       },
         // {
@@ -616,7 +617,7 @@ const User = () => {
                 
                   
                     <Select defaultValue="all" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
-                            <Option value="all">All</Option>
+                            <Option value="all">All of types</Option>
                             <Option value="morale">Moral</Option>
                             <Option value="physique">Physical</Option>
                          

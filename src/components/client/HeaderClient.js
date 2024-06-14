@@ -98,7 +98,7 @@ const HeaderClient = () => {
     Devis
   </Button>
 </Link>
-<Link to="/Client/Profil">
+<Link to="/Client">
   <Button type="link" style={{ color: 'white', fontSize: '1rem', marginTop: "1px", fontFamily: 'cursive', cursor: 'pointer' }} icon={<FileDoneOutlined />}>
   Invoice
   </Button>

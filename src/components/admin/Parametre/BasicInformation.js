@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Form, Input, Col,Select, Row, Checkbox,message, Modal, Tooltip,Popconfirm, Space,Badge } from 'antd';
-import { EditOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Table, Button, Form, Input, Col,Select, Row, Checkbox,message, Modal, Tooltip, Space,Badge } from 'antd';
+import { EditOutlined,  UserAddOutlined,StopOutlined,CheckOutlined } from '@ant-design/icons';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import countryList from 'react-select-country-list';
@@ -24,6 +24,7 @@ const CountryOption = (props) => {
 };
 
 const BasicInformation = () => {
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -35,6 +36,8 @@ const BasicInformation = () => {
   const [searchText, setSearchText] = useState(''); 
   // eslint-disable-next-line
   const [selectedCountry, setSelectedCountry] = useState(null);
+  // eslint-disable-next-line
+  const [filterMode, setFilterMode] = useState('menu'); 
   const [parametreStatusFilter, setParametreStatusFilter] = useState('all');
   const [status, setStatus] = useState(null);
   const handleCheckboxChange = (event) => {
@@ -78,22 +81,22 @@ const BasicInformation = () => {
     });
   };
 
-  const handleDelete = async (record) => {
-    try {
-      const response = await fetch(`http://localhost:5000/parametre/${record._id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        message.success('Data deleted successfully');
-        fetchData();
-      } else {
-        throw new Error('Failed to delete data');
-      }
-    } catch (error) {
-      console.error('Error deleting data:', error);
-      message.error('Failed to delete data');
-    }
-  };
+  // const handleDelete = async (record) => {
+  //   try {
+  //     const response = await fetch(`http://localhost:5000/parametre/${record._id}`, {
+  //       method: 'DELETE',
+  //     });
+  //     if (response.ok) {
+  //       message.success('Data deleted successfully');
+  //       fetchData();
+  //     } else {
+  //       throw new Error('Failed to delete data');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting data:', error);
+  //     message.error('Failed to delete data');
+  //   }
+  // };
 
   const handleFormSubmit = async (values) => {
     if (editRecord) {
@@ -237,9 +240,16 @@ const BasicInformation = () => {
       key: 'status',
       width: 80,
       render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        <Badge
+        status={status ? "success" : "error"}
+        text={status ? "Actif" : "Inactif"}
+  
+        icon={status ? <CheckOutlined /> : <StopOutlined />}
+      />
       ),
-  },
+       sorter: (a, b) => a.status - b.status, 
+
+    },
     { title: 'FullName', dataIndex: 'Nom_S', key: 'Nom_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     { title: 'Email', dataIndex: 'Email_S', key: 'Email_S', ellipsis: true,
@@ -262,14 +272,14 @@ const BasicInformation = () => {
         <>
           <Space style={{ float: 'left' }}>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-            <Popconfirm
+            {/* <Popconfirm
               title="Are you sure to delete this user?"
               onConfirm={() => handleDelete(record)}
               okText="Yes"
               cancelText="No"
             >
               <Button type="link" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
+            </Popconfirm> */}
           </Space>
         </>
       ),

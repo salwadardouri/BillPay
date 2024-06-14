@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Input, Modal, Tooltip,Popconfirm,  message, Space, Row,Col } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, } from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
@@ -86,16 +86,22 @@ const Categories = () => {
 
   const handleDelete = async (record) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/categories/${record._id}`);
-      if (response.status === 200) {
-        message.success('Category deleted successfully');
+      const response = await fetch(`http://localhost:5000/categories/activated/${record._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' // Ajoutez l'en-tête Content-Type
+        },
+        body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
+      });
+      if (response.ok) {
+        message.success('Data  successfully inactivated');
         fetchCategory();
       } else {
-        throw new Error('Failed to delete category');
+        throw new Error('Failed to deactivate data');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
-      message.error('Failed to delete category');
+      console.error('Error deactivating  data:', error);
+      message.error('Failed to inactivate data');
     }
   };
 
@@ -128,14 +134,15 @@ const Categories = () => {
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+ 
           <Popconfirm
-            title="Are you sure to delete this category?"
-            onConfirm={() => handleDelete(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+              title="Are you sure to disable this category?"
+              onConfirm={() => handleDelete(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="link" danger >Disable</Button>
+            </Popconfirm>
         </Space>
       ),
     },

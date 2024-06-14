@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm, Button, Tabs, Modal, Badge,Form,Checkbox,  Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
-import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Table, Button, Tabs, Modal, Badge,Form,Checkbox, 
+   Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
+import {EditOutlined, UserAddOutlined,StopOutlined,CheckOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
@@ -95,16 +96,16 @@ const TaxVisto = () => {
 
   
 
-  const deleteRecord = async (record) => {
-    const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
-    try {
-      await axios.delete(`http://localhost:5000/${url}/${record._id}`);
-      message.success(`${activeTabKey} deleted successfully`);
-      fetchData();
-    } catch (error) {
-      message.error(`Failed to delete ${activeTabKey}`);
-    }
-  };
+  // const deleteRecord = async (record) => {
+  //   const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
+  //   try {
+  //     await axios.delete(`http://localhost:5000/${url}/${record._id}`);
+  //     message.success(`${activeTabKey} deleted successfully`);
+  //     fetchData();
+  //   } catch (error) {
+  //     message.error(`Failed to delete ${activeTabKey}`);
+  //   }
+  // };
 
   const handleEditRecord = (record) => {
     setEditRecord(record);
@@ -161,9 +162,16 @@ const handleTimbreStatusChange = (value) => {
         key: 'status',
         width: 80,
         render: (status) => (
-            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+          <Badge
+          status={status ? "success" : "error"}
+          text={status ? "Actif" : "Inactif"}
+    
+          icon={status ? <CheckOutlined /> : <StopOutlined />}
+        />
         ),
-    },
+         sorter: (a, b) => a.status - b.status, 
+  
+      },
       { 
         title: 'Pourcent_TVA', 
         dataIndex: 'Pourcent_TVA', 
@@ -177,14 +185,14 @@ const handleTimbreStatusChange = (value) => {
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
-            <Popconfirm
+            {/* <Popconfirm
               title="Are you sure to delete this item?"
               onConfirm={() => deleteRecord(record)}
               okText="Yes"
               cancelText="No"
             >
               <Button type="link" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
+            </Popconfirm> */}
           </Space>
         ),
       },
@@ -196,9 +204,16 @@ const handleTimbreStatusChange = (value) => {
         key: 'status',
         width: 80,
         render: (status) => (
-            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+          <Badge
+          status={status ? "success" : "error"}
+          text={status ? "Actif" : "Inactif"}
+    
+          icon={status ? <CheckOutlined /> : <StopOutlined />}
+        />
         ),
-    },
+         sorter: (a, b) => a.status - b.status, 
+  
+      },
       { title: 'Valeur', dataIndex: 'Valeur', key: 'Valeur' },
       {
         title: 'Devise',
@@ -213,14 +228,14 @@ const handleTimbreStatusChange = (value) => {
         render: (_, record) => (
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
-            <Popconfirm
+            {/* <Popconfirm
               title="Are you sure to delete this item?"
               onConfirm={() => deleteRecord(record)}
               okText="Yes"
               cancelText="No"
             >
               <Button type="link" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
+            </Popconfirm> */}
           </Space>
         ),
       },
@@ -251,7 +266,7 @@ const handleTimbreStatusChange = (value) => {
       <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} style={{marginTop:"30px"}}>
         <TabPane tab="Tva" key="Tva">
         <Select defaultValue="all" style={{ width: 150, marginBottom: 20 ,marginTop:"10px"}} onChange={handleTvaStatusChange}>
-                            <Option value="all">All</Option>
+                            <Option value="all">All of status</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>

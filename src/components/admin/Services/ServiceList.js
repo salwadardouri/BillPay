@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Row, Col,Checkbox, Modal,Space, Alert,Tooltip, Select,Badge, InputNumber,message, Table, Popconfirm} from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Row, Col,Checkbox, Modal,Space, Alert,Tooltip, 
+  Select,Badge, InputNumber,message, Table} from 'antd';
+import { PlusOutlined,  EditOutlined,StopOutlined,CheckOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
@@ -21,6 +22,8 @@ const ServiceList = () => {
   const [editRecord, setEditRecord] = useState(null);
   const [servicesStatusFilter, setServicesStatusFilter] = useState('all');
   const [status, setStatus] = useState(null);
+  // eslint-disable-next-line
+  const [availableServices, setAvailableServices] = useState([]);
   const handleCheckboxChange = (event) => {
     const { value } = event.target;
     setStatus(value === 'true');
@@ -28,18 +31,23 @@ const ServiceList = () => {
   const handleServicesStatusChange = (value) => {
     setServicesStatusFilter(value);
 };
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('http://localhost:5000/services');
-      setServices(response.data);
-    } catch (error) {
-      console.error('Error fetching services:', error);
-    } finally {
-      setLoading(false);
+const fetchServices = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get('http://localhost:5000/services');
+    if (response.status === 200) {
+      const filteredServices = response.data.filter(service => service.categories);
+      setAvailableServices(filteredServices);
+      setServices(filteredServices);
+    } else {
+      console.error('Failed to fetch Services data');
     }
-  };
-
+  } catch (error) {
+    console.error('Error fetching Services data:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchDevise = async () => {
     try {
@@ -114,6 +122,7 @@ const handleEdit = (record) => {
     deviseId: record.devise?._id,
     categoriesId: record.categories?._id,
     libelle: record.libelle,
+    unite: record.unite,
     reference: record.reference,
     prix_unitaire: record.prix_unitaire,
     status: record.status,
@@ -166,9 +175,16 @@ const onSearch = debounce(async (query) => {
       key: 'status',
       width: 80,
       render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        <Badge
+        status={status ? "success" : "error"}
+        text={status ? "Actif" : "Inactif"}
+  
+        icon={status ? <CheckOutlined /> : <StopOutlined />}
+      />
       ),
-  },
+       sorter: (a, b) => a.status - b.status, 
+
+    },
     {
       title: 'Ref',
       dataIndex: 'reference',
@@ -206,7 +222,14 @@ const onSearch = debounce(async (query) => {
       key: 'prix_unitaire', ellipsis: true,
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
-   
+  
+    {
+      title: 'Unite ',
+      dataIndex: 'unite',
+      key: 'unite', ellipsis: true,
+      render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
+    },
+  
     {
       title: 'Devise',
       dataIndex: ['devise', 'Nom_D'],
@@ -223,14 +246,7 @@ const onSearch = debounce(async (query) => {
           <Space style={{ float: 'left' }}>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
             
-            <Popconfirm
-              title="Are you sure to delete this user?"
-              onConfirm={() => handleDelete(record)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button type="link" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
+      
           </Space>
         </>
       ),
@@ -240,22 +256,22 @@ const onSearch = debounce(async (query) => {
 
 
 
-  const handleDelete = async (record) => {
-    try {
-      const response = await fetch(`http://localhost:5000/services/${record._id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        message.success('Data deleted successfully');
-        fetchServices();
-      } else {
-        throw new Error('Failed to delete data');
-      }
-    } catch (error) {
-      console.error('Error deleting data:', error);
-      message.error('Failed to delete data');
-    }
-  };
+  // const handleDelete = async (record) => {
+  //   try {
+  //     const response = await fetch(`http://localhost:5000/services/${record._id}`, {
+  //       method: 'DELETE',
+  //     });
+  //     if (response.ok) {
+  //       message.success('Data deleted successfully');
+  //       fetchServices();
+  //     } else {
+  //       throw new Error('Failed to delete data');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting data:', error);
+  //     message.error('Failed to delete data');
+  //   }
+  // };
 
   return (
     <>
@@ -383,6 +399,27 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
              </Form.Item>
    </Col>
 
+   <Col span={12} style={{ marginBottom: '16px' }}>
+            <Form.Item
+            name="unite"
+            label="unity"
+            rules={[{ required: true, message: 'Please input the unity!' }]}>
+        <Select
+        placeholder="Select the unity"
+    
+         
+     
+          style={{ width: '100%' }}
+        >
+         <Option value="heure">Heure</Option>
+      <Option value="jour">Jour</Option>
+      <Option value="semaine">Semaine</Option>
+      <Option value="mois">Mois</Option>
+      <Option value="année">Année</Option>
+        </Select>
+        </Form.Item>
+        </Col></Row>
+        <Row gutter={[16, 16]}>
   <Col span={12} style={{ marginBottom: '16px' }}><Form.Item
               name="categoriesId"
               label="Categories"

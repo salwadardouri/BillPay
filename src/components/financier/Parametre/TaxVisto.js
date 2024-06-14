@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Popconfirm, Button, Tabs, Modal, Form,  Select,InputNumber,Input, Space, message, Col, Row } from 'antd';
-import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
+import {  EditOutlined, UserAddOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
@@ -105,14 +105,14 @@ const TaxVisto = () => {
         body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
       });
       if (response.ok) {
-        message.success(`${activeTabKey} deleted successfully`);
+        message.success(`${activeTabKey}  successfully deactivated.`);
         fetchData();
       } else {
-        throw new Error('Failed to delete data');
+        throw new Error('Failed to deactivate data');
       }
     } catch (error) {
-      console.error('Error deleting data:', error);
-      message.error(`Failed to delete ${activeTabKey}`);    }
+      console.error('Error deactivating data:', error);
+      message.error(`Failed to inactivate ${activeTabKey}`);    }
   };
   
 
@@ -174,12 +174,12 @@ const TaxVisto = () => {
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
             <Popconfirm
-              title="Are you sure to delete this item?"
+              title="Are you sure to disable this TVA?"
               onConfirm={() => deleteRecord(record)}
               okText="Yes"
               cancelText="No"
             >
-              <Button type="link" danger icon={<DeleteOutlined />} />
+              <Button type="link" danger >Disable</Button>
             </Popconfirm>
           </Space>
         ),
@@ -201,12 +201,12 @@ const TaxVisto = () => {
           <Space>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditRecord(record)} />
             <Popconfirm
-              title="Are you sure to delete this item?"
+              title="Are you sure to disable this Stamp?"
               onConfirm={() => deleteRecord(record)}
               okText="Yes"
               cancelText="No"
             >
-              <Button type="link" danger icon={<DeleteOutlined />} />
+              <Button type="link" danger >Disable</Button>
             </Popconfirm>
           </Space>
         ),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Input, Col, Row, message, Modal, Popconfirm, Space } from 'antd';
-import { EditOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons';
+import { EditOutlined, UserAddOutlined } from '@ant-design/icons';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import countryList from 'react-select-country-list';
@@ -86,14 +86,14 @@ const fetchData = async () => {
         body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
       });
       if (response.ok) {
-        message.success('Data deleted successfully');
+        message.success('Data  successfully inactivated');
         fetchData();
       } else {
-        throw new Error('Failed to delete data');
+        throw new Error('Failed to deactivate data');
       }
     } catch (error) {
-      console.error('Error deleting data:', error);
-      message.error('Failed to delete data');
+      console.error('Error deactivating data:', error);
+      message.error('Failed to inactivate data');
     }
   };
   
@@ -241,12 +241,12 @@ const fetchData = async () => {
           <Space style={{ float: 'left' }}>
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
             <Popconfirm
-              title="Are you sure to delete this user?"
+              title="Are you sure to disable this user?"
               onConfirm={() => handleDelete(record)}
               okText="Yes"
               cancelText="No"
             >
-              <Button type="link" danger icon={<DeleteOutlined />} />
+              <Button type="link" danger >Disable</Button>
             </Popconfirm>
           </Space>
         </>

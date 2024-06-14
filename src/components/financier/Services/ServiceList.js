@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Row, Col, Modal,Space, Alert,Tooltip, Select,InputNumber,message, Table, Popconfirm} from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
@@ -19,20 +19,22 @@ const ServiceList = () => {
   const [devise, setDevise] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
+  // eslint-disable-next-line
+  const [availableServices, setAvailableServices] = useState([]);
 
   const fetchServices = async () => {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/services');
       if (response.status === 200) {
-        // Filtrer les services ayant le statut true
-        const filteredServices = response.data.filter(service => service.status === true);
+        const filteredServices = response.data.filter(service => service.status === true && service.categories);
+        setAvailableServices(filteredServices);
         setServices(filteredServices);
       } else {
-        console.error('Failed to fetch service data');
+        console.error('Failed to fetch Services data');
       }
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error('Error fetching Services data:', error);
     } finally {
       setLoading(false);
     }
@@ -113,6 +115,7 @@ const handleEdit = (record) => {
   form.setFieldsValue({
 
     deviseId: record.devise?._id,
+    unite: record.unite,
     categoriesId: record.categories?._id,
     libelle: record.libelle,
     reference: record.reference,
@@ -201,22 +204,17 @@ const onSearch = debounce(async (query) => {
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
     {
-      title: 'Devise',
-      dataIndex: 'devise', // Change this to just 'devise' since we will handle the rest in render
-      key: 'devise_Symbole',
-      ellipsis: true,
-      render: (text, record) => {
-        // Combine Nom_D and Symbole
-        const displayText = `${record.devise.Nom_D} (${record.devise.Symbole})`;
-        return (
-          <Tooltip placement="topLeft" title={displayText}>
-            {displayText}
-          </Tooltip>
-        );
-      }
+      title: 'Unite ',
+      dataIndex: 'unite',
+      key: 'unite', ellipsis: true,
+      render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
-    
-
+    {
+      title: 'Devise',
+      dataIndex: ['devise', 'Nom_D'],
+      key: 'devise_Nom_D',
+  
+    },
  
 
     {
@@ -227,12 +225,12 @@ const onSearch = debounce(async (query) => {
             <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
             
             <Popconfirm
-              title="Are you sure to delete this user?"
+              title="Are you sure to disable this user?"
               onConfirm={() => handleDelete(record)}
               okText="Yes"
               cancelText="No"
             >
-              <Button type="link" danger icon={<DeleteOutlined />} />
+              <Button type="link" danger >Disable</Button>
             </Popconfirm>
           </Space>
         </>
@@ -243,22 +241,29 @@ const onSearch = debounce(async (query) => {
 
 
 
+
+  
   const handleDelete = async (record) => {
     try {
-      const response = await fetch(`http://localhost:5000/services/${record._id}`, {
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:5000/services/activated/${record._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' // Ajoutez l'en-tête Content-Type
+        },
+        body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
       });
       if (response.ok) {
-        message.success('Data deleted successfully');
+        message.success('Data  successfully inactivated');
         fetchServices();
       } else {
-        throw new Error('Failed to delete data');
+        throw new Error('Failed to deactivate data');
       }
     } catch (error) {
-      console.error('Error deleting data:', error);
-      message.error('Failed to delete data');
+      console.error('Error deactivating data:', error);
+      message.error('Failed to inactivate data');
     }
   };
+
 
   return (
     <>
@@ -352,6 +357,28 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
              </Form.Item>
    </Col>
 
+   <Col span={12} style={{ marginBottom: '16px' }}>
+            <Form.Item
+            name="unite"
+            label="unity"
+            rules={[{ required: true, message: 'Please input the unity!' }]}>
+        <Select
+        placeholder="Select the unity"
+    
+         
+     
+          style={{ width: '100%' }}
+        >
+         <Option value="heure">Heure</Option>
+      <Option value="jour">Jour</Option>
+      <Option value="semaine">Semaine</Option>
+      <Option value="mois">Mois</Option>
+      <Option value="année">Année</Option>
+        </Select>
+        </Form.Item>
+        </Col></Row>
+        <Row gutter={[16, 16]}>
+ 
   <Col span={12} style={{ marginBottom: '16px' }}><Form.Item
               name="categoriesId"
               label="Categories"

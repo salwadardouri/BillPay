@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Input, Modal, Popconfirm, message, Space, Row, Col } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Form, Input, Modal,  message, Space, Row, Col } from 'antd';
+import { EditOutlined, } from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
@@ -79,20 +79,20 @@ const DeviseParam = () => {
     }
   };
 
-  const handleDelete = async (record) => {
-    try {
-      const response = await axios.delete(`http://localhost:5000/devise/${record._id}`);
-      if (response.status === 200) {
-        message.success('Devise deleted successfully');
-        fetchDevise();
-      } else {
-        throw new Error('Failed to delete devise');
-      }
-    } catch (error) {
-      console.error('Error deleting devise:', error);
-      message.error('Failed to delete devise');
-    }
-  };
+  // const handleDelete = async (record) => {
+  //   try {
+  //     const response = await axios.delete(`http://localhost:5000/devise/${record._id}`);
+  //     if (response.status === 200) {
+  //       message.success('Devise deleted successfully');
+  //       fetchDevise();
+  //     } else {
+  //       throw new Error('Failed to delete devise');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting devise:', error);
+  //     message.error('Failed to delete devise');
+  //   }
+  // };
 
   const onSearch = debounce(async (query) => {
     setLoading(true);
@@ -122,14 +122,14 @@ const DeviseParam = () => {
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Popconfirm
+          {/* <Popconfirm
             title="Are you sure to delete this devise?"
             onConfirm={() => handleDelete(record)}
             okText="Yes"
             cancelText="No"
           >
             <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm> */}
         </Space>
       ),
     },

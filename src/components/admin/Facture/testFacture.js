@@ -188,9 +188,6 @@ const handleTVAChange = (value) => {
       montant_HT: record.montant_HT,
       montant_TTC: record.montant_TTC, 
       total_TVA: record.total_TVA});
-  
-  
-  
     setDrawerVisible(true); 
   };
 

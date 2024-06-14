@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Popconfirm,Tooltip,Button, Tabs, Modal,Select, Drawer, Badge,Checkbox, Space, message, Form, Input, Col, Row, Alert} from 'antd';
-import { DeleteOutlined, EditOutlined, UserAddOutlined ,EyeOutlined,CheckCircleOutlined, CloseCircleOutlined} from '@ant-design/icons';import './User.css';
+import { Table, Tooltip,Button, Tabs, Modal,Select, Drawer, Badge,Checkbox, Space, message, Form, Input, Col, Row, Alert} from 'antd';
+import { EditOutlined, UserAddOutlined ,EyeOutlined,CheckCircleOutlined, CloseCircleOutlined,StopOutlined,CheckOutlined} from '@ant-design/icons';import './User.css';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import countryList from 'react-select-country-list';
@@ -165,7 +165,7 @@ const User = () => {
       } finally {
         setLoading(false);
       }
-    };0
+    };
     
 
     const handleChangePhoneNumber = (value) => {
@@ -396,39 +396,7 @@ const User = () => {
       }
     };
     
-    const handleDeleteClient = async (recordClient) => {
-      try {
-        const response = await fetch(`http://localhost:5000/clients/${recordClient._id}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          message.success('Client deleted successfully');
-          fetchClients();
-        } else {
-          throw new Error('Failed to delete client');
-        }
-      } catch (error) {
-        console.error('Error deleting client:', error);
-        message.error('Failed to delete client');
-      }
-    };
  
-    const handleDeleteFinancier = async (record) => {
-      try {
-        const response = await fetch(`http://localhost:5000/financier/${editRecordFinancier._id}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          message.success('Data deleted successfully');
-          fetchFinanciers();
-        } else {
-          throw new Error('Failed to delete data');
-        }
-      } catch (error) {
-        console.error('Error deleting data:', error);
-        message.error('Failed to delete data');
-      }
-    };
     const onTabChange = (key) => {
         setActiveTabKey(key);
     };
@@ -465,11 +433,18 @@ const onSearch = debounce(async (query) => {
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        width: 80,
+        width: 90,
         render: (status) => (
-            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+          <Badge
+          status={status ? "success" : "error"}
+          text={status ? "Actif" : "Inactif"}
+    
+          icon={status ? <CheckOutlined /> : <StopOutlined />}
+        />
         ),
-    },
+         sorter: (a, b) => a.status - b.status, 
+  
+      },
         {
             title: 'Fullname',
             dataIndex: 'fullname',
@@ -508,17 +483,11 @@ const onSearch = debounce(async (query) => {
         },
         {
             title: 'Actions',
+            width: 100,
             render: (_, recordFinancier) => (
                 <>
                             <Button type="link" icon={<EditOutlined />} onClick={() => handleEditFinancier(recordFinancier)} />
-                    <Popconfirm
-                        title="Are you sure to delete this user?"
-                        onConfirm={() => handleDeleteFinancier(recordFinancier)}
-                        okText="Yes"
-                        cancelText="No"
-                    >
-                        <Button type="link" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                 
                     
                 </>
             ),
@@ -526,17 +495,22 @@ const onSearch = debounce(async (query) => {
     ];
 
     const columnsClient = [
-      {    title: 'Status',
+      {
+        title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        width: 80,
+        width: 90,
         render: (status) => (
-            <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+          <Badge
+          status={status ? "success" : "error"}
+          text={status ? "Actif" : "Inactif"}
+    
+          icon={status ? <CheckOutlined /> : <StopOutlined />}
+        />
         ),
-    },
-
-
-
+         sorter: (a, b) => a.status - b.status, 
+  
+      },
         {
             title: 'Fullname',
             dataIndex: 'fullname',
@@ -567,7 +541,9 @@ const onSearch = debounce(async (query) => {
           dataIndex: 'type',
           ellipsis: true,
           width: 100,
+          sorter: (a, b) => a.type - b.type,
           render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
+           
       },
         // {
         //     title: 'Address',
@@ -593,19 +569,12 @@ const onSearch = debounce(async (query) => {
             ]),
         {
             title: 'Actions',
+            width: 100,
             render: (_, recordClient) => (
                 <>
                  <Space>
                   <Button type="link" icon={<EditOutlined />} onClick={() => handleEditClient(recordClient)} />
-                    <Popconfirm
-                        title="Are you sure to delete this user?"
-                        onConfirm={() => handleDeleteClient(recordClient)}
-                        okText="Yes"
-                        cancelText="No"
-                    >
-                        <Button type="link" danger icon={<DeleteOutlined />} />
-                        
-                    </Popconfirm>
+                
                     <Button type="link" icon={<EyeOutlined />} onClick={() => handleViewClient(recordClient)} />
                     </Space>  </>
             ),
@@ -1039,7 +1008,8 @@ const onSearch = debounce(async (query) => {
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
      <Drawer
-    title="Create a new account"
+
+    
     width={720}
     onClose={onClose}
     open={open}
@@ -1075,13 +1045,13 @@ const onSearch = debounce(async (query) => {
                     <TabPane tab="Clients" key="Clients">
                   
                     <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
-                            <Option value="allclient">All</Option>
+                            <Option value="allclient">All of types</Option>
                             <Option value="morale">Moral</Option>
                             <Option value="physique">Physical</Option>
                          
                         </Select>
                         <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20,marginLeft:'10px' }} onChange={handleClientStatusChange}>
-                            <Option value="allclient">All</Option>
+                            <Option value="allclient">All of status</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>
@@ -1101,7 +1071,7 @@ const onSearch = debounce(async (query) => {
                     </TabPane>
                     <TabPane tab="Financiers" key="Financiers">
                         <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleFinancierStatusChange}>
-                            <Option value="all">All</Option>
+                            <Option value="all">All of status</Option>
                             <Option value="activated">Activated</Option>
                             <Option value="inactivated">Inactivated</Option>
                         </Select>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Input, Modal,Select, Badge,Tooltip,Popconfirm,  message, Space, Row, Checkbox,Col } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Form, Input, Modal,Select, Badge,Tooltip,  message, Space, Row, Checkbox,Col } from 'antd';
+import { EditOutlined,StopOutlined,CheckOutlined} from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
@@ -94,20 +94,20 @@ const Categories = () => {
     }
   };
 
-  const handleDelete = async (record) => {
-    try {
-      const response = await axios.delete(`http://localhost:5000/categories/${record._id}`);
-      if (response.status === 200) {
-        message.success('Category deleted successfully');
-        fetchCategory();
-      } else {
-        throw new Error('Failed to delete category');
-      }
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      message.error('Failed to delete category');
-    }
-  };
+  // const handleDelete = async (record) => {
+  //   try {
+  //     const response = await axios.delete(`http://localhost:5000/categories/${record._id}`);
+  //     if (response.status === 200) {
+  //       message.success('Category deleted successfully');
+  //       fetchCategory();
+  //     } else {
+  //       throw new Error('Failed to delete category');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting category:', error);
+  //     message.error('Failed to delete category');
+  //   }
+  // };
 
   const onSearch = debounce(async (query) => {
     setLoading(true);
@@ -134,9 +134,16 @@ const Categories = () => {
       key: 'status',
       width: 80,
       render: (status) => (
-          <Badge dot style={{ backgroundColor: status ? 'green' : 'red' }} />
+        <Badge
+        status={status ? "success" : "error"}
+        text={status ? "Actif" : "Inactif"}
+  
+        icon={status ? <CheckOutlined /> : <StopOutlined />}
+      />
       ),
-  },
+       sorter: (a, b) => a.status - b.status, 
+
+    },
     { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie'  , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' , ellipsis: true,
@@ -148,14 +155,14 @@ const Categories = () => {
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Popconfirm
+          {/* <Popconfirm
             title="Are you sure to delete this category?"
             onConfirm={() => handleDelete(record)}
             okText="Yes"
             cancelText="No"
           >
             <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm> */}
         </Space>
       ),
     },
@@ -169,7 +176,7 @@ const Categories = () => {
           style={{ backgroundColor: '#022452' }}
           onClick={() => setOpen(true)}
         >
-          New Collection
+          New Category
         </Button>      </div>
         <Search
         placeholder="Search "
