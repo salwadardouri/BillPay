@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Form, Input,DatePicker, Table, Select, Button,Tooltip,Space, InputNumber,Row,Col,message ,Modal ,Typography} from 'antd';
+import { Form, Input,DatePicker,Divider, Table, Select, Button,Tooltip,Space, InputNumber,Row,Col,message ,Modal ,Typography} from 'antd';
 import Visto from '../../../images/Visto.png';
 
-import { CloseOutlined ,EyeOutlined,EditOutlined,} from '@ant-design/icons';
+import { CloseOutlined ,EyeOutlined,} from '@ant-design/icons';
 
 import moment from 'moment';
 
 const { Option } = Select;
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 
 const CreateInvoiceForm = () => {
@@ -41,6 +41,9 @@ const [selectedTimbre, setSelectedTimbre] = useState(null);
 const [loading, setLoading] = useState(false);
   const [valeur_TVA, setValeur_TVA] = useState(0);
   const [selectedTVA, setSelectedTVA] = useState(null);
+  const [paymentType, setPaymentType] = useState(''); // Stocke le type de paiement sélectionné
+  const [installments, setInstallments] = useState([{ id: 1 }]); // Stocke les échéances
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
 
   const [invoiceData, setInvoiceData] = useState({
     total_HT,
@@ -55,186 +58,6 @@ const [loading, setLoading] = useState(false);
     services: []
   });
 
-  const factureTable = [
-    {
-      title: 'Ref',
-      dataIndex: 'reference',
-      key: 'reference',
-      width: '140px',
-      ellipsis: true,  
-      render: text => (
-        <Tooltip placement="topLeft" title={text}>
-          <Input style={{ width: '100%' , border: 'none',textAlign: 'justify'}} readOnly value={text} />
-        </Tooltip>
-      )
-    },
- {
-      title: 'Descriptions',
-      dataIndex: 'libelle',
-      key: 'libelle',
-      render: (text) => (
-        <Tooltip placement="topLeft" title={text}>
-          <Input style={{ width: '100%', border: 'none' }} readOnly value={text} />
-        </Tooltip>
-      )
-    },
-    {
-      title: 'PU',
-      dataIndex: 'prix_unitaire',
-      key: 'prix_unitaire',
-      width: '100px',
-      render: (value, record, index) => (
-        <Tooltip placement="topLeft" title={value}>
-          <InputNumber
-            style={{ width: '100%', border: 'none' }}
-            value={value}
-            onChange={(val) => {
-              handleServiceChange(val, index, 'prix_unitaire');
-              calculateServiceTotals(index);
-            }}
-          />
-        </Tooltip>
-      )
-    },
-
-    {
-      title: 'Unity',
-      dataIndex: 'unite',
-      key: 'unite',
-      render: (text) => (
-        <Tooltip placement="topLeft" title={text}>
-          <Input style={{ width: '100%', border: 'none' }} readOnly value={text} />
-        </Tooltip>
-      )
-    },
-    {
-      title: 'Qté',
-      dataIndex: 'quantite',
-      key: 'quantite',
-      width: '80px',
-      render: (value, record, index) => (
-        <InputNumber
-          style={{ width: '100%' }}
-          value={value}
-          onChange={(val) => {
-            handleServiceChange(val, index, 'quantite');
-            calculateServiceTotals(index);
-          }}
-        />
-      )
-    },
-    {
-      title: 'Montant HT',
-      dataIndex: 'montant_HT',
-      key: 'montant_HT',
-      width: '150px',
-      render: (value) => (
-        <InputNumber
-          style={{ width: '100%' }}
-          value={value}
-          readOnly
-        />
-      )
-    },
-    {
-      title: 'Remise (%)',
-      dataIndex: 'remise',
-      key: 'remise',
-      width: '120px',
-      render: (value, record, index) => (
-
-        <InputNumber
-          style={{ width: '100%' }}
-          value={value}
-          onChange={(val) => {
-            handleServiceChange(val, index, 'remise');
-            calculateServiceTotals(index);
-          }}
-        
-         formatter={value => `${value}%`} // Ajouter le symbole "%" après la valeur
-         parser={value => value.replace('%', '')}// Retirer le symbole "%" lors de la saisie
-         />
-      )
-    },
-    // {
-    //   title: 'Valeur Remise',
-    //   dataIndex: 'Valeur_Remise',
-    //   key: 'Valeur_Remise',
-    //   width: '180px',
-    //   render: (value) => (
-    //     <InputNumber
-    //       style={{ width: '100%' }}
-    //       value={value}
-    //       readOnly
-    //     />
-    //   )
-    // },
-    // {
-    //   title: 'Montant HT Net',
-    //   dataIndex: 'montant_HT_Apres_Remise',
-    //   key: 'montant_HT_Apres_Remise',
-    //   width: '180px',
-    //   render: (value) => (
-    //     <InputNumber
-    //       style={{ width: '100%' }}
-    //       value={value}
-    //       readOnly
-    //     />
-    //   )
-    // },
-    {
-      title: 'TVA (%)',
-      dataIndex: 'tvaId',
-      key: 'tvaId',
-      width: '110px',
-      render: (value, record, index) => (
-        <Select
-          placeholder="Select a TVA"
-          value={value}
-          onChange={(val) => {
-            handleServiceChange(val, index, 'tvaId');
-            calculateServiceTotals(index);
-          }}
-          style={{ width: '90px' }}
-        >
-          {tvaList.map((tva) => (
-            <Option key={tva._id} value={tva._id}>
-              {tva.Pourcent_TVA} %
-            </Option>
-          ))}
-        </Select>
-      )
-    },
-    // {
-    //   title: 'Valeur TVA',
-    //   dataIndex: 'valeur_TVA',
-    //   key: 'valeur_TVA',
-    //   width: '180px',
-    //   render: (value) => (
-    //     <InputNumber
-    //       style={{ width: '100%' }}
-    //       value={value}
-    //       readOnly
-    //     />
-    //   )
-    // },
-    {
-      key: 'action',
-      width: '40px',
-      ellipsis: true,
-      render: (_, record, index) => (
-        <Button
-          type="text"
-          icon={<CloseOutlined />}
-          onClick={() => handleRemoveService(index)}
-          style={{ color: 'red', width: '100%' }}
-        />
-      )
-    },
-  ];
- 
- 
-  
   const showShowModal = (record) => {
     setIsShowModalVisible(true);
     setSelectedFacture(record);
@@ -243,8 +66,6 @@ const [loading, setLoading] = useState(false);
   const handleShowModalCancel = () => {
     setIsShowModalVisible(false);
   };
-
-  
 
   useEffect(() => {
     fetchTimbre();
@@ -355,74 +176,7 @@ const [loading, setLoading] = useState(false);
       setLoading(false);
     }
   };
-  const currentDate = moment();
 
-  const calculateDaysDifference = (date1, date2) => {
-    return moment(date1).diff(moment(date2), 'days');
-  };
-
-  const calculateReceptionDays = (dateFacture, dateEcheance) => {
-    return moment(dateEcheance).diff(moment(dateFacture), 'days');
-  };
-
-  const handleEdit = (record) => {
-    setEditRecord(record);
-    setIsUpdateModalVisible(true);
-    
-    form.setFieldsValue({
-      total_TTC: record.total_TTC,
-      Status_delais: record.Status_delais,
-      Etat_delais: record.Etat_delais,
-      Date_Echeance: moment(record.Date_Echeance),
-      Date_Fact: moment(record.Date_Fact),
-      Date_Jour_Actuel: currentDate,
-      montant_Paye: record.montant_Paye,
-    });
-
-    const nombre_jours_retard = calculateDaysDifference(currentDate, record.Date_Echeance);
-    const comptant_Reception = calculateReceptionDays(record.Date_Fact, record.Date_Echeance);
-    
-    form.setFieldsValue({
-      nombre_jours_retard,
-      comptant_Reception,
-    });
-  };
-  const updateInvoice = async (values) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/facture/${editRecord._id}`, values);
-      if (response.status === 200) {
-        message.success('Facture updated successfully');
-        fetchFacture();
-        setIsUpdateModalVisible(false);
-      } else {
-        throw new Error('Failed to update facture');
-      }
-    } catch (error) {
-      message.error('Failed to update facture');
-      console.error('Error updating facture:', error);
-    }
-  };
-
-  const handleFieldChange = (changedValues, allValues) => {
-    const { montant_Paye, total_TTC} = allValues;
-
-    // Recalculate montant_Restant
-    if (montant_Paye != null && total_TTC != null) {
-      const montant_Restant = total_TTC - montant_Paye;
-      form.setFieldsValue({ montant_Restant });
-    }
-
-  };
-
-  // const updateCalculatedFields = (Date_Fact, Date_Echeance, currentDate) => {
-  //   const comptant_Reception = moment(Date_Echeance).diff(moment(Date_Fact), 'days');
-  //   let nombre_jours_retard = moment(currentDate).diff(moment(Date_Echeance), 'days');
-   
-  //   form.setFieldsValue({
-  //     comptant_Reception,
-  //     nombre_jours_retard
-  //   });
-  // };
   const onFinish = async () => {
     console.log("Submitting invoice data:", invoiceData);
 
@@ -452,9 +206,6 @@ const [loading, setLoading] = useState(false);
     console.error('Error creating invoice:', error);
   }
 };
-
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setInvoiceData({ ...invoiceData, [name]: value });
@@ -620,7 +371,22 @@ const handleTimbreChange = (value) => {
   // Mettez à jour la valeur du champ de timbre dans le formulaire
   form.setFieldsValue({ timbre_Valeur: selected ? selected.Valeur : 0 });
 };
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+const handleEdit = (record) => {
+  setEditRecord(record);
+  setIsUpdateModalVisible(true);
+  
+  form.setFieldsValue({
+    total_TTC: record.total_TTC,
+    Date_Fact: moment(record.Date_Fact),
+  
+  });
 
+
+};
 const columns = [
   {
     title: 'Date',
@@ -674,18 +440,192 @@ const columns = [
     render: (_, record) => (
       <Space style={{ float: 'left' }}>
         <Button type="link" icon={<EyeOutlined />} onClick={() => showShowModal(record)} />
-        <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+        <Button type="link" onClick={() => handleEdit(record)} disabled={paymentSubmitted}>
+  Track
+</Button>
+
        
       </Space>
     ),
   },
 ];
+const factureTable = [
+  {
+    title: 'Ref',
+    dataIndex: 'reference',
+    key: 'reference',
+    width: '140px',
+    ellipsis: true,  
+    render: text => (
+      <Tooltip placement="topLeft" title={text}>
+        <Input style={{ width: '100%' , border: 'none',textAlign: 'justify'}} readOnly value={text} />
+      </Tooltip>
+    )
+  },
+{
+    title: 'Descriptions',
+    dataIndex: 'libelle',
+    key: 'libelle',
+    render: (text) => (
+      <Tooltip placement="topLeft" title={text}>
+        <Input style={{ width: '100%', border: 'none' }} readOnly value={text} />
+      </Tooltip>
+    )
+  },
+  {
+    title: 'PU',
+    dataIndex: 'prix_unitaire',
+    key: 'prix_unitaire',
+    width: '100px',
+    render: (value, record, index) => (
+      <Tooltip placement="topLeft" title={value}>
+        <InputNumber
+          style={{ width: '100%', border: 'none' }}
+          value={value}
+          onChange={(val) => {
+            handleServiceChange(val, index, 'prix_unitaire');
+            calculateServiceTotals(index);
+          }}
+        />
+      </Tooltip>
+    )
+  },
 
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
+  {
+    title: 'Unity',
+    dataIndex: 'unite',
+    key: 'unite',
+    render: (text) => (
+      <Tooltip placement="topLeft" title={text}>
+        <Input style={{ width: '100%', border: 'none' }} readOnly value={text} />
+      </Tooltip>
+    )
+  },
+  {
+    title: 'Qté',
+    dataIndex: 'quantite',
+    key: 'quantite',
+    width: '80px',
+    render: (value, record, index) => (
+      <InputNumber
+        style={{ width: '100%' }}
+        value={value}
+        onChange={(val) => {
+          handleServiceChange(val, index, 'quantite');
+          calculateServiceTotals(index);
+        }}
+      />
+    )
+  },
+  {
+    title: 'Montant HT',
+    dataIndex: 'montant_HT',
+    key: 'montant_HT',
+    width: '150px',
+    render: (value) => (
+      <InputNumber
+        style={{ width: '100%' }}
+        value={value}
+        readOnly
+      />
+    )
+  },
+  {
+    title: 'Remise (%)',
+    dataIndex: 'remise',
+    key: 'remise',
+    width: '120px',
+    render: (value, record, index) => (
 
+      <InputNumber
+        style={{ width: '100%' }}
+        value={value}
+        onChange={(val) => {
+          handleServiceChange(val, index, 'remise');
+          calculateServiceTotals(index);
+        }}
+      
+       formatter={value => `${value}%`} // Ajouter le symbole "%" après la valeur
+       parser={value => value.replace('%', '')}// Retirer le symbole "%" lors de la saisie
+       />
+    )
+  },
+  // {
+  //   title: 'Valeur Remise',
+  //   dataIndex: 'Valeur_Remise',
+  //   key: 'Valeur_Remise',
+  //   width: '180px',
+  //   render: (value) => (
+  //     <InputNumber
+  //       style={{ width: '100%' }}
+  //       value={value}
+  //       readOnly
+  //     />
+  //   )
+  // },
+  // {
+  //   title: 'Montant HT Net',
+  //   dataIndex: 'montant_HT_Apres_Remise',
+  //   key: 'montant_HT_Apres_Remise',
+  //   width: '180px',
+  //   render: (value) => (
+  //     <InputNumber
+  //       style={{ width: '100%' }}
+  //       value={value}
+  //       readOnly
+  //     />
+  //   )
+  // },
+  {
+    title: 'TVA (%)',
+    dataIndex: 'tvaId',
+    key: 'tvaId',
+    width: '110px',
+    render: (value, record, index) => (
+      <Select
+        placeholder="Select a TVA"
+        value={value}
+        onChange={(val) => {
+          handleServiceChange(val, index, 'tvaId');
+          calculateServiceTotals(index);
+        }}
+        style={{ width: '90px' }}
+      >
+        {tvaList.map((tva) => (
+          <Option key={tva._id} value={tva._id}>
+            {tva.Pourcent_TVA} %
+          </Option>
+        ))}
+      </Select>
+    )
+  },
+  // {
+  //   title: 'Valeur TVA',
+  //   dataIndex: 'valeur_TVA',
+  //   key: 'valeur_TVA',
+  //   width: '180px',
+  //   render: (value) => (
+  //     <InputNumber
+  //       style={{ width: '100%' }}
+  //       value={value}
+  //       readOnly
+  //     />
+  //   )
+  // },
+  {
+    key: 'action',
+    width: '40px',
+    ellipsis: true,
+    render: (_, record, index) => (
+      <Button
+        type="text"
+        icon={<CloseOutlined />}
+        onClick={() => handleRemoveService(index)}
+        style={{ color: 'red', width: '100%' }}
+      />
+    )
+  },
+];
   const columnsShow = [
     {
       title: 'Ref',
@@ -728,9 +668,52 @@ const formatDate = (dateString) => {
     },
   ];
 
+  useEffect(() => {
+    if (editRecord) {
+      form.setFieldsValue({
+        total_TTC: editRecord.total_TTC,
+        Date_Fact: moment(editRecord.Date_Fact),
+      });
+      setPaymentSubmitted(false); // Réinitialiser l'état lorsque editRecord change
+    }
+  }, [editRecord, form]);
+  
+  const handlePaymentTypeChange = (value) => {
+    setPaymentType(value);
+    if (value === 'cash') {
+      form.setFieldsValue({ montantPaye: editRecord.total_TTC, etatpaiement: 'Paid' });
+    }
+  };
 
+  const addInstallment = () => {
+    setInstallments([...installments, { id: installments.length + 1 }]);
+  };
 
-
+  const submitPayment = async (values) => {
+    const paymentData = {
+      etatpaiement: values.etatpaiement,
+      montantPaye: values.montantPaye,
+      typepaiement: paymentType,
+   
+      factures: editRecord ? editRecord._id : null,
+      echeances: installments.map((installment, index) => ({
+        numCheque: values[`numCheque_${index}`],
+        montantCheque: values[`montantCheque_${index}`],
+        dateCh: moment().toISOString(),
+        dateEcheance: values[`dateEcheance_${index}`] ? moment(values[`dateEcheance_${index}`]).toISOString() : null,
+      })),
+    };
+  
+    try {
+      await axios.post('http://localhost:5000/paiement', paymentData);
+      alert('Payment submitted successfully!');
+      setPaymentSubmitted(true); // Mettre à jour l'état après soumission réussie
+    } catch (error) {
+      console.error('Failed to submit payment', error);
+      alert('Failed to submit payment.');
+    }
+  };
+  
 
   return (
     <>
@@ -741,120 +724,138 @@ const formatDate = (dateString) => {
   <Modal
       visible={isUpdateModalVisible}
       onCancel={() => setIsUpdateModalVisible(false)}
-      width={1200}
+      width={1000}
       footer={null}
-      style={{ marginRight: '30px' }}
+
     >
-      <Form
-        form={form}
-        onFinish={updateInvoice}
-        onValuesChange={handleFieldChange}
-      >
-        {editRecord && (
-          <>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <Form.Item label="Client Name">
-                  <div>
-                    <span>{editRecord.client.fullname}</span>
-                    <br />
-                    <span style={{ fontSize: '0.9em', color: 'gray' }}>{editRecord.client.email}</span>
-                  </div>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="total_TTC" label="Montant TTC">
-                  <InputNumber readOnly style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <Form.Item
-                  name="Date_Jour_Actuel"
-                  label="Date Jour Actuel"
-                  labelAlign="left"
-                  rules={[{ required: true, message: 'Please select a Date Jour Actuel!' }]}
-                >
-                  <DatePicker defaultValue={currentDate} format="YYYY-MM-DD" style={{ width: '100%', height: '60px' }} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="Date_Echeance"
-                  label="Date Echeance"
-                  labelAlign="left"
-                  rules={[{ required: true, message: 'Please select a due date!' }]}
-                >
-                  <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="Date_Fact" label="Date Facture">
-                  <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }}  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <Form.Item
-                  name="Etat_delais"
-                  label="Etat Délais"
-                  rules={[{ required: true, message: 'Please input the status!' }]}
-                >
-                  <Select placeholder="Select status" style={{ width: '100%' }}>
-                    <Option value="Paid">Paid</Option>
-                    <Option value="Unpaid">Unpaid</Option>
-                    <Option value="Partially paid">Partially paid</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="Status_delais"
-                  label="Status Délais"
-                  rules={[{ required: true, message: 'Please input the status!' }]}
-                >
-                  <Select placeholder="Select status" style={{ width: '100%' }}>
-                    <Option value="OverDue">OverDue</Option>
-                    <Option value="On time">On time</Option>
-                    <Option value="Pending">Pending</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="montant_Paye" label="Montant Payé">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="comptant_Reception" label="Comptant Reception">
-                  <Input readOnly />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="nombre_jours_retard" label="Nombre de Jours Retard">
-                  <Input readOnly />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="montant_Restant" label="Montant Restant">
-                  <Input readOnly />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item>
-              <Button
-                type="primary"
-                style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
-                htmlType="submit"
+        
+    <Form
+      form={form}
+      onFinish={submitPayment}
+ 
+      onValuesChange={(changedValues, allValues) => console.log(allValues)}
+    >
+      {editRecord && (
+        <>
+         <div style={{  marginBottom: '16px' }}>
+         <Title level={1} style={{ color: '#022452', marginBottom: '12px' }}>
+        {`Track the payment of invoice N °: ${editRecord.Num_Fact}`}
+      </Title>
+      <Paragraph style={{ fontWeight: 'bold', color: 'grey', fontSize: '16px' }}>
+        Please select the payment method for the invoice created on <span style={{ color: '#333333'}}>{moment(editRecord.Date_Fact).format('YYYY-MM-DD')}</span> of the client <span style={{ color: '#333333'}}>{editRecord.client.fullname}</span> ({editRecord.client.email}).
+      </Paragraph>
+      <Divider />
+      </div>
+
+      <Paragraph style={{ fontWeight: 'bold', fontSize: '15px' }}>
+      The total amount inclusive of all taxes for this invoice (Total_TTC) is  :   {editRecord.total_TTC}{editRecord.devise.Symbole} .
+
+        </Paragraph>
+          <Row gutter={[16, 16]}>
+            <Col span={6}>
+              <Form.Item
+    
+                name="typepaiement"
+       
+                rules={[{ required: true, message: 'Please select a payment type!' }]}
               >
-                Update
-              </Button>
-            </Form.Item>
-          </>
-        )}
-      </Form>
+                <Select placeholder="Select a payment type" onChange={handlePaymentTypeChange}>
+                  <Select.Option value="cash">Cash</Select.Option>
+                  <Select.Option value="cheque">Cheque</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+</Row>
+<Row gutter={[16, 16]}> {paymentType === 'cash' && (
+              <>
+                <Col span={6}>
+                  <Form.Item           layout="vertical"
+         labelCol={{
+          span: 24,
+        }}
+        wrapperCol={{
+          span: 24,
+        }}
+      name="etatpaiement" label="Payment Status" initialValue="paid">
+                    <Select>
+                      <Select.Option value="paid" readOnly>Paid</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item   layout="vertical"
+         labelCol={{
+          span: 24,
+        }}
+        wrapperCol={{
+          span: 24,
+        }} name="montantPaye" label="Amount Paid" initialValue={editRecord.total_TTC} >
+                    <Input readOnly />
+                  </Form.Item>
+                </Col>
+              </>
+            )}
+
+            {paymentType === 'cheque' && (
+              <>
+          
+              <Col span={6}>
+                  <Form.Item  layout="vertical"
+         labelCol={{
+          span: 24,
+        }}
+        wrapperCol={{
+          span: 24,
+        }}name="etatpaiement" label="Payment Status" initialValue="partially paid">
+                    <Select>
+                      <Select.Option value="partially paid">Partially Paid</Select.Option>
+                      <Select.Option value="paid">Paid</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+      
+                
+                {installments.map((installment, index) => (
+                  <React.Fragment key={installment.id}>
+                       <Row gutter={[16, 16]}>
+                    <Col span={8}>
+                      <Form.Item name={`numCheque_${index}`} label="Cheque Number">
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item name={`montantCheque_${index}`} label="Cheque Amount">
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                      <Form.Item name={`dateEcheance_${index}`} label="Due Date">
+                        <DatePicker format="YYYY-MM-DD" />
+                      </Form.Item>
+                    </Col>
+                    </Row>
+                  </React.Fragment>
+                ))}
+                <Col span={24}>
+                  <Button type="dashed" onClick={addInstallment} style={{ width: '100%' }}>
+                    Add Another Cheque
+                  </Button>
+                </Col>
+              </>
+            )}
+          </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Form.Item style={{marginTop:'20px' }}>
+                <Button style={{backgroundColor: '#022452'}} type="primary" htmlType="submit">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </>
+      )}
+    </Form>
     </Modal>
   <Modal
   
@@ -938,7 +939,7 @@ const formatDate = (dateString) => {
               </Select>
             </Form.Item></Col> </Row>
             <Row gutter={[16, 16]}>
-     <Col span={8} >     <Form.Item>
+     <Col span={16} >     <Form.Item>
   <Select
     style={{ height: '60px' }}
     placeholder="Add services"
@@ -954,24 +955,8 @@ const formatDate = (dateString) => {
   </Select>
 </Form.Item>
      </Col> 
-     <Col span={8}>
-          <Form.Item
-            name="Date_Echeance"
-          
-            labelAlign="left"
-            rules={[{ required: true, message: 'Please select a due date!' }]}
-          >
-            <DatePicker
+  
         
-              defaultValue={moment()}
-              format="YYYY-MM-DD"
-              style={{ width: '100%' ,height:'60px'}}
-              onChange={( dateString) => {
-                handleChange({ target: { name: 'Date_Echeance', value: dateString } });
-              }}
-            />
-          </Form.Item>
-        </Col>
        <Col span={8} >  
        <Form.Item
   name="timbreid"
