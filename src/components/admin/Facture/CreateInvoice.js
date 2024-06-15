@@ -44,7 +44,7 @@ const [loading, setLoading] = useState(false);
   const [paymentType, setPaymentType] = useState(''); // Stocke le type de paiement sélectionné
   const [installments, setInstallments] = useState([{ id: 1 }]); // Stocke les échéances
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
-
+  const [paymentStatus, setPaymentStatus] = useState('paid'); 
   const [invoiceData, setInvoiceData] = useState({
     total_HT,
     total_TVA,
@@ -673,6 +673,7 @@ const factureTable = [
       form.setFieldsValue({
         total_TTC: editRecord.total_TTC,
         Date_Fact: moment(editRecord.Date_Fact),
+        
       });
       setPaymentSubmitted(false); // Réinitialiser l'état lorsque editRecord change
     }
@@ -699,8 +700,8 @@ const factureTable = [
       echeances: installments.map((installment, index) => ({
         numCheque: values[`numCheque_${index}`],
         montantCheque: values[`montantCheque_${index}`],
-        dateCh: moment().toISOString(),
-        dateEcheance: values[`dateEcheance_${index}`] ? moment(values[`dateEcheance_${index}`]).toISOString() : null,
+        dateCh: moment(values["dateCh"]).toISOString(),
+        dateEcheance:moment(values["dateEcheance"]).toISOString() ,
       })),
     };
   
@@ -714,7 +715,12 @@ const factureTable = [
     }
   };
   
-
+  const handlePaymentStatusChange = (value) => {
+    setPaymentStatus(value);
+  };  
+  const handleRemoveEcheance = (index) => {
+    setInstallments((prevInstallments) => prevInstallments.filter((_, i) => i !== index));
+  };
   return (
     <>
        <div style={{ marginBottom: 16, float: 'right' }}>
@@ -724,7 +730,7 @@ const factureTable = [
   <Modal
       visible={isUpdateModalVisible}
       onCancel={() => setIsUpdateModalVisible(false)}
-      width={1000}
+      width={900}
       footer={null}
 
     >
@@ -806,41 +812,91 @@ const factureTable = [
         }}
         wrapperCol={{
           span: 24,
-        }}name="etatpaiement" label="Payment Status" initialValue="partially paid">
-                    <Select>
+        }}name="etatpaiement" label="Payment Status" initialValue="paid">
+                    <Select  onChange={handlePaymentStatusChange}>
                       <Select.Option value="partially paid">Partially Paid</Select.Option>
                       <Select.Option value="paid">Paid</Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
-      
-                
-                {installments.map((installment, index) => (
-                  <React.Fragment key={installment.id}>
-                       <Row gutter={[16, 16]}>
-                    <Col span={8}>
-                      <Form.Item name={`numCheque_${index}`} label="Cheque Number">
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item name={`montantCheque_${index}`} label="Cheque Amount">
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item name={`dateEcheance_${index}`} label="Due Date">
+                {paymentStatus === 'paid' && (
+                <Col span={8}>
+                      <Form.Item  layout="vertical"
+         labelCol={{
+          span: 24,
+        }}
+        wrapperCol={{
+          span: 24,
+        }}name={"dateEcheance"} label="Due Date">
                         <DatePicker format="YYYY-MM-DD" />
                       </Form.Item>
-                    </Col>
-                    </Row>
+                    </Col>)}
+                {installments.map((installment, index) => (
+                  
+                  <React.Fragment key={installment.id}>
+       <Row gutter={[16, 16]}>
+  <Col span={6}>
+    <Form.Item
+      layout="vertical"
+      labelCol={{ span: 24 }}
+      wrapperCol={{ span: 24 }}
+      name={`numCheque_${index}`}
+      label="Cheque Number"
+    >
+      <Input />
+    </Form.Item>
+  </Col>
+  <Col span={6}>
+    <Form.Item
+      layout="vertical"
+      labelCol={{ span: 24 }}
+      wrapperCol={{ span: 24 }}
+      name={`montantCheque_${index}`}
+      label="Cheque Amount"
+    >
+      <Input />
+    </Form.Item>
+  </Col>
+  <Col span={6}>
+    <Form.Item
+      layout="vertical"
+      labelCol={{ span: 24 }}
+      wrapperCol={{ span: 24 }}
+      name={`dateCh_${index}`}
+      label="Cheque Validity"
+    >
+      <DatePicker format="YYYY-MM-DD" />
+    </Form.Item>
+  </Col>
+  <Col span={6}>
+  <Form.Item
+      layout="vertical"
+      labelCol={{ span: 24 }}
+      wrapperCol={{ span: 24 }}      
+      label="Cancel"
+      style={{ width: '50px', marginRight: '10px' }}
+    >
+       
+    <Button
+
+      type="text"
+      icon={<CloseOutlined />}
+      onClick={() => handleRemoveEcheance(index)}
+      style={{ color: 'red' }}
+    />
+     </Form.Item>
+  </Col>
+</Row>
+
                   </React.Fragment>
                 ))}
-                <Col span={24}>
-                  <Button type="dashed" onClick={addInstallment} style={{ width: '100%' }}>
-                    Add Another Cheque
-                  </Button>
-                </Col>
+       {paymentStatus === 'partially paid' && (
+        <Col span={24}>
+          <Button type="dashed" onClick={addInstallment} style={{ width: '100%' }}>
+            Add Another Cheque
+          </Button>
+        </Col>
+      )}
               </>
             )}
           </Row>
