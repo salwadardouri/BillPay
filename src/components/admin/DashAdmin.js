@@ -57,26 +57,26 @@ const DashAdmin = () => {
         console.error('Erreur lors de la déconnexion', error);
       }
     };
-    const handleChangePassword = async () => {
-      try {
-        const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+    // const handleChangePassword = async () => {
+    //   try {
+    //     const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
   
-        if (confirmed) {
-          const response = await fetch('http://localhost:5000/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-          });
-          if (response.ok) {
-            // Rediriger vers la page de connexion ou une autre page après la déconnexion
-            window.location.href = '/SignIn';
-          } else {
-            console.error('Erreur lors de la déconnexion');
-          }
-        }
-      } catch (error) {
-        console.error('Erreur lors de la déconnexion', error);
-      }
-    };
+    //     if (confirmed) {
+    //       const response = await fetch('http://localhost:5000/auth/logout', {
+    //         method: 'POST',
+    //         credentials: 'include',
+    //       });
+    //       if (response.ok) {
+    //         // Rediriger vers la page de connexion ou une autre page après la déconnexion
+    //         window.location.href = '/SignIn';
+    //       } else {
+    //         console.error('Erreur lors de la déconnexion');
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error('Erreur lors de la déconnexion', error);
+    //   }
+    // };
   const renderContent = () => {
     switch (selectedMenuItem) {
     
@@ -117,12 +117,12 @@ const DashAdmin = () => {
   const menu = (
     <Menu>
       <Menu.Item key="0">
-        <span style={{marginLeft:'30px'}}>Admin</span>
+        <span style={{marginLeft:'8px'}}>Admin</span>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="1" onClick={handleChangePassword}>
+      {/* <Menu.Item key="1" onClick={handleChangePassword}>
         Change Password 
-      </Menu.Item>
+      </Menu.Item> */}
       <Menu.Item key="2" onClick={handleLogout}>
        LogOut
       </Menu.Item>

@@ -705,7 +705,7 @@ const onSearch = debounce(async (query) => {
                   
                                         <Form.Item
                                             name="num_phone"
-                                            label="Phone_Number"
+                                            label="Phone Number"
                                             rules={[{ required: true, message: 'Please input your phone number!' }]}
                                         >
                                         
@@ -778,7 +778,10 @@ const onSearch = debounce(async (query) => {
                         </Form.Item>
                       </Col>
                     </Row>
+                    {isMatriculeEnabled && (
+  <>
                     <Row gutter={16}>
+
         <Col span={12}>
             <Form.Item
                 name="Nom_entreprise"
@@ -803,7 +806,7 @@ const onSearch = debounce(async (query) => {
                   
                                         <Form.Item
                                             name="num_fax"
-                                            label="Phone_Number"
+                                            label="Fax Number"
                                             
                                         >
                                         
@@ -825,7 +828,7 @@ const onSearch = debounce(async (query) => {
                   
                   <Form.Item
                       name="num_bureau"
-                      label="Phone Number"
+                      label="Office number"
                      
                   >
                   
@@ -841,8 +844,11 @@ const onSearch = debounce(async (query) => {
                   </Form.Item>
                   {!validPhoneNumber && (
                       <p>Please enter a valid phone number.</p>
-                  )}
-              </Col></Row>
+                    )}
+                    </Col>
+                  </Row>
+                </>
+              )}
                   </Form>);
     const drawerContentFinancier= () => (<Form form={form} layout="vertical" onFinish={handleFormSubmitFinancier}>
    {editRecordFinancier && (

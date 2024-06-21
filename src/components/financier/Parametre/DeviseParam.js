@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Input, Modal,Badge,Select, Checkbox, message, Space, Row, Col } from 'antd';
-import { EditOutlined, StopOutlined,CheckOutlined} from '@ant-design/icons';
+import { Table, Button, Form, Input, Modal,  message, Space, Row,Popconfirm, Col } from 'antd';
+import { EditOutlined, } from '@ant-design/icons';
 import axios from 'axios';
 
 import { debounce } from 'lodash';//pour search pro 
 const { Search } = Input;
-const { Option } = Select;
 const DeviseParam = () => {
   const [open, setOpen] = useState(false);
   const [deviseData, setDeviseData] = useState([]);
@@ -13,31 +12,17 @@ const DeviseParam = () => {
   const [form] = Form.useForm();
   const [editRecord, setEditRecord] = useState(null);
   const [searchText, setSearchText] = useState(''); 
-  const [deviseStatusFilter, setDeviseStatusFilter] = useState('all');
-  const [status, setStatus] = useState(null);
-  const handleCheckboxChange = (event) => {
-    const { value } = event.target;
-    setStatus(value === 'true');
-  };
-  const handleDeviseStatusChange = (value) => {
-    setDeviseStatusFilter(value);
-};
-useEffect(() => {
-  if (editRecord) {
-    setStatus(editRecord.status);
-  }
-}, [editRecord]);
 
   useEffect(() => {
     fetchDevise();
   }, []);
-
   const fetchDevise = async () => {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/devise');
       if (response.status === 200) {
-        setDeviseData(response.data);
+        const filteredDevise = response.data.filter(devise => devise.status === true);
+        setDeviseData(filteredDevise);
       } else {
         console.error('Failed to fetch devise data');
       }
@@ -47,6 +32,7 @@ useEffect(() => {
       setLoading(false);
     }
   };
+
 
   const handleEdit = (record) => {
     setEditRecord(record);
@@ -61,7 +47,7 @@ useEffect(() => {
       await createDevise(values);
     }
   };
- 
+
   const createDevise= async (values) => {
     values.status = true;
     try {
@@ -80,6 +66,7 @@ useEffect(() => {
   };
 
   const updateDevise = async (values) => {
+    values.status = true;
     try {
       const response = await axios.put(`http://localhost:5000/devise/${editRecord._id}`, values);
       if (response.status === 200) {
@@ -110,6 +97,27 @@ useEffect(() => {
   //   }
   // };
 
+  const handleDelete = async (record) => {
+    try {
+      const response = await fetch(`http://localhost:5000/devise/activated/${record._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' // Ajoutez l'en-tête Content-Type
+        },
+        body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
+      });
+      if (response.ok) {
+        message.success('Data  successfully inactivated');
+        fetchDevise();
+      } else {
+        throw new Error('Failed to deactivate data');
+      }
+    } catch (error) {
+      console.error('Error deactivating  data:', error);
+      message.error('Failed to inactivate data');
+    }
+  };
+
   const onSearch = debounce(async (query) => {
     setLoading(true);
     try {
@@ -129,22 +137,6 @@ useEffect(() => {
   }, 300); // Debouncing de 300 ms pour réduire les appels API
 
   const columnsDevise = [
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 80,
-      render: (status) => (
-        <Badge
-        status={status ? "success" : "error"}
-        text={status ? "Actif" : "Inactif"}
-  
-        icon={status ? <CheckOutlined /> : <StopOutlined />}
-      />
-      ),
-       sorter: (a, b) => a.status - b.status, 
-
-    },
     { title: 'Nom_D', dataIndex: 'Nom_D', key: 'Nom_D' },
     { title: 'Symbole', dataIndex: 'Symbole', key: 'Symbole' },
     {
@@ -154,14 +146,14 @@ useEffect(() => {
       render: (_, record) => (
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          {/* <Popconfirm
-            title="Are you sure to delete this devise?"
-            onConfirm={() => handleDelete(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm> */}
+          <Popconfirm
+              title="Are you sure to disable this devise?"
+              onConfirm={() => handleDelete(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="link" danger >Disable</Button>
+            </Popconfirm>
         </Space>
       ),
     },
@@ -189,18 +181,9 @@ useEffect(() => {
       />
 
       <div style={{ clear: 'both' }}>
-      <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleDeviseStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
-                        </Select>
         <Table
           columns={columnsDevise}
-     
-          dataSource={
-            deviseStatusFilter === 'all' ? deviseData: deviseData.filter(deviseData =>deviseData.status === (deviseStatusFilter === 'activated'))
-        }
-    
+          dataSource={deviseData}
           loading={loading}
           pagination={{ pageSize: 12 }}
           style={{ clear: 'both', marginTop: '60px' }}
@@ -214,41 +197,7 @@ useEffect(() => {
         footer={null}
       >
         <Form form={form} layout="vertical" style={{ marginTop: '20px' }} onFinish={handleFormSubmit}>
-        {editRecord && (
-  <Row>
-    <Col span={24}>
-      <Form.Item
-        name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
-        initialValue={false}
-      >
-        <Row>
-          <Col span={12}>
-            <Checkbox
-              checked={status === true}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'green' : 'red' }}
-              value={true}
-            >
-              Activated
-            </Checkbox>
-          </Col>
-          <Col span={12}>
-            <Checkbox
-              checked={status === false}
-              onChange={handleCheckboxChange}
-              style={{ color: status ? 'red' : 'green' }}
-              value={false}
-            >
-              Inactivated
-            </Checkbox>
-          </Col>
-        </Row>
-      </Form.Item>
-    </Col>
-  </Row>
-)} 
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item

@@ -11,6 +11,7 @@ import SendcodeAuth from './auth/SendcodeAuth';
 import InvoiceList from './components/client/Facture/InvoiceList';
 import DevisAjout from './components/client/Devis/DevisAjout';
 import ProfileClient from './components/client/profile/profileClient';
+import ChangePass from './components/client/profile/ChangePass';
 import DashFinancier from './components/financier/DashFinancier';
 import DashAdmin from './components/admin/DashAdmin';
 import User from './components/admin/user/User';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/DashFinancier" element={<DashFinancier/>} />
           <Route path="/Users" element={<User/>} />
           <Route path="/Client/Profil" element={<ProfileClient/>} />
+          <Route path="/Client/ChangePassword" element={<ChangePass/>} />
           <Route path="/create-passwordfin/:token" element={<CreatePassword/>} />
           <Route path="/create-passwordfin/:token" element={<CreatePassFin/>} />
         

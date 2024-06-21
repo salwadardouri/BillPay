@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Form, Input,DatePicker,Divider, Table, Select, Button,Tooltip,Space, InputNumber,Row,Col,message ,Modal ,Typography} from 'antd';
 import Visto from '../../../images/Visto.png';
 
-import { CloseOutlined ,EyeOutlined,} from '@ant-design/icons';
+import { CloseOutlined ,EyeOutlined,CheckCircleOutlined, ExclamationCircleOutlined, WarningOutlined} from '@ant-design/icons';
 
 import moment from 'moment';
 
@@ -24,6 +24,8 @@ const CreateInvoiceForm = () => {
   const [timbre, setTimbre] = useState([]);
   const [editRecord, setEditRecord] = useState(null);
   const [parametre, setParametre] = useState([]); 
+  // eslint-disable-next-line
+  const [paiement, setPaiement] = useState([]);
   const [tvaList, setTvaList] = useState([]);
   const [devise, setDevise] = useState([]);
   const [quantite, setQuantite] = useState(0);
@@ -66,7 +68,6 @@ const [loading, setLoading] = useState(false);
   const handleShowModalCancel = () => {
     setIsShowModalVisible(false);
   };
-
   useEffect(() => {
     fetchTimbre();
     fetchServices();
@@ -75,6 +76,7 @@ const [loading, setLoading] = useState(false);
     fetchDevise();
     fetchParametre();
     fetchFacture();
+    fetchPaiement();
   }, []);
   const fetchParametre = async () => {
     setLoading(true);
@@ -92,6 +94,14 @@ const [loading, setLoading] = useState(false);
       setLoading(false);
     }
   }; 
+  const fetchPaiement = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/paiement');
+      setPaiement(response.data);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des paiements :', error);
+    }
+  };
   const fetchTvaList = async () => {
     setLoading(true);
     try {
@@ -176,10 +186,9 @@ const [loading, setLoading] = useState(false);
       setLoading(false);
     }
   };
-
   const onFinish = async () => {
     console.log("Submitting invoice data:", invoiceData);
-
+  
     try {
       // Convertir les champs numériques en nombres
       const dataToSend = {
@@ -189,23 +198,72 @@ const [loading, setLoading] = useState(false);
         total_Remise: parseFloat(total_Remise),
         total_HT_Apres_Remise: parseFloat(total_HT_Apres_Remise),
         total_TTC: parseFloat(total_TTC),
-  
       };
-      
+  
       const response = await axios.post('http://localhost:5000/facture', dataToSend);
- 
-      console.log("Response:", response.data);
-      message.success('Category created successfully');
+      console.log("Facture créée:", response.data);
+  
+      // Récupérer l'ID du client sélectionné
+      const clientId = dataToSend.clientid;
+  
+      // Créer la notification pour la facture créée
+      const notificationData = {
+        type: 'FactureCréée',
+        notif: ` We inform you that your invoice number ${dataToSend.Num_Fact} is now available for viewing. `,
+      
+        client: clientId, // Assurez-vous que clientId est bien défini comme un ID MongoDB
+      };
+  
+      // Envoyer la notification
+      const notificationResponse = await axios.post('http://localhost:5000/notifications', notificationData);
+      console.log("Notification créée:", notificationResponse.data);
+  
+      message.success('Invoice created successfully');
       setIsNewInvoiceModalVisible(false);
       form.resetFields();
-   
+  
       fetchFacture();
+    } catch (error) {
+      message.error('Failed to create Invoice');
+      console.error('Error creating invoice:', error);
+    }
+  };
+  const submitPayment = async (values) => {
+    const paymentData = {
+      etatpaiement: values.etatpaiement,
+      montantPaye: values.montantPaye,
+      typepaiement: paymentType,
+   
+      factures: editRecord ? editRecord._id : null,
+      echeances: installments.map((installment, index) => ({
+        numCheque: values[`numCheque_${index}`],
+        montantCheque: values[`montantCheque_${index}`],
+        dateCh: moment(values["dateCh"]).toISOString(),
+        dateEcheance:moment(values["dateEcheance"]).toISOString() ,
+      })),
+    };
+  
+    try {
+      await axios.post('http://localhost:5000/paiement', paymentData);
+      alert('Payment submitted successfully!');
+      setPaymentSubmitted(true); // Mettre à jour l'état après soumission réussie
+      console.log(paymentData);
 
+    // Créer la notification pour le paiement
+    const notificationData = {
+      type: 'PaiementEffectué',
+      notif: `Payment of ${values.montantPaye} successfully submitted for invoice ${editRecord.Num_Fact}.`,
+      client: values.factures.client._id// Assurez-vous que ceci est correct et correspond à ce que votre API backend attend
+    };
+
+    const notificationResponse = await axios.post('http://localhost:5000/notifications', notificationData);
+    console.log("Notification créée pour le paiement:", notificationResponse.data);
   } catch (error) {
-    message.error('Failed to create Invoice');
-    console.error('Error creating invoice:', error);
+    console.error('Failed to submit payment', error);
+    alert('Failed to submit payment.');
   }
 };
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setInvoiceData({ ...invoiceData, [name]: value });
@@ -358,12 +416,6 @@ const calculateTotals = (services) => {
     total_TTC
   });
 };
-// const handleTimbreChange = (value) => {
-//   const selected = timbre.find(t => t._id === value);
-//   setSelectedTimbre(selected);
-//   calculateTotals(invoiceData.services);
-// };
-
 const handleTimbreChange = (value) => {
   const selected = timbre.find(t => t._id === value);
   setSelectedTimbre(selected);
@@ -382,12 +434,71 @@ const handleEdit = (record) => {
   form.setFieldsValue({
     total_TTC: record.total_TTC,
     Date_Fact: moment(record.Date_Fact),
-  
+ 
   });
+};
+useEffect(() => {
+  if (editRecord) {
+    form.setFieldsValue({
+      total_TTC: editRecord.total_TTC,
+      Date_Fact: moment(editRecord.Date_Fact),
+      
+    });
+    setPaymentSubmitted(false); // Réinitialiser l'état lorsque editRecord change
+  }
+}, [editRecord, form]);
 
+const handlePaymentTypeChange = (value) => {
+  setPaymentType(value);
+  if (value === 'cash') {
+    form.setFieldsValue({ montantPaye: editRecord.total_TTC, etatpaiement: 'Paid' });
+  }
+};
+const addInstallment = () => {
+  setInstallments([...installments, { id: installments.length + 1 }]);
+};
+const handlePaymentStatusChange = (value) => {
+  setPaymentStatus(value);
+};  
+const handleRemoveEcheance = (index) => {
+  setInstallments((prevInstallments) => prevInstallments.filter((_, i) => i !== index));
+};
+const renderEtatPaiement = (record) => {
+  const paiementAssocie = paiement.find(p => p.factures.includes(record._id));
+  let icon;
+  let text;
 
+  if (paiementAssocie) {
+    const etatpaiement = paiementAssocie.etatpaiement;
+
+    if (etatpaiement === 'Paid') {
+      icon = <CheckCircleOutlined style={{ color: 'green' }} />;
+      text = 'Paid';
+    } else if (etatpaiement === 'partially paid') {
+      icon = <WarningOutlined style={{ color: 'yellow' }} />;
+      text = 'partially paid';
+    } else {
+      icon = <ExclamationCircleOutlined style={{ color: 'red' }} />;
+      text = 'Unpaid';
+    }
+  } else {
+    // Si aucun paiement associé n'est trouvé
+    icon = <ExclamationCircleOutlined style={{ color: 'red' }} />;
+    text = 'Unpaid';
+  }
+
+  return (
+    <span>
+      {icon} {text}
+    </span>
+  );
 };
 const columns = [
+  {
+    title: 'État Paiement',
+    key: 'etatpaiement',
+    render: (record) => renderEtatPaiement(record),
+  },
   {
     title: 'Date',
     dataIndex: 'Date_Fact',
@@ -667,60 +778,6 @@ const factureTable = [
       width: '150px',
     },
   ];
-
-  useEffect(() => {
-    if (editRecord) {
-      form.setFieldsValue({
-        total_TTC: editRecord.total_TTC,
-        Date_Fact: moment(editRecord.Date_Fact),
-        
-      });
-      setPaymentSubmitted(false); // Réinitialiser l'état lorsque editRecord change
-    }
-  }, [editRecord, form]);
-  
-  const handlePaymentTypeChange = (value) => {
-    setPaymentType(value);
-    if (value === 'cash') {
-      form.setFieldsValue({ montantPaye: editRecord.total_TTC, etatpaiement: 'Paid' });
-    }
-  };
-
-  const addInstallment = () => {
-    setInstallments([...installments, { id: installments.length + 1 }]);
-  };
-
-  const submitPayment = async (values) => {
-    const paymentData = {
-      etatpaiement: values.etatpaiement,
-      montantPaye: values.montantPaye,
-      typepaiement: paymentType,
-   
-      factures: editRecord ? editRecord._id : null,
-      echeances: installments.map((installment, index) => ({
-        numCheque: values[`numCheque_${index}`],
-        montantCheque: values[`montantCheque_${index}`],
-        dateCh: moment(values["dateCh"]).toISOString(),
-        dateEcheance:moment(values["dateEcheance"]).toISOString() ,
-      })),
-    };
-  
-    try {
-      await axios.post('http://localhost:5000/paiement', paymentData);
-      alert('Payment submitted successfully!');
-      setPaymentSubmitted(true); // Mettre à jour l'état après soumission réussie
-    } catch (error) {
-      console.error('Failed to submit payment', error);
-      alert('Failed to submit payment.');
-    }
-  };
-  
-  const handlePaymentStatusChange = (value) => {
-    setPaymentStatus(value);
-  };  
-  const handleRemoveEcheance = (index) => {
-    setInstallments((prevInstallments) => prevInstallments.filter((_, i) => i !== index));
-  };
   return (
     <>
        <div style={{ marginBottom: 16, float: 'right' }}>
@@ -819,7 +876,7 @@ const factureTable = [
                     </Select>
                   </Form.Item>
                 </Col>
-                {paymentStatus === 'paid' && (
+                {paymentStatus === 'partially paid' && (
                 <Col span={8}>
                       <Form.Item  layout="vertical"
          labelCol={{

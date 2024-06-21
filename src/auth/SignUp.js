@@ -6,9 +6,7 @@ import countryList from 'react-select-country-list';
 import { components } from 'react-select';
 import 'react-phone-input-2/lib/style.css';
 import ReactSelect from 'react-select';
-import FacebookImage from '../images/fb.png';
-import GmailImage from '../images/g.png';
-import LinkedinImage from '../images/in.png';
+
 import {  ArrowLeftOutlined,MailOutlined,GlobalOutlined,LockOutlined ,UserOutlined,EnvironmentOutlined } from '@ant-design/icons';
 import './media.css'; 
 const { Option } = Select;
@@ -211,8 +209,8 @@ const SignUp = () => {
           rules={[{ required: true, message: 'Please select client type!' }]}
       >
           <Select onChange={handleClientTypeChange} placeholder="Select Client Type">
-              <Option value="Client Morale">Client Morale</Option>
-              <Option value="Client Physique">Client Physique</Option>
+              <Option value="Client Morale">Corporate client</Option>
+              <Option value="Client Physique">Individual client</Option>
           </Select>
       </Form.Item>
     </Row>
@@ -403,18 +401,13 @@ const SignUp = () => {
                             left: 210,
                             width: '40%',
                             height: '1px',
-                            marginLeft: "60px",
+                            marginLeft: "90px",
                             backgroundColor: '#ccc',
                         }}>
                         </div>
-                        <span style={{ color: 'grey',float:'center' }}>Create an account with </span>
-                        <div style={{ float:'center' }}>
-                            <img src={FacebookImage} alt="Facebook" style={{ width: '40px' }} />
-                            <img src={GmailImage} alt="Instagram" style={{ width: '30px' }} />
-                            <img src={LinkedinImage} alt="Linkedin" style={{ width: '40px' }} />
-                        </div>
+                        <br />
                         <div style={{ float:'center', fontFamily: 'cursive', color: 'grey', fontWeight: 'bold' }}> Don't have an account ?  
-                        <span style={{ cursor: 'pointer',color:'#004AAD'  }} onClick={handleLoginClick}>
+                        <span style={{ cursor: 'pointer',color:'#004AAD',  }} onClick={handleLoginClick}>
                         SignIn!  </span>
            </div>
                     </div>

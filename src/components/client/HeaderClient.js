@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './HeaderClient.css'; 
 import { Link } from 'react-router-dom';
-import { Button, Avatar, Dropdown, Menu, Badge } from 'antd';
+import { Button, Avatar, Dropdown, Menu, Badge,Divider } from 'antd';
 import { BellOutlined, UserOutlined,HomeOutlined ,FileTextOutlined, FileDoneOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import Logo from "../../images/3.png"; 
@@ -17,23 +17,41 @@ const HeaderClient = () => {
           throw new Error('Access token not found');
         }
 
-        const response = await axios.get('http://localhost:5000/auth/profile', {
+        const response = await axios.get('http://localhost:5000/auth/profile/client', {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
         });
 
         setUserProfile(response.data);
+        fetchNotifications(response.data._id); // Utilisation directe de response.data._id pour l'ID du profil utilisateur
       } catch (error) {
         console.error('Error fetching user profile:', error.message);
-       
+      }
+    };
+
+    const fetchNotifications = async (userId) => { // Changement ici pour utiliser userId comme paramètre
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          throw new Error('Access token not found');
+        }
+
+        const response = await axios.get(`http://localhost:5000/notifications/client/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error.message);
       }
     };
 
     fetchUserProfile();
-    // Simulation des notifications
-    setNotifications(['Notification 1', 'Notification 2','Notif 3']); // Vous devez remplacer cela par votre logique de récupération des notifications
   }, []);
+
   const handleLogout = async () => {
     const confirmLogout = window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
 
@@ -53,10 +71,27 @@ const HeaderClient = () => {
   
   const notificationMenu = (
     <Menu>
-      {notifications.map((notification, index) => (
-        <Menu.Item key={index}>{notification}</Menu.Item>
-      ))}
-    </Menu>
+    <Menu.Item disabled key="title">
+      <div>
+        <strong style={{fontWeight: 'bold' , color:'black', fontSize: '25px'}}>Notifications </strong>
+        <br />
+        <span style={{ color: 'black', fontSize: '17px' }}>Welcome  {userProfile.fullname}</span>
+      </div>
+     
+    </Menu.Item>
+<br/>
+    {notifications.map((notification, index) => (
+      <Menu.Item key={index}>
+        <div>
+          <span style={{ fontSize: '18px' }}>{notification.notif}</span>
+        </div>
+        <div>
+          <span style={{ color: 'grey', fontFamily: 'cursive' }}>{new Date(notification.createdAt).toLocaleString()}</span>
+        </div>
+        <Divider style={{ margin: '4px 0' }} />
+      </Menu.Item>
+    ))}
+  </Menu>
   );
 
   const userMenu = (
@@ -68,8 +103,8 @@ const HeaderClient = () => {
       <Menu.Item key="profile">
         <Link to="/Client/Profil">Profil</Link>
       </Menu.Item>
-      <Menu.Item key="updatePassword">
-        <Link to="/Client/UpdatePassword">Change Password</Link>
+      <Menu.Item key="ChangePass">
+        <Link to="/Client/ChangePassword">Change Password</Link>
       </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>
       Logout
@@ -112,7 +147,8 @@ const HeaderClient = () => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', float: 'right', marginRight:'60px' }}>
         <div style={{ marginRight: '40px', marginTop:'10px' }}>
-          <Dropdown overlay={notificationMenu} trigger={['click']}>
+        
+          <Dropdown overlay={notificationMenu}  trigger={['click']}>
             <Badge count={notifications.length} offset={[10, 0]}>
               <BellOutlined style={{ fontSize: '20px', cursor: 'pointer',color:'white' }} />
             </Badge>

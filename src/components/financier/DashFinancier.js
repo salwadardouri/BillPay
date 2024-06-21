@@ -6,14 +6,14 @@ import Tax from './Parametre/TaxVisto';
 import ServiceList from './Services/ServiceList';
 import Categories from './Services/Categories';
 import BasicInformation from './Parametre/BasicInformation';
-import Devise from '../admin/Parametre/DeviseParam';
+import Devise from './Parametre/DeviseParam';
 import './DashFinancier.css'; 
 import Logo from "../../images/2.png"; 
 import Bill from "../../images/1.png"; 
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Profile from './Profile/ProfileFin';    
-
+import ChangePass from './Profile/ChangePass';   
 const { Header, Footer, Sider, Content } = Layout;
 const DashFinancier = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState('user');
@@ -86,6 +86,9 @@ case 'profile':
   return <Profile />; 
 
         
+case 'ChangePass':
+  return <ChangePass/>; 
+
             case 'Tax':
               return <Tax />;
               case 'Devise':
@@ -112,8 +115,8 @@ case 'profile':
   <Menu.Item key="profile">
     <Link to="#">Profil</Link>
   </Menu.Item>
-  <Menu.Item key="updatePassword">
-    <Link to="/UpdatePassword">Change Password</Link>
+  <Menu.Item key="ChangePass">
+    <Link to="#">Change Password</Link>
   </Menu.Item>
   <Menu.Item key="logout" onClick={handleLogout}>
     Logout
