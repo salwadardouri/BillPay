@@ -22,6 +22,11 @@ const Categories = () => {
   const handleCategoriesStatusChange = (value) => {
     setCategoriesStatusFilter(value);
 };
+useEffect(() => {
+  if (!open) {
+    form.resetFields();
+  }
+}, [open, form]);
   useEffect(() => {
     fetchCategory();
   }, []);
@@ -66,14 +71,14 @@ const Categories = () => {
     try {
       const response = await axios.post('http://localhost:5000/categories', values);
       if (response.status === 201) {
-        message.success('Category created successfully');
+        message.success('Catégorie créée avec succès');
         setOpen(false);
         fetchCategory();
       } else {
         throw new Error('Failed to create category');
       }
     } catch (error) {
-      message.error('Failed to create category');
+      message.error('Échec de la création de la catégorie');
       console.error('Error creating category:', error);
     }
   };
@@ -82,14 +87,14 @@ const Categories = () => {
     try {
       const response = await axios.put(`http://localhost:5000/categories/${editRecord._id}`, values);
       if (response.status === 200) {
-        message.success('Category updated successfully');
+        message.success('Catégorie mise à jour avec succès');
         setOpen(false);
         fetchCategory();
       } else {
         throw new Error('Failed to update category');
       }
     } catch (error) {
-      message.error('Failed to update category');
+      message.error('Échec de la mise à jour de la catégorie');
       console.error('Error updating category:', error);
     }
   };
@@ -129,10 +134,10 @@ const Categories = () => {
 
   const columnsCategory = [
     {
-      title: 'Status',
+      title: 'Statut',
       dataIndex: 'status',
       key: 'status',
-      width: 80,
+      width: 100,
       render: (status) => (
         <Badge
         status={status ? "success" : "error"}
@@ -144,9 +149,9 @@ const Categories = () => {
        sorter: (a, b) => a.status - b.status, 
 
     },
-    { title: 'Titre_Categorie', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie'  , ellipsis: true,
+    { title: 'Titre', dataIndex: 'Titre_Categorie', key: 'Titre_Categorie'  , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Description_Categorie', dataIndex: 'Description_Categorie', key: 'Description_Categorie' , ellipsis: true,
+    { title: 'Description', dataIndex: 'Description_Categorie', key: 'Description_Categorie' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
     {
       title: 'Actions',
@@ -176,10 +181,10 @@ const Categories = () => {
           style={{ backgroundColor: '#022452' }}
           onClick={() => setOpen(true)}
         >
-          New Category
+          Nouvelle catégorie
         </Button>      </div>
         <Search
-        placeholder="Search "
+        placeholder="Recherche "
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -191,9 +196,9 @@ const Categories = () => {
 
       <div style={{ clear: 'both' ,marginTop:"30px"}}>
       <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleCategoriesStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
         <Table
           columns={columnsCategory}
@@ -208,7 +213,7 @@ const Categories = () => {
       </div>
 
       <Modal
-        title={editRecord ? "Edit Category" : "Create New Category"}
+        title={editRecord ? " Modifier Categorie" : "Créer une nouvelle catégorie"}
         visible={open}
         onCancel={() => setOpen(false)}
         footer={null}
@@ -219,7 +224,7 @@ const Categories = () => {
     <Col span={24}>
       <Form.Item
         name="status"
-        label="Status"
+        label="Statut"
         rules={[{ required: true, message: 'Please select the status!' }]}
         initialValue={false}
       >
@@ -231,7 +236,7 @@ const Categories = () => {
               style={{ color: status ? 'green' : 'red' }}
               value={true}
             >
-              Activated
+              Activé
             </Checkbox>
           </Col>
           <Col span={12}>
@@ -241,7 +246,7 @@ const Categories = () => {
               style={{ color: status ? 'red' : 'green' }}
               value={false}
             >
-              Inactivated
+            Désactivé
             </Checkbox>
           </Col>
         </Row>
@@ -255,10 +260,10 @@ const Categories = () => {
               <Form.Item
                 name="Titre_Categorie"
                 rules={[
-                  { required: true, message: 'Please enter the category title.' },
+                  { required: true, message: 'Veuillez entrer l titre de la catégorie..' },
                 ]}
               >
-                <Input name="Titre_Categorie" placeholder="Category title"    style={{ width: '100%' }} />
+                <Input name="Titre_Categorie" placeholder="Titre"    style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -267,10 +272,10 @@ const Categories = () => {
               <Form.Item
                 name="Description_Categorie"
                 rules={[
-                  { required: true, message: 'Please enter the category description.' },
+                  { required: true, message: 'Veuillez entrer la description de la catégorie..' },
                 ]}
               >
-                  <Input.TextArea name="Description_Categorie" placeholder="Category description"    style={{ width: '100%' , height:'100px'}}/>
+                  <Input.TextArea name="Description_Categorie" placeholder="Description"    style={{ width: '100%' , height:'100px'}}/>
               </Form.Item>
             </Col>
           </Row>
@@ -280,7 +285,7 @@ const Categories = () => {
               style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
               htmlType="submit"
             >
-              {editRecord ? 'Update' : 'Create'}
+              {editRecord ? 'Modifier' : 'Créer'}
             </Button>
           </Form.Item>
         </Form>

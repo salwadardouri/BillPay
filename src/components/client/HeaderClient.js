@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './HeaderClient.css'; 
 import { Link } from 'react-router-dom';
 import { Button, Avatar, Dropdown, Menu, Badge,Divider } from 'antd';
-import { BellOutlined, UserOutlined,HomeOutlined ,FileTextOutlined, FileDoneOutlined} from '@ant-design/icons';
+import { BellOutlined, UserOutlined,HomeOutlined , FileDoneOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import Logo from "../../images/3.png"; 
 const HeaderClient = () => {
@@ -128,11 +128,12 @@ const HeaderClient = () => {
     Home
   </Button>
 </Link>
+{/* 
 <Link to="/Client/Devis">
   <Button type="link" style={{ color: 'white', fontSize: '1rem', marginTop: "1px", fontFamily: 'cursive', cursor: 'pointer' }} icon={<FileTextOutlined />}>
     Devis
-  </Button>
-</Link>
+  </Button> 
+</Link>*/}
 <Link to="/Client">
   <Button type="link" style={{ color: 'white', fontSize: '1rem', marginTop: "1px", fontFamily: 'cursive', cursor: 'pointer' }} icon={<FileDoneOutlined />}>
   Invoice

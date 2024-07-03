@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, Menu,Button , Avatar, Dropdown,Badge} from 'antd';
-import { UserOutlined, FileOutlined,FileTextOutlined,SettingOutlined,MenuFoldOutlined,AppstoreOutlined, BellOutlined,DashboardOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Layout, Menu,Button , Avatar, Dropdown} from 'antd';
+import { UserOutlined, FileTextOutlined,SettingOutlined,MenuFoldOutlined,AppstoreOutlined,DashboardOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import User from './user/User';
 import Tax from './Parametre/TaxVisto';
 import ServiceList from './Services/ServiceList';
 import Categories from './Parametre/Categories';
 import BasicInformation from './Parametre/BasicInformation';
 import Devise from '../admin/Parametre/DeviseParam';
-import FactureList from './Facture/FactureList';
-import DevisList from './Devis/DevisList';
+import Statistique from '../admin/Statistique/statistique';
+// import FactureList from './Facture/FactureList';
+
 import CreateInvoice from './Facture/CreateInvoice';
 import Logo from "../../images/2.png"; 
 import Bill from "../../images/1.png"; 
@@ -19,22 +20,22 @@ const { Header, Footer, Sider, Content } = Layout;
 const DashAdmin = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState('user');
   const [collapsed, setCollapsed] = useState(false);  
-  const [notifications, setNotifications] = useState([]);
+ // const [notifications, setNotifications] = useState([]);
   const handleMenuSelect = ({ key }) => {
     setSelectedMenuItem(key);
   };
 
 
-  useEffect(() => {
-    // Remplacez ceci par votre logique pour obtenir les notifications par l'ID de l'utilisateur
-    const fetchNotifications = async () => {
-      const response = await fetch(`/api/notifications?userId`);
-      const data = await response.json();
-      setNotifications(data);
-    };
+  // useEffect(() => {
+  //   // Remplacez ceci par votre logique pour obtenir les notifications par l'ID de l'utilisateur
+  //   const fetchNotifications = async () => {
+  //     const response = await fetch(`/api/notifications?userId`);
+  //     const data = await response.json();
+  //     setNotifications(data);
+  //   };
 
-    fetchNotifications();
-  });
+  //   fetchNotifications();
+  // });
 
     const handleLogout = async () => {
       try {
@@ -82,7 +83,7 @@ const DashAdmin = () => {
     
       case 'User':
         return <User />;
- 
+      
           case 'BasicInformation':
             return <BasicInformation />;
             case 'Categories':
@@ -93,27 +94,29 @@ const DashAdmin = () => {
               return <Tax />;
               case 'Devise':
                 return <Devise />;
-                case 'Devis':
-                  return <DevisList />;
-                case 'Factures':
-                  return <FactureList />;
+             //   case 'Devis':
+                //  return <DevisList />;
+                // case 'Factures':
+                //   return <FactureList />;
                    case 'Facture':
                    return <CreateInvoice />;
-      default:
-        return null;
+                   default:
+                    case 'Statistique':
+                    return <Statistique />; 
+    
     }
   };
-  const notificationMenu = (
-    <Menu>
-      {notifications.length === 0 ? (
-        <Menu.Item key="0">Aucune notification</Menu.Item>
-      ) : (
-        notifications.map((notification, index) => (
-          <Menu.Item key={index}>{notification.message}</Menu.Item>
-        ))
-      )}
-    </Menu>
-  );
+  // const notificationMenu = (
+  //   <Menu>
+  //     {notifications.length === 0 ? (
+  //       <Menu.Item key="0">Aucune notification</Menu.Item>
+  //     ) : (
+  //       notifications.map((notification, index) => (
+  //         <Menu.Item key={index}>{notification.message}</Menu.Item>
+  //       ))
+  //     )}
+  //   </Menu>
+  // );
   const menu = (
     <Menu>
       <Menu.Item key="0">
@@ -124,7 +127,7 @@ const DashAdmin = () => {
         Change Password 
       </Menu.Item> */}
       <Menu.Item key="2" onClick={handleLogout}>
-       LogOut
+       Déconnecter
       </Menu.Item>
     </Menu>
   );
@@ -147,30 +150,30 @@ const DashAdmin = () => {
           selectedKeys={[selectedMenuItem]}
           onSelect={handleMenuSelect}
         >
-       <Menu.Item key="dashboard" icon={<DashboardOutlined />} className={selectedMenuItem === 'dashboard' ? 'selected-menu-item' : ''}>
-            Dashboard
+       <Menu.Item key="statistique" icon={<DashboardOutlined />} className={selectedMenuItem === 'Statistique' ? 'selected-menu-item' : ''}>
+       Tableau de bord
           </Menu.Item>
           <Menu.Item key="User" icon={<UserOutlined />} className={selectedMenuItem === 'User' ? 'selected-menu-item' : ''}>
-            Users
+            Utilisateurs
           </Menu.Item>
-          <Menu.SubMenu key="Catalogue" icon={<AppstoreOutlined/>} title="Catalog">
-            <Menu.Item key="Categories">Category</Menu.Item>
+          <Menu.SubMenu key="Catalogue" icon={<AppstoreOutlined/>} title="Catalogues">
+            <Menu.Item key="Categories">Categories</Menu.Item>
             <Menu.Item key="Services">Services</Menu.Item>
           </Menu.SubMenu>
          
-          <Menu.Item key="Devis" icon={<FileOutlined />} className={selectedMenuItem === 'Devis' ? 'selected-menu-item' : ''}>
+          {/*  <Menu.Item key="Devis" icon={<FileOutlined />} className={selectedMenuItem === 'Devis' ? 'selected-menu-item' : ''}>
            Devis
           </Menu.Item>
-          <Menu.Item key="Factures" icon={<FileTextOutlined />} className={selectedMenuItem === 'Factures' ? 'selected-menu-item' : ''}>
+         <Menu.Item key="Factures" icon={<FileTextOutlined />} className={selectedMenuItem === 'Factures' ? 'selected-menu-item' : ''}>
          Factures
-          </Menu.Item>
+          </Menu.Item> */}
          <Menu.Item key="Facture" icon={<FileTextOutlined />} className={selectedMenuItem === 'Facture' ? 'selected-menu-item' : ''}>
-          Facture
+          Factures
           </Menu.Item> 
-           <Menu.SubMenu key="settings" icon={<SettingOutlined />} title="Settings">
-            <Menu.Item key="BasicInformation">Basic Information</Menu.Item>
-            <Menu.Item key="Tax">Tax</Menu.Item>
-            <Menu.Item key="Devise">Devise</Menu.Item>
+           <Menu.SubMenu key="settings" icon={<SettingOutlined />} title="Paramètres">
+            <Menu.Item key="BasicInformation">Fiches Techniques</Menu.Item>
+            <Menu.Item key="Tax">TAX</Menu.Item>
+            <Menu.Item key="Devise">Devises</Menu.Item>
           </Menu.SubMenu>
         </Menu>
       </Sider>
@@ -183,11 +186,11 @@ const DashAdmin = () => {
         style={{ marginTop: '15px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}
       />
       <div style={{ display: 'flex', alignItems: 'center', float: 'right', marginRight: '30px', marginTop: '-25px' }}>
-      <Dropdown overlay={notificationMenu} trigger={['click']}>
+      {/* <Dropdown overlay={notificationMenu} trigger={['click']}>
           <Badge count={notifications.length} offset={[10, 0]}>
             <BellOutlined style={{ fontSize: '20px', cursor: 'pointer' ,marginRight: '25px' }} />
           </Badge>
-        </Dropdown>
+        </Dropdown> */}
         <Dropdown overlay={menu} trigger={['click']} style={{ marginLeft: '15px' }}>
           <Avatar style={{ cursor: 'pointer' }} icon={<UserOutlined />} />
         </Dropdown>
@@ -197,7 +200,7 @@ const DashAdmin = () => {
           <Content style={{ margin: '30px 20px', padding: 24, minHeight: 280, background: 'white', borderRadius: '10px' }}>
           {renderContent()} 
           </Content>
-          <Footer style={{ textAlign: 'center' }}>BillPayVisto ©{new Date().getFullYear()} Created by Visto</Footer>
+          <Footer style={{ textAlign: 'center' }}>BillPayVisto ©{new Date().getFullYear()} Créé par Visto</Footer>
         </Layout>
       </Layout>
 

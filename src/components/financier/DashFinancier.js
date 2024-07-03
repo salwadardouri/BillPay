@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu,Button , Avatar, Dropdown,Badge} from 'antd';
-import { UserOutlined, SettingOutlined,MenuFoldOutlined,AppstoreOutlined,BellOutlined,DashboardOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Layout, Menu,Button , Avatar, Dropdown} from 'antd';
+import { UserOutlined, SettingOutlined,MenuFoldOutlined,AppstoreOutlined,FileTextOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import User from './user/User';
 import Tax from './Parametre/TaxVisto';
 import ServiceList from './Services/ServiceList';
@@ -14,11 +14,12 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Profile from './Profile/ProfileFin';    
 import ChangePass from './Profile/ChangePass';   
+import CreateInvoice from '../admin/Facture/CreateInvoice';
 const { Header, Footer, Sider, Content } = Layout;
 const DashFinancier = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState('user');
   const [collapsed, setCollapsed] = useState(false);  
-  const [notifications, setNotifications] = useState([]);
+  // const [notifications, setNotifications] = useState([]);
   const [userProfile, setUserProfile] = useState({});
 
 
@@ -48,7 +49,7 @@ const DashFinancier = () => {
 
     fetchUserProfile();
     // Simulation des notifications
-    setNotifications(['Notification 1', 'Notification 2','Notif 3']); // Vous devez remplacer cela par votre logique de récupération des notifications
+   // setNotifications(['Notification 1', 'Notification 2','Notif 3']); // Vous devez remplacer cela par votre logique de récupération des notifications
   }, []);
   const handleLogout = async () => {
     const confirmLogout = window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
@@ -84,7 +85,8 @@ const DashFinancier = () => {
 
 case 'profile':
   return <Profile />; 
-
+  case 'Facture':
+    return <CreateInvoice />;
         
 case 'ChangePass':
   return <ChangePass/>; 
@@ -93,18 +95,18 @@ case 'ChangePass':
               return <Tax />;
               case 'Devise':
                 return <Devise />;
-      default:
-        return null;
+                default:
+                  return <User />; 
     }
   };
   
-  const notificationMenu = (
-    <Menu>
-      {notifications.map((notification, index) => (
-        <Menu.Item key={index}>{notification}</Menu.Item>
-      ))}
-    </Menu>
-  );
+  // const notificationMenu = (
+  //   <Menu>
+  //     {notifications.map((notification, index) => (
+  //       <Menu.Item key={index}>{notification}</Menu.Item>
+  //     ))}
+  //   </Menu>
+  // );
 
   const userMenu = (
 <Menu onClick={handleMenuSelect}>
@@ -147,21 +149,21 @@ case 'ChangePass':
           selectedKeys={[selectedMenuItem]}
           onSelect={handleMenuSelect}
         >
-            <div className={`dashboard-subtitle ${collapsed ? "collapsed" : ""}`} style={{marginLeft:'20px',marginTop:'20px' ,display: 'flex', alignItems: 'center', justifyContent: 'start', padding: '10px' }}>
-          <DashboardOutlined style={{ marginRight: '10px' }} />
-          {!collapsed && <span>Dashboard</span>}
-        </div>
+    
           <Menu.Item key="User" icon={<UserOutlined />} className={selectedMenuItem === 'User' ? 'selected-menu-item' : ''}>
-            User
+            Utilisateurs
           </Menu.Item>
-          <Menu.SubMenu key="Catalogue" icon={<AppstoreOutlined/>} title="Catalog">
-            <Menu.Item key="Categories">Category</Menu.Item>
+          <Menu.SubMenu key="Catalogue" icon={<AppstoreOutlined/>} title="Catalogues">
+            <Menu.Item key="Categories">Categories</Menu.Item>
             <Menu.Item key="Services">Services</Menu.Item>
           </Menu.SubMenu>
-          <Menu.SubMenu key="settings" icon={<SettingOutlined />} title="Settings">
-            <Menu.Item key="BasicInformation">Basic Information</Menu.Item>
-            <Menu.Item key="Tax">Tax</Menu.Item>
-            <Menu.Item key="Devise">Devise</Menu.Item>
+          <Menu.Item key="Facture" icon={<FileTextOutlined />} className={selectedMenuItem === 'Facture' ? 'selected-menu-item' : ''}>
+          Factures
+          </Menu.Item> 
+          <Menu.SubMenu key="settings" icon={<SettingOutlined />} title="Paramètres">
+            <Menu.Item key="BasicInformation">Fiches Techniques</Menu.Item>
+            <Menu.Item key="Tax">TAX</Menu.Item>
+            <Menu.Item key="Devise">Devises</Menu.Item>
           </Menu.SubMenu>
       
         </Menu>
@@ -180,13 +182,13 @@ case 'ChangePass':
   </div>
 
   <div style={{ marginRight: '20px', display: 'flex', alignItems: 'center' }}> {/* Ajout de marge à gauche */}
-  <div style={{ marginRight: '30px', display: 'flex', alignItems: 'center' }}>
+  {/* <div style={{ marginRight: '30px', display: 'flex', alignItems: 'center' }}>
   <Dropdown overlay={notificationMenu} trigger={['click']} >
         <Badge count={notifications.length} offset={[10, 0]}>
           <BellOutlined style={{ fontSize: '20px', cursor: 'pointer', color: 'black' }} />
         </Badge>
       </Dropdown>
-      </div>
+      </div> */}
     <Dropdown overlay={userMenu} trigger={['click']}>
       {userProfile.fullname ? (
         <Avatar style={{ backgroundColor: '#FC6736', fontWeight: 'bold', cursor: 'pointer', width: '40px', height: '40px' }}>

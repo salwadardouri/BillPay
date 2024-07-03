@@ -3,9 +3,18 @@ import axios from 'axios';
 import { Form, Input,DatePicker,Divider, Table, Select, Button,Tooltip,Space, InputNumber,Row,Col,message ,Modal ,Typography} from 'antd';
 import Visto from '../../../images/Visto.png';
 
-import { CloseOutlined ,EyeOutlined,CheckCircleOutlined, ExclamationCircleOutlined, WarningOutlined} from '@ant-design/icons';
+import { CloseOutlined ,DownloadOutlined,EyeOutlined,CheckCircleOutlined, ExclamationCircleOutlined, WarningOutlined} from '@ant-design/icons';
 
 import moment from 'moment';
+import {
+  PDFDownloadLink,
+  Document,
+  Page,
+  Text,
+  View,
+  Image,
+  StyleSheet,
+} from "@react-pdf/renderer";
 
 const { Option } = Select;
 const { Title, Paragraph } = Typography;
@@ -24,7 +33,8 @@ const CreateInvoiceForm = () => {
   const [timbre, setTimbre] = useState([]);
   const [editRecord, setEditRecord] = useState(null);
   const [parametre, setParametre] = useState([]); 
-  // eslint-disable-next-line
+  const [montantRestant, setMontantRestant] = useState(editRecord ? editRecord.total_TTC : 0);
+
   const [paiement, setPaiement] = useState([]);
   const [tvaList, setTvaList] = useState([]);
   const [devise, setDevise] = useState([]);
@@ -45,8 +55,10 @@ const [loading, setLoading] = useState(false);
   const [selectedTVA, setSelectedTVA] = useState(null);
   const [paymentType, setPaymentType] = useState(''); // Stocke le type de paiement sélectionné
   const [installments, setInstallments] = useState([{ id: 1 }]); // Stocke les échéances
-  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+
   const [paymentStatus, setPaymentStatus] = useState('paid'); 
+  const [isPrintModalVisible, setIsPrintModalVisible] = useState(false);
+
   const [invoiceData, setInvoiceData] = useState({
     total_HT,
     total_TVA,
@@ -58,7 +70,180 @@ const [loading, setLoading] = useState(false);
     clientid :'',
     parametreid :'',
     services: []
+
   });
+  const styles = StyleSheet.create({
+    page: {
+      flexDirection: "column",
+      backgroundColor: "#fff",
+      padding: 20,
+    },
+    section: {
+      marginBottom: 20,
+      padding: 10,
+    },
+    Visto: {
+      marginBottom: 10,
+      width: "20%",
+    },
+  //    Visto: {
+  //   width: 50, // Largeur de l'image réduite
+  //   height: 50, // Hauteur de l'image réduite
+  //   marginBottom: 10,
+  // },
+    title: {
+      fontSize: 20,
+      color: "#14149f",
+      fontWeight: "bold",
+      textTransform: "uppercase",
+      letterSpacing: 2,
+      marginLeft: "auto",
+      marginRight: "auto",
+      textDecoration: "underline",
+      paddingBottom: 4,
+      marginBottom: 10,
+    },
+    subtitle: {
+      fontSize: 11,
+      color: "#1b1b1b",
+      fontWeight: "normal",
+      marginBottom: 8,
+    },
+    table: {
+      display: "table",
+      width: "100%",
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderColor: "#bfbfbf",
+      borderRightWidth: 0,
+      borderBottomWidth: 0,
+    },
+    tableRow: {
+      flexDirection: "row",
+    },
+    tableColHeaderDesignation: {
+      width: "40%", // Largeur plus grande pour la colonne "Designation"
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderColor: "#6696bd",
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+      backgroundColor: "#84bdea",
+    },
+    tableColDesignation: {
+      width: "40%", // Largeur correspondante pour les cellules de "Designation"
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderColor: "#bfbfbf",
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+    },
+    tableColHeader: {
+      width: "15%",
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderColor: "#6696bd",
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+      backgroundColor: "#84bdea",
+    },
+    tableCol: {
+      width: "15%",
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderColor: "#bfbfbf",
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+    },
+    tableCellHeader: {
+      margin: 5,
+      fontSize: 10,
+      fontWeight: "bold",
+      textAlign: "center",
+    },
+    tableCell: {
+      margin: 5,
+      fontSize: 10,
+      textAlign: "center",
+    },
+
+    totalsContainer: {
+      flexDirection: "row",
+      marginTop: 20,
+      marginBottom: 10,
+      justifyContent: "space-between",
+    },
+    totalsLeft: {
+      width: "40%",
+      marginRight: 10,
+      textAlign: "right",
+    },
+    totalsRight: {
+      width: "40%",
+      marginLeft: 10,
+    },
+    totalsText: {
+      fontSize: 10,
+      marginBottom: 5,
+      color: "#333",
+    },
+    totalsValue: {
+      fontSize: 12,
+      marginBottom: 5,
+      color: "#555",
+    },
+    totalsTable: {
+      marginLeft: 50,
+      width: "80%",
+
+      borderStyle: "solid",
+    },
+    totalsTableRow: {
+      flexDirection: "row",
+      borderBottomWidth: 1,
+      borderColor: "#ccc",
+    },
+    totalsTableCell: {
+      flex: 1,
+
+      textAlign: "center",
+      borderRightWidth: 1,
+      borderColor: "#ccc",
+    },
+    totalsTableCellHeader: {
+      flex: 1,
+
+      textAlign: "center",
+      borderRightWidth: 1,
+      borderColor: "#ccc",
+      backgroundColor: "#84bdea", // Couleur de fond pour les en-têtes de colonnes
+      fontWeight: "bold", // Gras pour les en-têtes
+    },
+    totalsLastCell: {
+      borderRightWidth: 0,
+    },
+
+    footerContainer: {
+      textAlign: "center",
+      borderTop: "2px solid #ddd",
+      paddingTop: 10,
+      marginTop:130,
+      fontSize: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    footerText: {
+      fontSize: 11.5,
+    },
+  });
+
+  const showPrintModal = (record) => {
+    setSelectedFacture(record); // Sélectionnez la facture pour l'impression
+    setIsPrintModalVisible(true);
+  };
+  const handlePrintModalCancel = () => {
+    setIsPrintModalVisible(false);
+  };
 
   const showShowModal = (record) => {
     setIsShowModalVisible(true);
@@ -205,12 +390,11 @@ const [loading, setLoading] = useState(false);
   
       // Récupérer l'ID du client sélectionné
       const clientId = dataToSend.clientid;
-  
+       const Num_Fact = dataToSend.Num_Fact;
       // Créer la notification pour la facture créée
       const notificationData = {
         type: 'FactureCréée',
-        notif: ` We inform you that your invoice number ${dataToSend.Num_Fact} is now available for viewing. `,
-      
+        notif: ` We inform you that your invoice number ${Num_Fact} is now available for viewing. `,
         client: clientId, // Assurez-vous que clientId est bien défini comme un ID MongoDB
       };
   
@@ -228,42 +412,81 @@ const [loading, setLoading] = useState(false);
       console.error('Error creating invoice:', error);
     }
   };
+  const submitNotification = async (clientId,Num_Fact,etatpaiement) => {
+    try {
+      const notificationData = {
+        type: 'PaiementRéglé',
+        notif: `Your invoice number: ${Num_Fact}, Payment status:  ${etatpaiement}`,
+        client: clientId,
+      };
+
+      const response = await axios.post('http://localhost:5000/notifications', notificationData);
+      console.log("Notification créée:", response.data);
+      message.success('Notification sent successfully');
+    } catch (error) {
+      console.error('Failed to send notification', error);
+      message.error('Failed to send notification.');
+    }
+  };
+
   const submitPayment = async (values) => {
+    if (montantRestant > 0) {
+      message.error('Le montant restant doit être 0 pour soumettre le paiement.');
+      return;
+    }
+  
+    if (!editRecord || !editRecord.client || !editRecord.client._id || !editRecord.Num_Fact) {
+      message.error('Les informations de la facture sont manquantes');
+      return;
+    }
+  
+    const echeances = installments.map((installment, index) => {
+      const numCheque = values[`numCheque_${index}`];
+      const montantCheque = parseFloat(values[`montantCheque_${index}`] || 0);
+      const dateCh = moment(values[`dateCh_${index}`]).toISOString();
+      const dateEcheance = moment(values[`dateEcheance`]).toISOString();
+  
+      const montantRestant = editRecord.total_TTC - installments.slice(0, index + 1)
+        .reduce((acc, _, i) => acc + parseFloat(values[`montantCheque_${i}`] || 0), 0);
+  
+      return {
+        numCheque,
+        montantCheque,
+        dateCh,
+        dateEcheance,
+        montantRestant: montantRestant >= 0 ? montantRestant : 0,
+      };
+    });
+  
     const paymentData = {
       etatpaiement: values.etatpaiement,
       montantPaye: values.montantPaye,
       typepaiement: paymentType,
-   
       factures: editRecord ? editRecord._id : null,
-      echeances: installments.map((installment, index) => ({
-        numCheque: values[`numCheque_${index}`],
-        montantCheque: values[`montantCheque_${index}`],
-        dateCh: moment(values["dateCh"]).toISOString(),
-        dateEcheance:moment(values["dateEcheance"]).toISOString() ,
-      })),
+      echeances
     };
   
     try {
       await axios.post('http://localhost:5000/paiement', paymentData);
       alert('Payment submitted successfully!');
-      setPaymentSubmitted(true); // Mettre à jour l'état après soumission réussie
       console.log(paymentData);
-
-    // Créer la notification pour le paiement
-    const notificationData = {
-      type: 'PaiementEffectué',
-      notif: `Payment of ${values.montantPaye} successfully submitted for invoice ${editRecord.Num_Fact}.`,
-      client: values.factures.client._id// Assurez-vous que ceci est correct et correspond à ce que votre API backend attend
-    };
-
-    const notificationResponse = await axios.post('http://localhost:5000/notifications', notificationData);
-    console.log("Notification créée pour le paiement:", notificationResponse.data);
-  } catch (error) {
-    console.error('Failed to submit payment', error);
-    alert('Failed to submit payment.');
-  }
-};
+      await submitNotification(editRecord.client._id, editRecord.Num_Fact, paymentData.etatpaiement);
+    } catch (error) {
+      console.error('Failed to submit payment', error);
+      alert('Failed to submit payment.');
+    }
+  };
   
+const handleEdit = (record) => {
+  setEditRecord(record);
+  setIsUpdateModalVisible(true);
+  
+  form.setFieldsValue({
+    total_TTC: record.total_TTC,
+    Date_Fact: moment(record.Date_Fact),
+ 
+  });
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setInvoiceData({ ...invoiceData, [name]: value });
@@ -427,16 +650,7 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
-const handleEdit = (record) => {
-  setEditRecord(record);
-  setIsUpdateModalVisible(true);
-  
-  form.setFieldsValue({
-    total_TTC: record.total_TTC,
-    Date_Fact: moment(record.Date_Fact),
- 
-  });
-};
+
 useEffect(() => {
   if (editRecord) {
     form.setFieldsValue({
@@ -444,9 +658,23 @@ useEffect(() => {
       Date_Fact: moment(editRecord.Date_Fact),
       
     });
-    setPaymentSubmitted(false); // Réinitialiser l'état lorsque editRecord change
+
   }
 }, [editRecord, form]);
+const calculateMontantRestant = (allValues) => {
+  const total_TTC = editRecord ? editRecord.total_TTC : 0;
+  const montantCheques = installments.reduce((acc, _, index) => {
+    const montantCheque = parseFloat(allValues[`montantCheque_${index}`] || 0);
+    return acc + montantCheque;
+  }, 0);
+  const restant = total_TTC - montantCheques;
+  setMontantRestant(restant >= 0 ? restant : 0);
+};
+
+useEffect(() => {
+  form.validateFields(); // Force the validation to check if montantRestant is 0
+
+}, [form]);
 
 const handlePaymentTypeChange = (value) => {
   setPaymentType(value);
@@ -463,28 +691,26 @@ const handlePaymentStatusChange = (value) => {
 const handleRemoveEcheance = (index) => {
   setInstallments((prevInstallments) => prevInstallments.filter((_, i) => i !== index));
 };
-const renderEtatPaiement = (record) => {
+const renderEtatPaiement = (record, paiement) => {
   const paiementAssocie = paiement.find(p => p.factures.includes(record._id));
-  let icon;
-  let text;
+  if (!paiementAssocie) return <span><ExclamationCircleOutlined style={{ color: 'red' }} /> Unpaid</span>;
 
-  if (paiementAssocie) {
-    const etatpaiement = paiementAssocie.etatpaiement;
+  const etatpaiement = paiementAssocie.etatpaiement;
+  let icon, text;
 
-    if (etatpaiement === 'Paid') {
+  switch (etatpaiement) {
+    case 'Paid':
       icon = <CheckCircleOutlined style={{ color: 'green' }} />;
       text = 'Paid';
-    } else if (etatpaiement === 'partially paid') {
+      break;
+    case 'partially paid':
       icon = <WarningOutlined style={{ color: 'yellow' }} />;
-      text = 'partially paid';
-    } else {
+      text = 'Partially Paid';
+      break;
+    default:
       icon = <ExclamationCircleOutlined style={{ color: 'red' }} />;
       text = 'Unpaid';
-    }
-  } else {
-    // Si aucun paiement associé n'est trouvé
-    icon = <ExclamationCircleOutlined style={{ color: 'red' }} />;
-    text = 'Unpaid';
+      break;
   }
 
   return (
@@ -493,15 +719,18 @@ const renderEtatPaiement = (record) => {
     </span>
   );
 };
+
 const columns = [
   {
     title: 'État Paiement',
-    key: 'etatpaiement',
-    render: (record) => renderEtatPaiement(record),
+    key: 'etatPaiement',
+    width:130 ,
+    render: (record) => renderEtatPaiement(record, paiement),
   },
   {
-    title: 'Date',
+    title: 'Date facture',
     dataIndex: 'Date_Fact',
+    width:130 ,
     key: 'Date_Fact',
     render: (text) => (
       <Tooltip placement="topLeft" title={new Date(text).toLocaleDateString()}>
@@ -510,14 +739,14 @@ const columns = [
     ),
   },
   {
-    title: 'Num_Fact',
+    title: 'Num Facture',
     dataIndex: 'Num_Fact',
     key: 'Num_Fact',
     ellipsis: true,
     render: (text) => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>,
   },
   {
-    title: 'Society',
+    title: 'Entreprise',
     key: 'parametre_Nom_S',
     render: (record) => (
       <div>
@@ -550,16 +779,44 @@ const columns = [
     title: 'Actions',
     render: (_, record) => (
       <Space style={{ float: 'left' }}>
-        <Button type="link" icon={<EyeOutlined />} onClick={() => showShowModal(record)} />
-        <Button type="link" onClick={() => handleEdit(record)} disabled={paymentSubmitted}>
-  Track
-</Button>
-
-       
+        <Button style={{size:'30px'}} type="link" icon={<EyeOutlined />} onClick={() => showShowModal(record)} />
+    
+        <Button
+            type="link"
+            icon={<DownloadOutlined />}
+            onClick={() => showPrintModal(record)} // Passer le record à la fonction
+          ></Button>
+        {/* <Button
+  type="link"
+  onClick={() => handleEdit(record)}
+  disabled={etatpaiement === 'partially paid' || etatpaiement === 'paid'}
+>
+  Suivre
+</Button> */}
+{renderTrackPaiement(record, paiement)}
+           
       </Space>
     ),
   },
 ];
+const renderTrackPaiement = (record, paiement) => {
+  // Recherche du paiement associé à l'enregistrement spécifique
+  const paiementAssocie = paiement.find(p => p.factures.includes(record._id));
+  
+  // Détermine si le bouton doit être désactivé en fonction de la présence du paiement associé
+  const disableButton = !!paiementAssocie;
+
+  // Rendu conditionnel du bouton "Suivre"
+  return (
+    <Button
+      type="link"
+      onClick={() => handleEdit(record)} // Remplacez handleEdit par la fonction appropriée pour éditer
+      disabled={disableButton}
+    >
+      Suivre
+    </Button>
+  );
+};
 const factureTable = [
   {
     title: 'Ref',
@@ -568,7 +825,7 @@ const factureTable = [
     width: '140px',
     ellipsis: true,  
     render: text => (
-      <Tooltip placement="topLeft" title={text}>
+      <Tooltip placement="topLeft" title={text}> 
         <Input style={{ width: '100%' , border: 'none',textAlign: 'justify'}} readOnly value={text} />
       </Tooltip>
     )
@@ -796,7 +1053,10 @@ const factureTable = [
       form={form}
       onFinish={submitPayment}
  
-      onValuesChange={(changedValues, allValues) => console.log(allValues)}
+
+      onValuesChange={(changedValues, allValues) => {
+        console.log(allValues);
+        calculateMontantRestant(allValues);}}
     >
       {editRecord && (
         <>
@@ -814,6 +1074,9 @@ const factureTable = [
       The total amount inclusive of all taxes for this invoice (Total_TTC) is  :   {editRecord.total_TTC}{editRecord.devise.Symbole} .
 
         </Paragraph>
+        <Paragraph style={{ fontWeight: 'bold', fontSize: '15px' }}>
+        The remaining amount to be paid is: {montantRestant} {editRecord.devise.Symbole}.
+      </Paragraph>
           <Row gutter={[16, 16]}>
             <Col span={6}>
               <Form.Item
@@ -876,6 +1139,13 @@ const factureTable = [
                     </Select>
                   </Form.Item>
                 </Col>
+                <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <Form.Item label="Remaining Amount">
+              <Input value={montantRestant} readOnly />
+            </Form.Item>
+          </Col>
+        </Row>
                 {paymentStatus === 'partially paid' && (
                 <Col span={8}>
                       <Form.Item  layout="vertical"
@@ -911,7 +1181,8 @@ const factureTable = [
       name={`montantCheque_${index}`}
       label="Cheque Amount"
     >
-      <Input />
+      <Input onChange={() => calculateMontantRestant(form.getFieldsValue())} />
+      
     </Form.Item>
   </Col>
   <Col span={6}>
@@ -925,6 +1196,7 @@ const factureTable = [
       <DatePicker format="YYYY-MM-DD" />
     </Form.Item>
   </Col>
+
   <Col span={6}>
   <Form.Item
       layout="vertical"
@@ -1073,7 +1345,7 @@ const factureTable = [
        <Col span={8} >  
        <Form.Item
   name="timbreid"
-  rules={[{ required: true, message: 'Please select a stamp!' }]}
+ 
 >
   <Select 
     placeholder="Select a stamp."   
@@ -1195,7 +1467,350 @@ const factureTable = [
         dataSource={facture }
         loading={loading}
    rowKey="Num_Fact"
+
       />  
+       <Modal
+            visible={isPrintModalVisible}
+            onCancel={handlePrintModalCancel}
+            footer={
+              <PDFDownloadLink
+                document={
+                  <Document>
+                    <Page size="A4" style={styles.page}>
+                      <View style={styles.section}>
+                        <Image src={Visto} style={styles.Visto} />
+                        <Text style={styles.title}>
+                          {selectedFacture
+                            ? selectedFacture.Num_Fact
+                            : "-"}
+                        </Text>
+                        <Text style={styles.subtitle}>
+                          Date:{" "}
+                          {selectedFacture
+                            ? formatDate(selectedFacture.Date_Fact)
+                            : "-"}
+                        </Text>
+
+                        <Text style={styles.subtitle}>
+                          Tax ID:{" "}
+                          {selectedFacture && selectedFacture.parametre
+                            ? selectedFacture.parametre.Matricule_Fiscale_S
+                            : "-"}
+                        </Text>
+                        <Text style={styles.subtitle}>
+                        Company name :{" "}
+  {selectedFacture && selectedFacture.parametre
+    ? selectedFacture.parametre.Nom_S
+    : "-"}
+</Text>
+
+                        <Text style={styles.subtitle}>
+                          Phone:{" "}
+                          {selectedFacture && selectedFacture.parametre
+                            ? selectedFacture.parametre.Num_Phone_S
+                            : "-"}
+                        </Text>
+                        <Text style={styles.subtitle}>
+                          {selectedFacture && selectedFacture.parametre
+                            ? `${selectedFacture.parametre.Address_S}, ${selectedFacture.parametre.Paye_S}, ${selectedFacture.parametre.Code_Postal_S}`
+                            : "-"}
+                        </Text>
+                      </View>
+                      {/* Informations du client à droite */}
+                      <View style={styles.section}>
+                        <View style={{ marginTop: -70, marginLeft: 375 }}>
+                          {selectedFacture &&
+                            selectedFacture.client &&
+                            selectedFacture.client.matricule_fiscale && (
+                              <Text style={styles.subtitle}>
+                                Tax ID:{" "}
+                                {selectedFacture.client.matricule_fiscale}
+                              </Text>
+                            )}
+                          <Text style={styles.subtitle}>
+                            Client:{" "}
+                            {selectedFacture && selectedFacture.client
+                              ? selectedFacture.client.fullname
+                              : "-"}
+                          </Text>
+                          <Text style={styles.subtitle}>
+  Country: {" "}
+  {selectedFacture && selectedFacture.client
+    ? selectedFacture.client.country
+    : "-"}
+</Text>
+
+                          <Text style={styles.subtitle}>
+                            Email:{" "}
+                            {selectedFacture && selectedFacture.client
+                              ? selectedFacture.client.email
+                              : "-"}
+                          </Text>
+                          <Text style={styles.subtitle}>
+                            Phone:{" "}
+                            {selectedFacture && selectedFacture.client
+                              ? selectedFacture.client.num_phone
+                              : "-"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.table}>
+                        <View style={styles.tableRow}>
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>
+                             Ref
+                            </Text>
+                          </View>
+                          <View style={styles.tableColHeaderDesignation}> {/* Utilisation du nouveau style pour "Designation" */}
+      <Text style={styles.tableCellHeader}>
+        Designation
+      </Text>
+    </View>
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>Unit</Text>
+                          </View>
+                        
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>Quantity</Text>
+                          </View>
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>
+                             PU
+                            </Text>
+                          </View>
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>
+                            Discount(%)
+                            </Text>
+                          </View>
+                          {/* <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>TVA</Text>
+                          </View> */}
+                          <View style={styles.tableColHeader}>
+                            <Text style={styles.tableCellHeader}>
+                            Net Amount
+                            </Text>
+                          </View>
+                        </View>
+                        {selectedFacture &&
+                        selectedFacture.services &&
+                        Array.isArray(selectedFacture.services) &&
+                        selectedFacture.services.length > 0 ? (
+                          selectedFacture.services.map((service, index) => (
+                            <View style={styles.tableRow} key={index}>
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.reference}
+                                </Text>
+                              </View>
+                              <View style={styles.tableColDesignation}>
+                                <Text style={styles.tableCell}>
+                                  {service.libelle}
+                                </Text>
+                              </View>
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.unite}
+                                </Text>
+                              </View>
+                       
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.quantite}
+                                </Text>
+                              </View>
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.prix_unitaire}
+                                </Text>
+                              </View>
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.remise}%
+                                </Text>
+                              </View>
+                                     {/* <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.tva}%
+                                </Text>
+                              </View> */}
+                              <View style={styles.tableCol}>
+                                <Text style={styles.tableCell}>
+                                  {service.montant_HT}
+                                </Text>
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <View style={styles.tableRow}>
+                            <View style={styles.tableCol} colSpan={7}>
+                              <Text style={styles.tableCell}>
+                              No service found
+                              </Text>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+
+                      <View style={styles.totalsContainer}>
+                        <View style={{ marginLeft: 10 }}>
+                          <Text style={styles.totalsText}>
+                          Invoice totalled to" ou "Invoice amounted to{" "}
+                          </Text>
+                          <Text style={styles.totalsText}>
+                            {selectedFacture
+                              ? selectedFacture.total_TTC_Lettre
+                              : "-"}
+                          </Text>
+                        </View>
+                        <View style={styles.totalsRight}>
+                          <View style={styles.totalsTable}>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                  Total HT
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture && selectedFacture.total_HT !== undefined
+                                    ? selectedFacture.total_HT.toFixed(3)
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                Discount
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture && selectedFacture.total_Remise !== undefined
+                                    ? selectedFacture.total_Remise.toFixed(3)
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                Net total after Discount
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture && selectedFacture.total_HT_Apres_Remise !== undefined
+                                    ? selectedFacture.total_HT_Apres_Remise.toFixed(
+                                        3
+                                      )
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                  Total TVA
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture && selectedFacture.total_TVA !== undefined
+                                    ? selectedFacture.total_TVA.toFixed(3)
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                Fiscal Stamp
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture  && selectedFacture.timbre.Valeur !== undefined
+                                    ? selectedFacture.timbre.Valeur.toFixed(3)
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.totalsTableRow}>
+                              <View style={styles.totalsTableCellHeader}>
+                                <Text style={styles.tableCellHeader}>
+                                  Total TTC
+                                </Text>
+                              </View>
+                              <View style={styles.totalsTableCell}>
+                                <Text style={styles.tableCell}>
+                                  {selectedFacture  && selectedFacture.total_TTC !== undefined
+                                    ? selectedFacture.total_TTC.toFixed(3)
+                                    : "-"}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+
+                      <View style={styles.footerContainer}>
+                        <Text style={styles.footerText}>
+                         Phone:{" "}
+                          {selectedFacture
+                            ? selectedFacture.parametre.Num_Phone_S
+                            : "-"}{" "}
+                          | Email:{" "}
+                          {selectedFacture
+                            ? selectedFacture.parametre.email
+                            : "-"}{" "}
+                          |Address:{" "}
+                          {selectedFacture
+                            ? `${selectedFacture.parametre.Address_S}, ${selectedFacture.parametre.Paye_S}, ${selectedFacture.parametre.Code_Postal_S}`
+                            : "-"}
+                        </Text>
+                      </View>
+                    </Page>
+                  </Document>
+                }
+                fileName="facture.pdf"
+              >
+                {({ loading }) =>
+                  loading ? "Chargement..." : "Download PDF"
+                }
+              </PDFDownloadLink>
+            }
+            width={800}
+          >
+            <div
+              style={{
+                textAlign: "center",
+                margin: "20px auto",
+                maxWidth: "600px",
+              }}
+            >
+              {selectedFacture && (
+                <>
+                  <p
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Invoice number : {selectedFacture.Num_Fact}
+                  </p>
+                  {/* Ajoutez d'autres détails de la facture ici si nécessaire */}
+                  <p style={{ fontSize: "18px", marginBottom: "20px" }}>
+                  Click the button below to download your invoice in PDF format:
+                  </p>
+                  {/* Ajoutez votre bouton de téléchargement ici */}
+                </>
+              )}
+            </div>
+          </Modal>
  <Modal
   width={1000}
   visible={isShowModalVisible}

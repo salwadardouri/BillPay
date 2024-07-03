@@ -144,7 +144,7 @@ const BasicInformation = () => {
       });
   
       if (response.ok) {
-        message.success('Data updated successfully');
+        message.success('Données mises à jour avec succès');
          form.resetFields();
         setOpen(false);
         fetchData(); // Recharger les données
@@ -152,7 +152,7 @@ const BasicInformation = () => {
         throw new Error('Failed to update data');
       }
     } catch (error) {
-      message.error('Failed to update data');
+      message.error('Échec de la mise à jour des données');
       console.error('Error updating data:', error);
     }
   };
@@ -202,7 +202,7 @@ const BasicInformation = () => {
       });
   
       if (response.status === 201) {
-        message.success('Basic Information created successfully');
+        message.success('Informations de base créées avec succès');
         form.resetFields();
         setOpen(false);
         fetchData();
@@ -211,7 +211,7 @@ const BasicInformation = () => {
       }
     } catch (error) {
       console.error('Error creating Basic Information:', error);
-      message.error('Failed to create Basic Information');
+      message.error('Échec de la création des informations de base');
     }
   };
   const onSearch = debounce(async (query) => {
@@ -226,7 +226,7 @@ const BasicInformation = () => {
         setData(response.data); // Met à jour les données de la table avec les résultats de recherche
       }
     } catch (error) {
-      message.error('Error during search');
+      message.error('Erreur lors de la recherche');
     } finally {
       setLoading(false);
     }
@@ -235,7 +235,7 @@ const BasicInformation = () => {
   
   const columnsVisto = [
     {
-      title: 'Status',
+      title: 'Statut',
       dataIndex: 'status',
       key: 'status',
       width: 80,
@@ -250,19 +250,19 @@ const BasicInformation = () => {
        sorter: (a, b) => a.status - b.status, 
 
     },
-    { title: 'FullName', dataIndex: 'Nom_S', key: 'Nom_S' , ellipsis: true,
+    { title: 'Nom', dataIndex: 'Nom_S', key: 'Nom_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     { title: 'Email', dataIndex: 'Email_S', key: 'Email_S', ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
-    { title: 'Country', dataIndex: 'Paye_S', key: 'Paye_S' , ellipsis: true,
+    { title: 'Pays', dataIndex: 'Paye_S', key: 'Paye_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Address', dataIndex: 'Address_S', key: 'Address_S' , ellipsis: true,
+    { title: 'Adresse', dataIndex: 'Address_S', key: 'Address_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Phone number', dataIndex: 'Num_Phone_S', key: 'Num_Phone_S', ellipsis: true,
+    { title: 'Numéro de téléphone ', dataIndex: 'Num_Phone_S', key: 'Num_Phone_S', ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip> },
-    { title: 'Postal code', dataIndex: 'Code_Postal_S', key: 'Code_Postal_S' , ellipsis: true,
+    { title: 'Code postal', dataIndex: 'Code_Postal_S', key: 'Code_Postal_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
-    { title: 'Tax identification number', dataIndex: 'Matricule_Fiscale_S', key: 'Matricule_Fiscale_S' , ellipsis: true,
+    { title: 'Matricule fiscale', dataIndex: 'Matricule_Fiscale_S', key: 'Matricule_Fiscale_S' , ellipsis: true,
     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>},
     {
       title: 'Actions',
@@ -292,7 +292,7 @@ const BasicInformation = () => {
         <Button style={{ backgroundColor: '#022452' }} type="primary" icon={<UserAddOutlined />} onClick={() => setOpen(true)}>Create</Button>
       </div>
       <Search
-        placeholder="Search "
+        placeholder="Recherche "
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -303,9 +303,9 @@ const BasicInformation = () => {
       />
       <div style={{ clear: 'both',marginTop:"30px" }}>
       <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleParametreStatusChange}>
-                            <Option value="all">All of status </Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts </Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
         <Table
           columns={columnsVisto}
@@ -320,7 +320,7 @@ const BasicInformation = () => {
       </div>
       
       <Modal
-       title={editRecord ? "Edit Data" : "Create New data"}
+       title={editRecord ? "Modifier paramètre d'entreprise" : "Créer paramètre d'entreprise "}
         visible={open}
         onCancel={() => setOpen(false)}
         footer={null}
@@ -332,8 +332,8 @@ const BasicInformation = () => {
     <Col span={24}>
       <Form.Item
         name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
+        label="Statut"
+        rules={[{ required: true, message: 'Veuillez sélectionner le statut!' }]}
         initialValue={false}
       >
         <Row>
@@ -344,7 +344,7 @@ const BasicInformation = () => {
               style={{ color: status ? 'green' : 'red' }}
               value={true}
             >
-              Activated
+              Activé
             </Checkbox>
           </Col>
           <Col span={12}>
@@ -354,7 +354,7 @@ const BasicInformation = () => {
               style={{ color: status ? 'red' : 'green' }}
               value={false}
             >
-              Inactivated
+              Désactivé
             </Checkbox>
           </Col>
         </Row>
@@ -370,19 +370,19 @@ const BasicInformation = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'Please enter the full name.',
+                      message: 'Veuillez saisirle nom de l entreprise ',
                     },
                   ]}
                 >
-                  <Input name="Nom_S" placeholder="Full name" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
+                  <Input name="Nom_S" placeholder="Nom de l'entreprise " style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item
                   name="Email_S"
                   rules={[
-                    { type: 'email', message: 'The input is not valid E-mail!' },
-                    { required: true, message: 'Please input your E-mail!' },
+                    { type: 'email', message: 'E-mail invalide!' },
+                    { required: true, message: 'Veuillez saisir votre adresse e-mail !' },
                   ]}
                 >
                   <Input name="Email_S" placeholder="E-mail!" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
@@ -394,7 +394,7 @@ const BasicInformation = () => {
                 <Form.Item
                   name="Num_Phone_S"
                   style={{ border: 'none', borderBottom: '0.5px solid grey', }}
-                  rules={[{ required: true, message: 'Please input your phone number!' }]}
+                  rules={[{ required: true, message: 'Veuillez saisir votre numéro de téléphone !' }]}
                 >
                   <PhoneInput
                     country={'us'}
@@ -402,25 +402,25 @@ const BasicInformation = () => {
                     value={phoneNumber}
                     onChange={handleChangePhoneNumber}
                     inputStyle={{ border: 'none', boxShadow: 'none' }}
-                    placeholder="Phone number"
+                    placeholder="Numéro de téléphone"
                     buttonStyle={{ border: 'none', boxShadow: 'none', backgroundColor: 'transparent' }}
                   />
                 </Form.Item>
                 {!validPhoneNumber && (
-                  <p>Please enter a valid phone number.</p>
+                  <p>Veuillez saisir un numéro de téléphone valide ! .</p>
                 )}
               </Col>
               <Col span={12}>
                 <Form.Item
                   name="Paye_S"
-                  rules={[{ required: true, message: 'Please select your country!' }]}
+                  rules={[{ required: true, message: 'Veuillez sélectionner votre pays!' }]}
                   style={{ border: 'none', borderBottom: '0.5px solid grey' }}
                 >
                   <ReactSelect
                     options={countryOptions}
                     components={{ Option: CountryOption }}
                     name="Paye_S"
-                    placeholder='Country'
+                    placeholder='Pays'
                     isClearable={true}
                     onChange={(option) => setSelectedCountry(option)}
                     
@@ -455,11 +455,11 @@ const BasicInformation = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'Please enter the address!.',
+                      message: 'Veuillez saisir l adresse !.',
                     },
                   ]}
                 >
-                  <Input name="Address_S" placeholder="Address" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
+                  <Input name="Address_S" placeholder="Adresse" style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -468,11 +468,11 @@ const BasicInformation = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'Please enter the postal code!.',
+                      message: 'Veuillez saisir le code postal !.',
                     },
                   ]}
                 >
-                  <Input placeholder="Postal code." style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
+                  <Input placeholder="Code Postal." style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -483,11 +483,11 @@ const BasicInformation = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'Please enter the tax identification number!.',
+                      message: 'Veuillez saisir le numéro d identification fiscale!.',
                     },
                   ]}
                 >
-                  <Input name="Matricule_Fiscale_S" placeholder="Tax Identification Number ." style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
+                  <Input name="Matricule_Fiscale_S" placeholder="Matricule Fiscal." style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', fontSize: '16px', padding: '10px', height: '40px', width: '100%', borderBottom: '0.5px solid grey' }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -498,7 +498,7 @@ const BasicInformation = () => {
               style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
               htmlType="submit"
             >
-              {editRecord ? 'Update' : 'Create'}
+              {editRecord ? 'Modifier' : 'Créer'}
             </Button>
           </Form.Item>
         </Form>

@@ -103,9 +103,6 @@ const fetchServices = async () => {
   };
 
 
-
-
-
 const handleFormSubmit = async (values) => {
   if (editRecord) { // Si nous sommes en mode édition
     await updateRecord(values); // Appelez la fonction de mise à jour
@@ -131,20 +128,34 @@ const handleEdit = (record) => {
   setOpen(true);
 };
 const updateRecord = async (values) => {
+  const { deviseId, categoriesId, ...restValues } = values; // Séparez deviseId et categoriesId du reste des valeurs
+
+  const updatedValues = {
+    ...restValues, // Gardez toutes les autres valeurs intactes
+  };
+
+  if (deviseId) {
+    updatedValues.deviseId = deviseId; // Ajoutez deviseId si présent dans les valeurs
+  }
+
+  if (categoriesId) {
+    updatedValues.categoriesId = categoriesId; // Ajoutez categoriesId si présent dans les valeurs
+  }
   try {
     const response = await axios.put(`http://localhost:5000/services/${editRecord._id}`, values); // Utilisez l'ID de `editRecord`
     if (response.status === 200) {
-      message.success('Service updated successfully');
+      message.success('Service mis à jour avec succès');
       fetchServices(); // Rafraîchissez la liste des services
       setOpen(false);
     } else {
       throw new Error('Failed to update service');
     }
   } catch (error) {
-    message.error('Failed to update service');
+    message.error('Échec de la mise à jour du service');
     console.error('Error updating service:', error);
   }
 };
+
 const onSearch = debounce(async (query) => {
   setLoading(true);
   try {
@@ -211,20 +222,21 @@ const onSearch = debounce(async (query) => {
     {
       title: 'Designation',
       dataIndex: 'libelle',
+      width: 300,
       key: 'libelle', ellipsis: true,
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
  
 
     {
-      title: 'Unit Price',
+      title: 'Prix unitaire',
       dataIndex: 'prix_unitaire',
       key: 'prix_unitaire', ellipsis: true,
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
     },
   
     {
-      title: 'Unite ',
+      title: 'Unité ',
       dataIndex: 'unite',
       key: 'unite', ellipsis: true,
       render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -241,6 +253,7 @@ const onSearch = debounce(async (query) => {
 
     {
       title: 'Actions',
+      width: 80,
       render: (_, record) => (
         <>
           <Space style={{ float: 'left' }}>
@@ -276,10 +289,10 @@ const onSearch = debounce(async (query) => {
   return (
     <>
       <Button type="primary" onClick={() => setOpen(true)} icon={<PlusOutlined />} style={{ float: 'right' ,backgroundColor:'#022452' }}>
-        New service
+        Nouveau service
       </Button>
       <Search
-        placeholder="Search "
+        placeholder="Recherche "
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -288,24 +301,30 @@ const onSearch = debounce(async (query) => {
         }}
         style={{ maxWidth: 780, marginBottom: 20 }}
       />
-      {successAlert && <Alert message="Success" description="Service created successfully." type="success" showIcon />}
-        {errorAlert && <Alert message="Error" description="Failed to create the service. Please try again later." type="error" showIcon />}
+      {successAlert && <Alert message="Success" description="Service créé avec succès" type="success" showIcon />}
+        {errorAlert && <Alert message="Error" description="Échec de la création du service. Veuillez réessayer plus tard." type="error" showIcon />}
         
       
       <Modal
-        title={editRecord ? "Edit Category" : "Create New Category"}
+        title={editRecord ? "Modifier Service" : "Créer un nouveau service"}
         visible={open}
         width={800}
         onCancel={() => setOpen(false)}
         footer={null}
-      >  <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+      >  
+             <div style={{ borderTop: '1px solid #ccc', marginTop: '10px', marginBottom: '20px' }}></div>
+
+             <div style={{ marginBottom: '20px', color: '#022452', fontWeight: 'bold', fontSize: '1.1em', padding: '10px 0' }}>
+             Important: Il faut informer dans le libellé pour quel pays ce service sera créé
+</div>
+      <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
       {editRecord && (
 <Row>
   <Col span={24}>
     <Form.Item
       name="status"
-      label="Status"
-      rules={[{ required: true, message: 'Please select the status!' }]}
+      label="Statut"
+      rules={[{ required: true, message: 'Veuillez cocher le statut!' }]}
       initialValue={false}
     >
       <Row>
@@ -316,7 +335,7 @@ const onSearch = debounce(async (query) => {
             style={{ color: status ? 'green' : 'red' }}
             value={true}
           >
-            Activated
+            Activé
           </Checkbox>
         </Col>
         <Col span={12}>
@@ -326,7 +345,7 @@ const onSearch = debounce(async (query) => {
             style={{ color: status ? 'red' : 'green' }}
             value={false}
           >
-            Inactivated
+      Désactivé
           </Checkbox>
         </Col>
       </Row>
@@ -338,17 +357,17 @@ const onSearch = debounce(async (query) => {
       <Col span={12} style={{ marginBottom: '16px' }}>      
      <Form.Item
 name="reference"
-label="Reference"
+label="Référence"
 // Vous pouvez ajouter d'autres règles de validation au besoin
 rules={[
   { 
     required: editRecord, 
-    message: 'Please input the reference!' 
+    message: 'Veuillez saisir la référence!' 
   }
 ]}
 style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est pas nécessaire
 >
-<Input placeholder="Enter the reference" />
+<Input placeholder="Entrez la référence" />
 </Form.Item>
 
       </Col>
@@ -357,18 +376,18 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
             <Form.Item
               name="libelle"
               label="Designation"
-              rules={[{ required: true, message: 'Please input the designation!' }]}
+              rules={[{ required: true, message: 'Veuillez saisir la désignation!' }]}
             >
-              <Input placeholder="Enter the designation"  />
+              <Input placeholder="Entrez la désignation"  />
             </Form.Item>
       </Col>
       <Col span={12} style={{ marginBottom: '16px' }}>   
             <Form.Item
               name="deviseId"
               label="Devise"
-              rules={[{ required: true, message: 'Please select a Devise' }]}
+              rules={[{ required: true, message: 'Veuillez sélectionner une devise' }]}
             >
-              <Select placeholder="Select a Devise"
+              <Select placeholder="Sélectionnez une devise"
               >
                 {devise.map(devise => (
                   <Option key={devise._id} value={devise._id}>
@@ -388,11 +407,11 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
       <Col span={12} style={{ marginBottom: '16px' }}>
             <Form.Item
             name="prix_unitaire"
-            label="Unit Price"
-            rules={[{ required: true, message: 'Please input the unit price!' }]}>
+            label="Prix Uitaire"
+            rules={[{ required: true, message: 'Veuillez saisir le prix unitaire!' }]}>
               <InputNumber
               style={{ width: '100%' }}
-              placeholder="Enter the unit price"
+              placeholder="Entrez le prix unitaire"
          
            
                    />
@@ -402,10 +421,10 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
    <Col span={12} style={{ marginBottom: '16px' }}>
             <Form.Item
             name="unite"
-            label="unity"
-            rules={[{ required: true, message: 'Please input the unity!' }]}>
+            label="Unité"
+            rules={[{ required: true, message: 'Sélectionnez l unité!' }]}>
         <Select
-        placeholder="Select the unity"
+        placeholder="Sélectionnez l'unité"
     
          
      
@@ -423,9 +442,9 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
   <Col span={12} style={{ marginBottom: '16px' }}><Form.Item
               name="categoriesId"
               label="Categories"
-              rules={[{ required: true, message: 'Please select a Categories' }]}
+              rules={[{ required: true, message: 'Veuillez sélectionner une catégorie' }]}
             >
-              <Select placeholder="Select a Categories"  >
+              <Select placeholder="Sélectionnez une catégorie"  >
                 {categories.map(categories => (
                   <Option key={categories._id} value={categories._id}>{categories.Titre_Categorie}</Option>
                 ))}
@@ -441,7 +460,7 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
             style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
             htmlType="submit"
           >
-            {editRecord ? 'Update' : 'Create'}
+            {editRecord ? 'Modifier' : 'Créer'}
           </Button>
         </Form.Item>
 
@@ -452,9 +471,9 @@ style={{ display: editRecord ? 'block' : 'none' }} // Cache le champ s'il n'est 
     </Modal>
       <div style={{ clear: 'both' ,marginTop:"30px"}}>
       <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleServicesStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
       <Table
         style={{ marginTop: '10px' ,clear: 'both'}}

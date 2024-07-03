@@ -53,14 +53,14 @@ const DeviseParam = () => {
     try {
       const response = await axios.post('http://localhost:5000/devise', values);
       if (response.status === 201) {
-        message.success('Devise created successfully');
+        message.success('Devise créée avec succès');
         setOpen(false);
         fetchDevise();
       } else {
         throw new Error('Failed to create devise');
       }
     } catch (error) {
-      message.error('Failed to create devise');
+      message.error('Échec de la création de la devise');
       console.error('Error creating devise:', error);
     }
   };
@@ -70,14 +70,14 @@ const DeviseParam = () => {
     try {
       const response = await axios.put(`http://localhost:5000/devise/${editRecord._id}`, values);
       if (response.status === 200) {
-        message.success('Devise updated successfully');
+        message.success('Devise mise à jour avec succès');
         setOpen(false);
         fetchDevise();
       } else {
         throw new Error('Failed to update devise');
       }
     } catch (error) {
-      message.error('Failed to update devise');
+      message.error('Échec de la mise à jour de la devise');
       console.error('Error updating devise:', error);
     }
   };
@@ -107,14 +107,14 @@ const DeviseParam = () => {
         body: JSON.stringify({ status: false }) // Définissez le corps de la requête avec le statut false
       });
       if (response.ok) {
-        message.success('Data  successfully inactivated');
+        message.success('Données désactivées avec succès');
         fetchDevise();
       } else {
         throw new Error('Failed to deactivate data');
       }
     } catch (error) {
       console.error('Error deactivating  data:', error);
-      message.error('Failed to inactivate data');
+      message.error('Échec de la désactivation des données');
     }
   };
 
@@ -130,14 +130,14 @@ const DeviseParam = () => {
         setDeviseData(response.data);
       }
     } catch (error) {
-      message.error('Error during search');
+      message.error('Erreur lors de la recherche');
     } finally {
       setLoading(false);
     }
   }, 300); // Debouncing de 300 ms pour réduire les appels API
 
   const columnsDevise = [
-    { title: 'Nom_D', dataIndex: 'Nom_D', key: 'Nom_D' },
+    { title: 'Devise', dataIndex: 'Nom_D', key: 'Nom_D' },
     { title: 'Symbole', dataIndex: 'Symbole', key: 'Symbole' },
     {
       title: 'Actions',
@@ -147,12 +147,12 @@ const DeviseParam = () => {
         <Space style={{ float: 'left' }}>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
-              title="Are you sure to disable this devise?"
+              title="Êtes-vous sûr de vouloir désactiver cette devise ?"
               onConfirm={() => handleDelete(record)}
               okText="Yes"
               cancelText="No"
             >
-              <Button type="link" danger >Disable</Button>
+              <Button type="link" danger >Désactiver</Button>
             </Popconfirm>
         </Space>
       ),
@@ -167,10 +167,10 @@ const DeviseParam = () => {
           style={{ backgroundColor: '#022452' }}
           onClick={() => setOpen(true)}
         >
-          New Collection
+          Ajouter une devise
         </Button>      </div>
         <Search
-        placeholder="Search "
+        placeholder="Recherche"
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -191,7 +191,7 @@ const DeviseParam = () => {
       </div>
 
       <Modal
-        title={editRecord ? "Edit Devise" : "Create New Devise"}
+        title={editRecord ? "Modifier Devise" : "Créer une nouvelle devise"}
         visible={open}
         onCancel={() => setOpen(false)}
         footer={null}
@@ -203,10 +203,10 @@ const DeviseParam = () => {
               <Form.Item
                 name="Nom_D"
                 rules={[
-                  { required: true, message: 'Please enter the devise title.' },
+                  { required: true, message: 'Veuillez entrer le titre de la devise.' },
                 ]}
               >
-                <Input name="Nom_D" placeholder="Nom_D"    style={{ width: '100%' }} />
+                <Input name="Nom_D" placeholder="Devise"    style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -215,7 +215,7 @@ const DeviseParam = () => {
               <Form.Item
                 name="Symbole"
                 rules={[
-                  { required: true, message: 'Please enter the symbole description.' },
+                  { required: true, message: 'Veuillez saisir le symbole.' },
                 ]}
               >
                 <Input name="Symbole" placeholder="Symbole"    style={{ width: '100%' }}/>
@@ -228,7 +228,7 @@ const DeviseParam = () => {
               style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
               htmlType="submit"
             >
-              {editRecord ? 'Update' : 'Create'}
+              {editRecord ? 'Modifier' : 'Créer'}
             </Button>
           </Form.Item>
         </Form>

@@ -67,14 +67,14 @@ useEffect(() => {
     try {
       const response = await axios.post('http://localhost:5000/devise', values);
       if (response.status === 201) {
-        message.success('Devise created successfully');
+        message.success('Devise créée avec succès');
         setOpen(false);
         fetchDevise();
       } else {
         throw new Error('Failed to create devise');
       }
     } catch (error) {
-      message.error('Failed to create devise');
+      message.error('Échec de la création de la devise');
       console.error('Error creating devise:', error);
     }
   };
@@ -83,14 +83,14 @@ useEffect(() => {
     try {
       const response = await axios.put(`http://localhost:5000/devise/${editRecord._id}`, values);
       if (response.status === 200) {
-        message.success('Devise updated successfully');
+        message.success('Devise mise à jour avec succès');
         setOpen(false);
         fetchDevise();
       } else {
         throw new Error('Failed to update devise');
       }
     } catch (error) {
-      message.error('Failed to update devise');
+      message.error('Échec de la mise à jour de la devise');
       console.error('Error updating devise:', error);
     }
   };
@@ -122,7 +122,7 @@ useEffect(() => {
         setDeviseData(response.data);
       }
     } catch (error) {
-      message.error('Error during search');
+      message.error('Erreur lors de la recherche');
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ useEffect(() => {
 
   const columnsDevise = [
     {
-      title: 'Status',
+      title: 'Statut',
       dataIndex: 'status',
       key: 'status',
       width: 80,
@@ -145,7 +145,7 @@ useEffect(() => {
        sorter: (a, b) => a.status - b.status, 
 
     },
-    { title: 'Nom_D', dataIndex: 'Nom_D', key: 'Nom_D' },
+    { title: 'Devise', dataIndex: 'Nom_D', key: 'Nom_D' },
     { title: 'Symbole', dataIndex: 'Symbole', key: 'Symbole' },
     {
       title: 'Actions',
@@ -175,10 +175,10 @@ useEffect(() => {
           style={{ backgroundColor: '#022452' }}
           onClick={() => setOpen(true)}
         >
-          New Collection
+       Nouvelle devise
         </Button>      </div>
         <Search
-        placeholder="Search "
+        placeholder="Recherche"
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -190,9 +190,9 @@ useEffect(() => {
 
       <div style={{ clear: 'both' }}>
       <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleDeviseStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
         <Table
           columns={columnsDevise}
@@ -208,7 +208,7 @@ useEffect(() => {
       </div>
 
       <Modal
-        title={editRecord ? "Edit Devise" : "Create New Devise"}
+        title={editRecord ? "Modifier Devise" : "Créer Devise"}
         visible={open}
         onCancel={() => setOpen(false)}
         footer={null}
@@ -219,8 +219,8 @@ useEffect(() => {
     <Col span={24}>
       <Form.Item
         name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
+        label="Statut"
+        rules={[{ required: true, message: 'Veuillez cocher le statut!' }]}
         initialValue={false}
       >
         <Row>
@@ -231,7 +231,7 @@ useEffect(() => {
               style={{ color: status ? 'green' : 'red' }}
               value={true}
             >
-              Activated
+              Activé
             </Checkbox>
           </Col>
           <Col span={12}>
@@ -241,7 +241,7 @@ useEffect(() => {
               style={{ color: status ? 'red' : 'green' }}
               value={false}
             >
-              Inactivated
+              Désactivé
             </Checkbox>
           </Col>
         </Row>
@@ -254,10 +254,10 @@ useEffect(() => {
               <Form.Item
                 name="Nom_D"
                 rules={[
-                  { required: true, message: 'Please enter the devise title.' },
+                  { required: true, message: 'Veuillez entrer le nom de la devise ! .' },
                 ]}
               >
-                <Input name="Nom_D" placeholder="Nom_D"    style={{ width: '100%' }} />
+                <Input name="Nom_D" placeholder="Devise"    style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -266,7 +266,7 @@ useEffect(() => {
               <Form.Item
                 name="Symbole"
                 rules={[
-                  { required: true, message: 'Please enter the symbole description.' },
+                  { required: true, message: 'Veuillez entrer la description du symbole' },
                 ]}
               >
                 <Input name="Symbole" placeholder="Symbole"    style={{ width: '100%' }}/>
@@ -279,7 +279,7 @@ useEffect(() => {
               style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
               htmlType="submit"
             >
-              {editRecord ? 'Update' : 'Create'}
+              {editRecord ? 'Modifier' : 'Créer'}
             </Button>
           </Form.Item>
         </Form>

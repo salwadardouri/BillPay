@@ -6,6 +6,7 @@ const AccueilClient = () => {
   return (
     <div>
       <Header />
+      
         </div>
   );
 };

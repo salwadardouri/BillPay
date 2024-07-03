@@ -44,7 +44,7 @@ const TaxVisto = () => {
       setTimbreData(timbreResponse.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      message.error('Failed to fetch data');
+      message.error('Échec de la récupération des données');
     } finally {
       setLoading(false);
     }
@@ -77,9 +77,9 @@ const TaxVisto = () => {
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
     try {
       await axios.post(`http://localhost:5000/${url}`, values);
-      message.success(`${activeTabKey} created successfully`);
+      message.success(`${activeTabKey} créée avec succès`);
     } catch (error) {
-      message.error(`Failed to create ${activeTabKey}`);
+      message.error(`Échec de la création ${activeTabKey}`);
     }
   };
 
@@ -88,9 +88,9 @@ const TaxVisto = () => {
     const url = activeTabKey === 'Tva' ? 'tva' : 'timbre';
     try {
       await axios.put(`http://localhost:5000/${url}/${editRecord._id}`, values);
-      message.success(`${activeTabKey} updated successfully`);
+      message.success(`${activeTabKey} mise à jour avec succès`);
     } catch (error) {
-      message.error(`Failed to update ${activeTabKey}`);
+      message.error(`Échec de la mise à jour ${activeTabKey}`);
     }
   };
 
@@ -143,7 +143,7 @@ const TaxVisto = () => {
         }
       }
     } catch (error) {
-      message.error('Error during search');
+      message.error('Erreur lors de la recherche');
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ const handleTimbreStatusChange = (value) => {
   const columns = {
     Tva: [
       {
-        title: 'Status',
+        title: 'Statut',
         dataIndex: 'status',
         key: 'status',
         width: 80,
@@ -173,7 +173,7 @@ const handleTimbreStatusChange = (value) => {
   
       },
       { 
-        title: 'Pourcent_TVA', 
+        title: 'Taux de TVA', 
         dataIndex: 'Pourcent_TVA', 
         key: 'Pourcent_TVA', 
         render: (pourcentTva) => `${pourcentTva}%`, // Ajout du symbole '%' à côté de la valeur
@@ -199,7 +199,7 @@ const handleTimbreStatusChange = (value) => {
     ],
     Timbre: [
       {
-        title: 'Status',
+        title: 'Statut',
         dataIndex: 'status',
         key: 'status',
         width: 80,
@@ -251,10 +251,10 @@ const handleTimbreStatusChange = (value) => {
         style={{ marginBottom: 16, float: 'right', backgroundColor: '#022452' }}
      
       >
-        New Record
+Ajouter
       </Button>
       <Search
-        placeholder="Search "
+        placeholder="Recherche"
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -266,9 +266,9 @@ const handleTimbreStatusChange = (value) => {
       <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} style={{marginTop:"30px"}}>
         <TabPane tab="Tva" key="Tva">
         <Select defaultValue="all" style={{ width: 150, marginBottom: 20 ,marginTop:"10px"}} onChange={handleTvaStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
           <Table 
            dataSource={
@@ -278,9 +278,9 @@ const handleTimbreStatusChange = (value) => {
         </TabPane>
         <TabPane tab="Timbre" key="Timbre">
         <Select defaultValue="all" style={{ width: 150, marginBottom: 20 ,marginTop:"10px"}} onChange={handleTimbreStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les  statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
           <Table         dataSource={
             timbreStatusFilter === 'all' ? timbreData : timbreData.filter(timbreData => timbreData.status === (timbreStatusFilter === 'activated'))
@@ -289,7 +289,7 @@ const handleTimbreStatusChange = (value) => {
         </TabPane>
       </Tabs>
       <Modal
-  title={editRecord ? 'Edit Record' : 'Create New Record'}
+  title={editRecord ? 'Modifier' : 'Créer'}
   visible={modalVisible}
   onCancel={handleModalClose}
   footer={null}
@@ -302,8 +302,8 @@ const handleTimbreStatusChange = (value) => {
             <Col span={24}>
               <Form.Item
                 name="status"
-                label="Status"
-                rules={[{ required: true, message: 'Please select the status!' }]}
+                label="Statut"
+                rules={[{ required: true, message: 'Veuillez cocher le statut!' }]}
                 initialValue={true}
               >
                 <Row>
@@ -314,7 +314,7 @@ const handleTimbreStatusChange = (value) => {
                       style={{ color: status ? 'green' : 'red' }}
                       value={true}
                     >
-                      Activated
+                      Activé
                     </Checkbox>
                   </Col>
                   <Col span={12}>
@@ -324,7 +324,7 @@ const handleTimbreStatusChange = (value) => {
                       style={{ color: status ? 'red' : 'green' }}
                       value={false}
                     >
-                      Inactivated
+                  Désactivé
                     </Checkbox>
                   </Col>
                 </Row>
@@ -339,12 +339,12 @@ const handleTimbreStatusChange = (value) => {
               name="Pourcent_TVA"
               label={<span>TVA (%)</span>}
               rules={[
-                { required: true, message: 'Please enter the TVA percentage.' },
+                { required: true, message: 'Veuillez saisir le taux de TVA.' },
               ]}
             >
               <InputNumber 
                 style={{ width: '100%' }}
-                placeholder="TVA percentage" 
+                placeholder="Taux de TVA " 
               />
             </Form.Item>
           </Col>
@@ -359,8 +359,8 @@ const handleTimbreStatusChange = (value) => {
             <Col span={24}>
               <Form.Item
                 name="status"
-                label="Status"
-                rules={[{ required: true, message: 'Please select the status!' }]}
+                label="Statut"
+                rules={[{ required: true, message: 'Veuillez cocher le statut!' }]}
                 initialValue={true}
               >
                 <Row>
@@ -371,7 +371,7 @@ const handleTimbreStatusChange = (value) => {
                       style={{ color: status ? 'green' : 'red' }}
                       value={true}
                     >
-                      Activated
+                      Activé
                     </Checkbox>
                   </Col>
                   <Col span={12}>
@@ -381,7 +381,7 @@ const handleTimbreStatusChange = (value) => {
                       style={{ color: status ? 'red' : 'green' }}
                       value={false}
                     >
-                      Inactivated
+                     Désactivé
                     </Checkbox>
                   </Col>
                 </Row>
@@ -394,14 +394,14 @@ const handleTimbreStatusChange = (value) => {
           <Col span={24}>
             <Form.Item
               name="Valeur"
-              label="Stamp Value"
+              label="Timbre fiscal"
               rules={[
-                { required: true, message: 'Please enter the stamp value.' },
+                { required: true, message: 'Veuillez saisir la valeur du timbre fiscal.' },
               ]}
             >
               <InputNumber 
                 style={{ width: '100%' }}
-                placeholder="Stamp value" 
+                placeholder="Valeur de Timbre Fiscal" 
               />
             </Form.Item>
           </Col>
@@ -411,11 +411,11 @@ const handleTimbreStatusChange = (value) => {
             <Form.Item
               name="deviseId"
               label="Devise"
-              rules={[{ required: true, message: 'Please select a Devise' }]}
+              rules={[{ required: true, message: 'Veuillez sélectionner une devise' }]}
             >  
               <Select  
                 name="deviseId" 
-                placeholder="Select a Devise"
+                placeholder="Sélectionnez une devise"
               >
                 {devise.map(devise => (
                   <Option key={devise._id} value={devise._id}>
@@ -439,7 +439,7 @@ const handleTimbreStatusChange = (value) => {
         htmlType="submit" 
         style={{ width: '100px', marginTop: '20px', backgroundColor: '#022452' }}
       >
-        {editRecord ? 'Update' : 'Create'}
+        {editRecord ? 'Modifier' : 'Créer'}
       </Button>
     </Form.Item>
   </Form>

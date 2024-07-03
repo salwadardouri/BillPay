@@ -47,18 +47,19 @@ const User = () => {
     const [status, setStatus] = useState(null);
     const [visible, setVisible] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
-
+    useEffect(() => {
+      if (!open) {
+        form.resetFields();
+      }
+    }, [open, form]);
     const handleViewClient = (recordClient) => {
       setSelectedClient(recordClient);
       setVisible(true);
   };
-
-  
     const handleCheckboxChange = (event) => {
       const { value } = event.target;
       setStatus(value === 'true');
     };
-  
     const showDrawer = () => {
         setOpen(true);
     };
@@ -69,7 +70,6 @@ const User = () => {
         setEditRecordClient(null); 
         setEditRecordFinancier(null); 
     };
-
     const handleEditClient = (recordClient) => {
       setEditRecordClient(recordClient);
       setOpen(true);
@@ -98,12 +98,10 @@ const User = () => {
         country: country, // Définit la valeur du champ du pays
       });
     };
-  
     useEffect(() => {
         fetchClients();
         fetchFinanciers();
     }, []);
-
     const fetchFinanciers = async () => {
       setLoading(true);
       try {
@@ -134,8 +132,6 @@ const User = () => {
         setLoading(false);
       }
     };
-    
-
     const fetchClients = async () => {
       setLoading(true);
       try {
@@ -166,13 +162,10 @@ const User = () => {
         setLoading(false);
       }
     };
-    
-
     const handleChangePhoneNumber = (value) => {
         setPhoneNumber(value);
         setValidPhoneNumber(validatePhoneNumber(value));
     };
-
     const validatePhoneNumber = (phoneNumber) => {
         const phoneNumberPattern = /^\+?[1-9]\d{1,14}$/;
         return phoneNumberPattern.test(phoneNumber);
@@ -191,17 +184,14 @@ const User = () => {
         await onFinishClient(values);
       }
     };
-
-
     useEffect(() => {
       if (editRecordClient) {
         setStatus(editRecordClient.status);
       }
     }, [editRecordClient]);
-  
     const updateClient = async (values) => {
       try {
-        const { fullname, status,email,code_postal, siteweb, Nom_entreprise, address, matricule_fiscale, num_phone, num_fax, num_bureau } = values;
+        const { fullname, status,email,code_postal, address, matricule_fiscale, num_phone } = values;
     
         // Récupérez la valeur du pays du formulaire
         const selectedCountry = form.getFieldValue('country');
@@ -211,8 +201,7 @@ const User = () => {
         
         // Formatage des numéros de téléphone si présents
         const formattedPhoneNumber = num_phone ? num_phone.replace(/\s/g, '') : null;
-        const formattedFaxNumber = num_fax ? num_fax.replace(/\s/g, '') : null;
-        const formattedBureauNumber = num_bureau ? num_bureau.replace(/\s/g, '') : null;
+    
      
         // Construisez les données à envoyer en excluant les champs vides
         const postData = {
@@ -223,16 +212,9 @@ const User = () => {
           matricule_fiscale: matricule_fiscale ,
           code_postal: code_postal ,
           status: status ,
-          Nom_entreprise: Nom_entreprise ,
-          siteweb: siteweb,
-          num_phone: formattedPhoneNumber ,
-          num_fax: formattedFaxNumber ,
-          num_bureau: formattedBureauNumber,
-        };
-        
+        num_phone: formattedPhoneNumber , };
         // Filtrer les propriétés indéfinies
         const filteredPostData = Object.fromEntries(Object.entries(postData).filter(([_, v]) => v !== undefined));
-    
         const response = await fetch(`http://localhost:5000/clients/${editRecordClient._id}`, {
           method: 'PUT',
           headers: {
@@ -242,7 +224,7 @@ const User = () => {
         });
     
         if (response.ok) {
-          message.success('Data updated successfully');
+          message.success('Les données ont été mises à jour avec succès"');
           form.resetFields();
           setOpen(false);
           fetchClients(); 
@@ -250,7 +232,7 @@ const User = () => {
           throw new Error('Failed to update data');
         }
       } catch (error) {
-        message.error('Failed to update data');
+        message.error('Échec de la mise à jour des données');
         console.error('Error updating data:', error);
       }
     };
@@ -285,7 +267,7 @@ const User = () => {
         };
     
         const response = await fetch(`http://localhost:5000/financier/${editRecordFinancier._id}`, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -301,7 +283,7 @@ const User = () => {
           throw new Error('Failed to update data');
         }
       } catch (error) {
-        message.error('Failed to update data');
+        message.error('Échec de la mise à jour des données');
         console.error('Error updating data:', error);
       } finally {
         // Après avoir reçu la réponse de la requête PATCH, mettre à jour loading à false
@@ -352,11 +334,9 @@ const User = () => {
     const onFinishClient = async (values) => {
       values.roles = ["CLIENT"];
       let formattedPhoneNumber = `+${values.num_phone.replace(/\s/g, '')}`;
-      let formattedFaxNumber = `+${values.num_fax.replace(/\s/g, '')}`;
-      let formattedBureauNumber = `+${values.num_bureau.replace(/\s/g, '')}`;
+     
       values.num_phone = formattedPhoneNumber;
-      values.num_bureau = formattedBureauNumber;
-      values.num_fax = formattedFaxNumber;
+    
       values.matricule_fiscale = isMatriculeEnabled ? values.matricule_fiscale_input : null;
       values.country = selectedCountry ? selectedCountry.label : '';
     
@@ -369,12 +349,12 @@ const User = () => {
           body: JSON.stringify(values)
         });
     
-        const responseData = await response.json();
+        // const responseData = await response.json();
     
         if (response.ok) {
           // Stocker les jetons dans localStorage
-          localStorage.setItem('accessToken', responseData.accessToken);
-          localStorage.setItem('refreshToken', responseData.refreshToken);
+          // localStorage.setItem('accessToken', responseData.accessToken);
+          // localStorage.setItem('refreshToken', responseData.refreshToken);
     
           setSuccessAlert(true);
     
@@ -430,7 +410,7 @@ const onSearch = debounce(async (query) => {
 }, 300);
     const columnsFinancier = [
       {
-        title: 'Status',
+        title: 'Statut',
         dataIndex: 'status',
         key: 'status',
         width: 90,
@@ -446,7 +426,7 @@ const onSearch = debounce(async (query) => {
   
       },
         {
-            title: 'Fullname',
+            title: 'Nom ',
             dataIndex: 'fullname',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -458,25 +438,25 @@ const onSearch = debounce(async (query) => {
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
-            title: 'Country',
+            title: 'Pays',
             dataIndex: 'country',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
-            title: 'Phone Number',
+            title: 'Numéro de téléphone',
             dataIndex: 'num_phone',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
-            title: 'Address',
+            title: 'Adresse',
             dataIndex: 'address',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         },
         {
-            title: 'Postal Code',
+            title: 'Code Postal',
             dataIndex: 'code_postal',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -498,7 +478,7 @@ const onSearch = debounce(async (query) => {
       {
         title: 'Status',
         dataIndex: 'status',
-        key: 'status',
+        key: 'statut',
         width: 90,
         render: (status) => (
           <Badge
@@ -512,7 +492,7 @@ const onSearch = debounce(async (query) => {
   
       },
         {
-            title: 'Fullname',
+            title: 'Nom',
             dataIndex: 'fullname',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -531,7 +511,7 @@ const onSearch = debounce(async (query) => {
         //     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
         // },
         {
-            title: 'Phone Number',
+            title: 'Numéro de téléphone',
             dataIndex: 'num_phone',
             ellipsis: true,
             render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -561,7 +541,7 @@ const onSearch = debounce(async (query) => {
             ? []
             : [
                 {
-                    title: 'TIN : Tax identification number',
+                    title: 'Matricule Fiscale',
                     dataIndex: 'matricule_fiscale',
                     ellipsis: true,
                     render: text => <Tooltip placement="topLeft" title={text}>{text}</Tooltip>
@@ -603,8 +583,8 @@ const onSearch = debounce(async (query) => {
     <Col span={24}>
       <Form.Item
         name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
+        label="Statut"
+        rules={[{ required: true, message: 'Veuillez sélectionner le statut!' }]}
         initialValue={false}
       >
         <Row>
@@ -615,7 +595,7 @@ const onSearch = debounce(async (query) => {
               style={{ color: status ? 'green' : 'red' }}
               value={true}
             >
-              Activated
+              Activé
             </Checkbox>
           </Col>
           <Col span={12}>
@@ -625,7 +605,7 @@ const onSearch = debounce(async (query) => {
               style={{ color: status ? 'red' : 'green' }}
               value={false}
             >
-              Inactivated
+             Désactivé
             </Checkbox>
           </Col>
         </Row>
@@ -643,15 +623,15 @@ const onSearch = debounce(async (query) => {
          
         <Form.Item
           name="matricule_fiscale_input"
-          label="Tax identification number"
+          label="Matricule Fiscale"
           rules={[
     {
       required: editRecordClient ? true : false,
-      message: 'Please input your Matricule Fiscal!',
+      message: 'Veuillez saisir votre Matricule Fiscal!',
     },
   ]}
 >
-            <Input placeholder="Please input your TIN!" />
+            <Input placeholder="Veuillez saisir votre Matricule Fiscale!" />
         </Form.Item>
       </Col>
     )}
@@ -675,15 +655,15 @@ const onSearch = debounce(async (query) => {
                       <Col span={12}>
                         <Form.Item
                           name="fullname"
-                          label="Full Name"
+                          label="Nom complet"
                           rules={[
                             {
                               required: true,
-                              message: 'Please enter full name',
+                              message: 'Veuillez entrer votre Nom complet',
                             },
                           ]}
                         >
-                          <Input placeholder="Please enter full name" />
+                          <Input placeholder="Veuillez entrer votre Nom complet" />
                         </Form.Item>
                       </Col>
                       <Col span={12} style={{ marginBottom: '16px' }}>
@@ -691,11 +671,11 @@ const onSearch = debounce(async (query) => {
                           name="email"
                           label="E-mail"
                           rules={[
-                            { type: 'email', message: 'The input is not valid E-mail!' },
-                            { required: true, message: 'Please input your E-mail!' },
+                            { type: 'email', message: 'E-mail invalide! ' },
+                            { required: true, message: 'Veuillez entrer votre adresse e-mail!' },
                           ]}
                         >
-                          <Input placeholder="Please input your E-mail!" />
+                          <Input placeholder="Veuillez entrer votre adresse e-mail !" />
                         </Form.Item>
                       </Col>
                    
@@ -705,7 +685,7 @@ const onSearch = debounce(async (query) => {
                   
                                         <Form.Item
                                             name="num_phone"
-                                            label="Phone Number"
+                                            label="Numéro de téléphone"
                                             rules={[{ required: true, message: 'Please input your phone number!' }]}
                                         >
                                         
@@ -714,20 +694,20 @@ const onSearch = debounce(async (query) => {
                                                 value={phoneNumber}
                                                 onChange={handleChangePhoneNumber}
                                              
-                                                placeholder="Phone number"
+                                                placeholder="Numéro de téléphone"
                                                
                                             />
                                     
                                         </Form.Item>
                                         {!validPhoneNumber && (
-                                            <p>Please enter a valid phone number.</p>
+                                            <p>Veuillez entrer un numéro de téléphone valide ! .</p>
                                         )}
                                     </Col>
                                     <Col span={12} style={{ marginBottom: '16px' }}>
                                     <Form.Item
       name="country"
-      label='Country'
-      rules={[{ required: true, message: 'Please select your country!' }]}
+      label='Pays'
+      rules={[{ required: true, message: 'Veuillez saisir votre pays!' }]}
     
     >
       <ReactSelect
@@ -762,93 +742,23 @@ const onSearch = debounce(async (query) => {
                       <Col span={12} style={{ marginBottom: '16px' }}>
                         <Form.Item
                           name="address"
-                          label="Address"
-                          rules={[{ required: true, message: 'Please input your address!' }]}
+                          label="Adresse"
+                          rules={[{ required: true, message: 'Veuillez saisir votre adresse!' }]}
                         >
-                          <Input placeholder="Please input your address!" />
+                          <Input placeholder="Veuillez saisir votre adresse !" />
                         </Form.Item>
                       </Col>
                       <Col span={12} style={{ marginBottom: '16px' }}>
                         <Form.Item
                           name="code_postal"
-                          label="Postal Code"
-                          rules={[{ required: true, message: 'Please input your postal code!' }]}
+                          label="Code postal"
+                          rules={[{ required: true, message: 'Veuillez saisir votre code postal!' }]}
                         >
-                          <Input placeholder="Please input your postal code!"  />
+                          <Input placeholder="Veuillez saisir votre code postal!"  />
                         </Form.Item>
                       </Col>
                     </Row>
-                    {isMatriculeEnabled && (
-  <>
-                    <Row gutter={16}>
-
-        <Col span={12}>
-            <Form.Item
-                name="Nom_entreprise"
-                label="Name Society"
-              
-            >
-                <Input  name="Nom_entreprise" placeholder="Please enter Name Society" />
-            </Form.Item>
-        </Col>
-        <Col span={12}>
-            <Form.Item
-                name="siteweb"
-                label="Web Site"
-              
-            >
-                <Input  name="siteweb" placeholder="Please enter full name" />
-            </Form.Item>
-        </Col>
-        </Row>
-        <Row gutter={[16, 16]}>
-                      <Col span={12} style={{ marginBottom: '16px' }}>
-                  
-                                        <Form.Item
-                                            name="num_fax"
-                                            label="Fax Number"
-                                            
-                                        >
-                                        
-                                            <PhoneInput
-                                                country={'us'}
-                                                value={phoneNumber}
-                                                onChange={handleChangePhoneNumber}
-                                             
-                                                placeholder="Phone number"
-                                               
-                                            />
-                                    
-                                        </Form.Item>
-                                        {!validPhoneNumber && (
-                                            <p>Please enter a valid phone number.</p>
-                                        )}
-                                    </Col>
-                                    <Col span={12} style={{ marginBottom: '16px' }}>
-                  
-                  <Form.Item
-                      name="num_bureau"
-                      label="Office number"
-                     
-                  >
-                  
-                      <PhoneInput
-                          country={'us'}
-                          value={phoneNumber}
-                          onChange={handleChangePhoneNumber}
-                       
-                          placeholder="Phone number "
-                         
-                      />
-              
-                  </Form.Item>
-                  {!validPhoneNumber && (
-                      <p>Please enter a valid phone number.</p>
-                    )}
-                    </Col>
-                  </Row>
-                </>
-              )}
+                
                   </Form>);
     const drawerContentFinancier= () => (<Form form={form} layout="vertical" onFinish={handleFormSubmitFinancier}>
    {editRecordFinancier && (
@@ -856,8 +766,8 @@ const onSearch = debounce(async (query) => {
     <Col span={24}>
       <Form.Item
         name="status"
-        label="Status"
-        rules={[{ required: true, message: 'Please select the status!' }]}
+        label="Statuts"
+        rules={[{ required: true, message: 'Veuillez sélectionner le statut!' }]}
         initialValue={false}
       >
         <Row>
@@ -868,7 +778,7 @@ const onSearch = debounce(async (query) => {
               style={{ color: status ? 'green' : 'red' }}
               value={true}
             >
-              Activated
+              Activé
             </Checkbox>
           </Col>
           <Col span={12}>
@@ -878,7 +788,7 @@ const onSearch = debounce(async (query) => {
               style={{ color: status ? 'red' : 'green' }}
               value={false}
             >
-              Inactivated
+             Désactivé
             </Checkbox>
           </Col>
         </Row>
@@ -891,15 +801,15 @@ const onSearch = debounce(async (query) => {
         <Col span={12}>
             <Form.Item
                 name="fullname"
-                label="Full Name"
+                label="Nom complet"
                 rules={[
                     {
                         required: true,
-                        message: 'Please enter full name',
+                        message: 'Veuillez saisir votre nom complet',
                     },
                 ]}
             >
-                <Input placeholder="Please enter full name" />
+                <Input placeholder="Veuillez saisir votre nom complet" />
             </Form.Item>
         </Col>
         <Col span={12} style={{ marginBottom: '16px' }}>
@@ -907,11 +817,11 @@ const onSearch = debounce(async (query) => {
                 name="email"
                 label="E-mail"
                 rules={[
-                    { type: 'email', message: 'The input is not valid E-mail!' },
-                    { required: true, message: 'Please input your E-mail!' },
+                    { type: 'email', message: 'E-mail non valide!' },
+                    { required: true, message: 'Veuillez saisir votre E-mail!' },
                 ]}
             >
-                <Input placeholder="Please input your E-mail!" />
+                <Input placeholder="Veuillez saisir votre E-mail!" />
             </Form.Item>
         </Col>
     </Row>
@@ -920,8 +830,8 @@ const onSearch = debounce(async (query) => {
                   
                                         <Form.Item
                                             name="num_phone"
-                                            label="Phone_Number"
-                                            rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                            label="Numéro de téléphone"
+                                            rules={[{ required: true, message: 'Veuillez saisir votre numéro de téléphone!' }]}
                                         >
                                         
                                             <PhoneInput
@@ -929,26 +839,26 @@ const onSearch = debounce(async (query) => {
                                                 value={phoneNumber}
                                                 onChange={handleChangePhoneNumber}
                                              
-                                                placeholder="Phone number"
+                                                placeholder="Numéro de téléphone"
                                                
                                             />
                                     
                                         </Form.Item>
                                         {!validPhoneNumber && (
-                                            <p>Please enter a valid phone number.</p>
+                                            <p>Veuillez entrer un numéro de téléphone valide !.</p>
                                         )}
                                     </Col>
                                     <Col span={12} style={{ marginBottom: '16px' }}>
                                     <Form.Item
       name="country"
-      label='Country'
+      label='Pays'
       rules={[{ required: true, message: 'Please select your country!' }]}
     
     >
       <ReactSelect
         options={countryOptions}
         components={{ Option: CountryOption }}
-        placeholder="Country"
+        placeholder="Pays"
         isClearable={true}
         onChange={(option) => setSelectedCountry(option)} // Update state when a country is selected
         styles={{
@@ -977,19 +887,19 @@ const onSearch = debounce(async (query) => {
         <Col span={12} style={{ marginBottom: '16px' }}>
             <Form.Item
                 name="address"
-                label="Address"
-                rules={[{ required: true, message: 'Please input your address!' }]}
+                label="Adresse"
+                rules={[{ required: true, message: 'Veuillez saisir adresse!' }]}
             >
-                <Input placeholder="Please input your address!" />
+                <Input placeholder="Veuillez saisir adresse!" />
             </Form.Item>
         </Col>
         <Col span={12} style={{ marginBottom: '16px' }}>
             <Form.Item
                 name="code_postal"
-                label="Postal Code"
-                rules={[{ required: true, message: 'Please input your postal code!' }]}
+                label="Code postal"
+                rules={[{ required: true, message: 'Veuillez saisir votre code postal!' }]}
             >
-                <Input placeholder="Please input your postal code!" />
+                <Input placeholder="Veuillez saisir votre code postal!" />
             </Form.Item>
         </Col>
     </Row>
@@ -1001,10 +911,10 @@ const onSearch = debounce(async (query) => {
     return (
         <div>
             <div style={{ marginBottom: 16, float: 'right' }}>
-                <Button type="primary" style={{ backgroundColor:'#022452'}} icon={<UserAddOutlined />} onClick={showDrawer}>New account</Button>
+                <Button type="primary" style={{ backgroundColor:'#022452'}} icon={<UserAddOutlined />} onClick={showDrawer}>Nouveau compte</Button>
             </div>
             <Search
-        placeholder="Search "
+        placeholder="Recherche"
         value={searchText}
         onChange={(e) => {
           const text = e.target.value;
@@ -1027,7 +937,7 @@ const onSearch = debounce(async (query) => {
                 <Button onClick={onClose}>Cancel</Button>
                
                 <Button style={{ backgroundColor:'#022452'}} type="primary" onClick={() => form.submit()} htmlType="submit">
-  {editRecordClient || editRecordFinancier ? 'Update' : 'Create'}
+  {editRecordClient || editRecordFinancier ? 'Modifier' : 'Créer'}
 
 </Button>
 {loading && <div>Loading...</div>}
@@ -1036,8 +946,8 @@ const onSearch = debounce(async (query) => {
     }
 >
     <div style={{width:'600px'}}>
-        {successAlert && <Alert message="Success" description="Check your email to find the link." type="success" showIcon />}
-        {errorAlert && <Alert message="Error" description="The account could not be created due to a server error. Please try again later!" type="error" showIcon />}
+        {successAlert && <Alert message="Success" description="Vérifiez vos e-mails pour trouver le lien ." type="success" showIcon />}
+        {errorAlert && <Alert message="Error" description="Le compte n'a pas pu être créé en raison d'une erreur serveur. Veuillez réessayer ultérieurement!" type="error" showIcon />}
         <br/>
     </div>
     {activeTabKey === 'Financiers' && drawerContentFinancier()}
@@ -1051,15 +961,15 @@ const onSearch = debounce(async (query) => {
                     <TabPane tab="Clients" key="Clients">
                   
                     <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20}} onChange={handleClientTypeChange}>
-                            <Option value="allclient">All of types</Option>
-                            <Option value="morale">Moral</Option>
-                            <Option value="physique">Physical</Option>
+                            <Option value="allclient">Tous les types</Option>
+                            <Option value="morale">Morale</Option>
+                            <Option value="physique">Physique</Option>
                          
                         </Select>
                         <Select defaultValue="allclient" style={{ width: 150, marginBottom: 20,marginLeft:'10px' }} onChange={handleClientStatusChange}>
-                            <Option value="allclient">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="allclient">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
                 
                       
@@ -1077,9 +987,9 @@ const onSearch = debounce(async (query) => {
                     </TabPane>
                     <TabPane tab="Financiers" key="Financiers">
                         <Select defaultValue="all" style={{ width: 150, marginBottom: 20 }} onChange={handleFinancierStatusChange}>
-                            <Option value="all">All of status</Option>
-                            <Option value="activated">Activated</Option>
-                            <Option value="inactivated">Inactivated</Option>
+                            <Option value="all">Tous les statuts</Option>
+                            <Option value="activated">Activé</Option>
+                            <Option value="inactivated">Désactivé</Option>
                         </Select>
                         <Table
     dataSource={
@@ -1093,44 +1003,36 @@ const onSearch = debounce(async (query) => {
                 </Tabs>
             </div>
             <Modal
-                title="User Details"
+                title="Details de l'utilisateur"
                 visible={visible}
                 onCancel={() => setVisible(false)}
                 footer={[
                     <Button key="close" onClick={() => setVisible(false)}>
-                        Close
+                       Fermer
                     </Button>,
                 ]}
             >
                 {selectedClient && (
                     <div>
                                <p>
-                            <strong>Status:</strong>{' '}
+                            <strong>Statut:</strong>{' '}
                             {selectedClient.status ? <CheckCircleOutlined style={{ color: 'green' }} /> : <CloseCircleOutlined style={{ color: 'red' }} />}{' '}
                             {selectedClient.status ? 'Active' : 'Inactive'}
                         </p>
                         <p>
-                            <strong>Fullname:</strong> {selectedClient.fullname}
-                        </p>
+                            <strong>Nom Complet:</strong> {selectedClient.fullname}
+                       </p>
                         <p>
                             <strong>Email:</strong> {selectedClient.email}
                         </p>
-                        {selectedClient.Nom_entreprise && (
-                            <p>
-                                <strong>Society Name:</strong> {selectedClient.Nom_entreprise}
-                            </p>
-                        )}
-                        {selectedClient.siteweb  && (
-                            <p>
-                                <strong>Web Site :</strong> {selectedClient.siteweb}
-                            </p>
-                        )}
+                     
+                  
                         <p>
-                            <strong>Phone Number:</strong> {selectedClient.num_phone}
+                            <strong>Numéro de téléphone:</strong> {selectedClient.num_phone}
                         </p>
                
                         <p>
-                            <strong>Address:</strong> {selectedClient.address}
+                            <strong>Adresse:</strong> {selectedClient.address}
                         </p>
                         {selectedClient.type && (
                             <p>
@@ -1143,16 +1045,7 @@ const onSearch = debounce(async (query) => {
     </p>
 )}
 
-                         {selectedClient.num_fax && (
-                            <p>
-                                <strong> Fax number:</strong> {selectedClient.num_fax}
-                            </p>
-                        )}
-                        {selectedClient.num_bureau && (
-                            <p>
-                                <strong>bureau number:</strong> {selectedClient.num_bureau}
-                            </p>
-                        )}
+                     
                  
                     </div>
                 )}
